@@ -1,14 +1,21 @@
-import { MedicionType } from './types';
+import { MedicionData } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
- * Realiza una solicitud GET al endpoint de la API para obtener todas las mediciones almacenadas.
- *
- * @returns {Promise<Object[]>} - Retorna una promesa que se resuelve con un array de objetos que representan las mediciones.
- * @throws {Error} - Lanza un error si la solicitud falla o la respuesta no es válida.
+ * @brief Obtiene todas las mediciones almacenadas desde la API
+ * @author Juan Diaz Gutierrez
+ * 
+ * obtenerMediciones -> Promise<MedicionData[]>
+ * 
+ * Esta función realiza una solicitud GET al endpoint de la API para obtener
+ * todas las mediciones almacenadas. Utiliza fetch para realizar la solicitud
+ * HTTP y maneja tanto el éxito como los errores de la respuesta.
+ * 
+ * @throws Error - Si la solicitud falla o la respuesta no es válida
+ * @returns Una promesa que se resuelve con un array de objetos MedicionData
  */
-export const obtenerMediciones = async (): Promise<MedicionType[]> => {
+export const obtenerMediciones = async (): Promise<MedicionData[]> => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/mediciones`, {
             method: 'GET',

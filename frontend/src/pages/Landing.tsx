@@ -1,26 +1,36 @@
 import { useEffect, useState } from 'react';
 import { obtenerMediciones } from '../api-client';
 import Medicion from '../components/Medicion';
-import { MedicionType } from '../types';
+import { MedicionData } from '../types';
 
 const Landing = () => {
-  const [mediciones, setMediciones] = useState<MedicionType[]>([]);
-  const [loading, setLoading] = useState(true);
+const [mediciones, setMediciones] = useState<MedicionData[]>([]);
+const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMediciones = async () => {
-      try {
-        const data = await obtenerMediciones();
-        setMediciones(data);
-      } catch (error) {
-        console.error('Error obteniendo mediciones:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const fetchMediciones = async () => {
+    try {
+      const data = await obtenerMediciones();
+      setMediciones(data);
+    } catch (error) {
+      console.error('Error obteniendo mediciones:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Ejecutar la función inmediatamente al montar el componente
+  fetchMediciones();
+
+  // Configurar la actualización cada 10 segundos (10000 ms)
+  const interval = setInterval(() => {
     fetchMediciones();
-  }, []);
+  }, 10000);
+
+  // Limpiar el intervalo cuando el componente se desmonte
+  return () => clearInterval(interval);
+}, []);
+
 
   return (
     <main className="container mx-auto py-10">

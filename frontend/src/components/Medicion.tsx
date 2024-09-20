@@ -1,7 +1,7 @@
 import React from 'react';
-import { MedicionType } from '../types';
+import { MedicionData } from '../types';
 
-const Medicion: React.FC<MedicionType> = ({ fecha, ppm, temperatura, latitud, longitud }) => {
+const Medicion: React.FC<MedicionData> = ({ fecha, ppm, temperatura, latitud, longitud }) => {
   return (
     <div className="p-4 rounded-lg shadow-sm bg-gray-50">
       <p><strong>Fecha:</strong> {new Date(fecha).toLocaleString()}</p>
