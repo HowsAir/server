@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 
+import Layout from "./layouts/Layout";
 import Landing from "./pages/Landing";
 
 const App = () => {
@@ -14,7 +15,9 @@ const App = () => {
         <Route
           path="/"
           element={
-            <Landing />
+            <Layout>
+              <Landing />
+            </Layout>
           }
         />
         <Route path="*" element={<Navigate to="/" />} />

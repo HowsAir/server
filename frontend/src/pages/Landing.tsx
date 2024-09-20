@@ -1,26 +1,57 @@
+import { useEffect, useState } from 'react';
+import { obtenerMediciones } from '../api-client';
+import Medicion from '../components/Medicion';
+import { MedicionType } from '../types';
+
 const Landing = () => {
-    return (
-        <div className="text-center p-12 bg-gray-100">
-            <header className="mb-12">
-                <h1 className="text-5xl font-bold text-gray-800">Welcome to My Website</h1>
-                <p className="text-xl text-gray-600 mt-4">Your journey to excellence starts here.</p>
-                <a href="#get-started" className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-500">
-                    Get Started
-                </a>
-            </header>
-            <section className="my-12">
-                <h2 className="text-3xl font-semibold text-gray-800">Features</h2>
-                <ul className="list-none mt-6 space-y-4">
-                    <li className="text-xl text-gray-600">Feature 1</li>
-                    <li className="text-xl text-gray-600">Feature 2</li>
-                    <li className="text-xl text-gray-600">Feature 3</li>
-                </ul>
-            </section>
-            <footer className="mt-12 text-sm text-gray-500">
-                <p>&copy; 2023 My Website. All rights reserved.</p>
-            </footer>
+  const [mediciones, setMediciones] = useState<MedicionType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMediciones = async () => {
+      try {
+        const data = await obtenerMediciones();
+        setMediciones(data);
+      } catch (error) {
+        console.error('Error obteniendo mediciones:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMediciones();
+  }, []);
+
+  return (
+    <main className="container mx-auto py-10">
+      <div className="container mx-auto flex-1 mb-8">
+        <h1 className="text-center font-semibold text-4xl">Controla la calidad del aire a tu alrededor</h1>
+      </div>
+      <h2 className="text-xl font-normal mb-4 text-left">Últimas mediciones:</h2>
+
+      {loading ? (
+        <p className="text-center">Cargando mediciones...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mediciones.length > 0 ? (
+            mediciones.map((medicion) => (
+              <Medicion
+                key={medicion._id}
+                _id={medicion._id}
+                fecha={medicion.fecha}
+                ppm={medicion.ppm}
+                temperatura={medicion.temperatura}
+                latitud={medicion.latitud}
+                longitud={medicion.longitud}
+              />
+            ))
+          ) : (
+            <p className="text-center col-span-full">No hay mediciones disponibles</p>
+          )}
         </div>
-    );
+      )}
+    </main>
+  );
 };
 
 export default Landing;
