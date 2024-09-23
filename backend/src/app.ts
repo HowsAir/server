@@ -11,27 +11,30 @@ app.use(express.json());
 
 if (process.env.NODE_ENV === "development") {
   app.use(
-    cors(/*{
+    cors({
       origin: process.env.FRONTEND_URL,
       credentials: true,
-    }*/),
+    }),
   );
-}
-else {
+} else {
   app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 }
 
 app.use(express.urlencoded({ extended: true }));
 
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/")
+  .connect(process.env.MONGODB_URI as string)
   .then(() => console.log("Conectado a MongoDB"))
   .catch((error) => console.error("Error conectando a MongoDB:", error));
 
 app.use("/api/v1", v1Router);
 
-app.use((req, res) => {
+app.use("/api/*", (req, res) => {
   res.status(404).json({ message: "Endpoint no encontrado" });
+});
+
+app.get("/*", function (req, res) {
+  res.sendFile(path.join(__dirname, "../../frontend/dist", "index.html"));
 });
 
 export default app;
