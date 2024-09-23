@@ -62,6 +62,7 @@ El proyecto está organizado en dos carpetas principales: `backend` y `frontend`
 Asegúrate de crear archivos `.env` en las carpetas `backend` y `frontend` con las siguientes variables:
 
 - **Backend (`backend/.env`)**
+
   ```plaintext
   MONGODB_URI=mongodb+srv://admin:mybkf541d1D2Ea2U@cluster0.8u2cs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
   NODE_ENV=development
@@ -79,22 +80,26 @@ Asegúrate de crear archivos `.env` en las carpetas `backend` y `frontend` con l
 #### Backend
 
 1. **Instalar Dependencias**
+
    ```bash
    cd backend
    npm install
    ```
 
 2. **Ejecutar en Desarrollo**
+
    ```bash
    npm run dev
    ```
 
 3. **Compilar para Producción**
+
    ```bash
    npm run build
    ```
 
 4. **Ejecutar en Producción**
+
    ```bash
    npm start
    ```
@@ -107,12 +112,14 @@ Asegúrate de crear archivos `.env` en las carpetas `backend` y `frontend` con l
 #### Frontend
 
 1. **Instalar Dependencias**
+
    ```bash
    cd frontend
    npm install
    ```
 
 2. **Ejecutar en Desarrollo**
+
    ```bash
    npm run dev
    ```
@@ -133,12 +140,14 @@ Para producción, el frontend se compilará en archivos estáticos y se servirá
 En el entorno de producción, primero se compilan tanto el frontend como el backend:
 
 1. **Compilar el Frontend**
+
    ```bash
    cd frontend
    npm run build
    ```
 
 2. **Compilar el Backend**
+
    ```bash
    cd backend
    npm run build
@@ -151,3 +160,39 @@ En el entorno de producción, primero se compilan tanto el frontend como el back
    ```
 
 Esto servirá la aplicación completa, con el backend manejando tanto la API como los archivos estáticos del frontend.
+
+---
+
+## ARREGLAR Y ADAPTAR
+
+"docker-credential-wincred.exe", en ~/.docker/conf.json cambia credsStore a credStore
+
+Nos bajamos el proyecto, si queremos hacer desarrollo, colocamos los
+.env en frontend con la url del port que elegimos en el .env de backend y en backend escribimos el puerto, la url determinada del
+frontend, y la url de nuestra base de datos que puede ser en local
+que sera el contenedor que usaremos haciendo docker-compose luego
+o una url a base de datos mongodb en cluster con tus credenciales
+
+Luego hacemos npm install y npm run dev en frontend y backend ya deberia de estar si usas una url de mongodb en la nube.
+
+Si quieres usar en development un contenedor local de Docker con tu DB, haras:
+docker-compose build
+docker-compose --profile default up
+Ya tendrias tu base de datos en local solo tendras que poner una
+url como esta en .env: MONGODB_URI=mongodb://localhost:27017/your_database_name
+
+Si quieres en lugar de esto puedes simplemente clonar el repositorio
+y hacer:
+docker-compose build
+docker-compose --profile production up
+
+No te preocupes de cambiar los .env cuando haces estos comandos
+ya el docker-compose.yml configura las variables de entorno
+
+Asi tendras ya el Backend y la DB en contenedores separados que se
+comunican entre sí y podrás probarlo directamente sin complicaciones
+
+Ten en cuenta que esto no es para development ya que aquí no
+tendríamos las ventajas de hot reloading tanto de nodemon en el servidor
+como de vite con react en el frontend. Este Backend en contenedor
+ya esta compilado y el frontend es servido estáticamente ya compilado.
