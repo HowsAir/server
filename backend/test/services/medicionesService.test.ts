@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { guardarMedicionService, obtenerMedicionesService } from "../../src/services/medicionesService";
+import { medicionesService } from "../../src/services/medicionesService";
 import Medicion, { MedicionType } from "../../src/models/Medicion";
 
 // Mock Mongoose Model
@@ -29,7 +29,7 @@ describe("Mediciones Service", () => {
       // Mock save function to resolve successfully
       Medicion.prototype.save = vi.fn().mockResolvedValue(medicionData);
 
-      const result = await guardarMedicionService(medicionData);
+      const result = await medicionesService.guardarMedicion(medicionData);
 
       expect(Medicion.prototype.save).toHaveBeenCalled();
       expect(result).toEqual(medicionData);
@@ -46,10 +46,12 @@ describe("Mediciones Service", () => {
       };
 
       // Mock save function to reject with an error
-      Medicion.prototype.save = vi.fn().mockRejectedValue(new Error("Error al guardar"));
+      Medicion.prototype.save = vi
+        .fn()
+        .mockRejectedValue(new Error("Error al guardar"));
 
       try {
-        await guardarMedicionService(medicionData);
+        await medicionesService.guardarMedicion(medicionData);
       } catch (error: any) {
         expect(Medicion.prototype.save).toHaveBeenCalled();
         expect(error.message).toBe("Error al guardar");
@@ -70,7 +72,7 @@ describe("Mediciones Service", () => {
       });
 
       try {
-        await guardarMedicionService(medicionData as MedicionType);
+        await medicionesService.guardarMedicion(medicionData as MedicionType);
       } catch (error: any) {
         expect(error.message).toContain("validation failed");
       }
@@ -100,17 +102,19 @@ describe("Mediciones Service", () => {
 
       Medicion.find = vi.fn().mockResolvedValue(mockMediciones);
 
-      const result = await obtenerMedicionesService();
+      const result = await medicionesService.obtenerMediciones();
 
       expect(Medicion.find).toHaveBeenCalled();
       expect(result).toEqual(mockMediciones);
     });
 
     it("debería lanzar un error si ocurre un fallo al obtener mediciones", async () => {
-      Medicion.find = vi.fn().mockRejectedValue(new Error("Error al obtener mediciones"));
+      Medicion.find = vi
+        .fn()
+        .mockRejectedValue(new Error("Error al obtener mediciones"));
 
       try {
-        await obtenerMedicionesService();
+        await medicionesService.obtenerMediciones();
       } catch (error: any) {
         expect(Medicion.find).toHaveBeenCalled();
         expect(error.message).toBe("Error al obtener mediciones");
@@ -120,7 +124,7 @@ describe("Mediciones Service", () => {
     it("debería devolver una lista vacía si no hay mediciones", async () => {
       Medicion.find = vi.fn().mockResolvedValue([]);
 
-      const result = await obtenerMedicionesService();
+      const result = await medicionesService.obtenerMediciones();
 
       expect(Medicion.find).toHaveBeenCalled();
       expect(result).toEqual([]);
