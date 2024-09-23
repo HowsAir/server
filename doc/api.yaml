@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: Freshair Backend API Sprint-0
+  description: Diseño de la API para el Sprint 0 del Proyecto de Biometría.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Servidor local para desarrollo
+paths:
+  /mediciones:
+    get:
+      tags:
+        - Mediciones
+      summary: Obtiene todas las mediciones registradas
+      description: Devuelve una lista de todas las mediciones almacenadas en la base de datos.
+      responses:
+        "200":
+          description: Lista de mediciones obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Medicion"
+        "500":
+          description: Error en el servidor al obtener las mediciones
+    post:
+      tags:
+        - Mediciones
+      summary: Crea una nueva medición
+      description: Recibe los datos de una medición y la guarda en la base de datos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicionInput"
+      responses:
+        "201":
+          description: Medición creada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medicion"
+        "400":
+          description: Error de validación en los datos de la medición
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al guardar la medición
+components:
+  schemas:
+    Medicion:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID único de la medición
+        fecha:
+          type: string
+          format: date-time
+          description: Fecha y hora en que se registró la medición
+        ppm:
+          type: number
+          description: Niveles de partículas por millón (PPM)
+        temperatura:
+          type: number
+          description: Temperatura registrada en la medición
+        latitud:
+          type: number
+          description: Latitud en la que se tomó la medición
+        longitud:
+          type: number
+          description: Longitud en la que se tomó la medición
+    MedicionInput:
+      type: object
+      required:
+        - ppm
+        - temperatura
+        - latitud
+        - longitud
+      properties:
+        ppm:
+          type: number
+          description: Niveles de partículas por millón (PPM)
+          example: 50
+        temperatura:
+          type: number
+          description: Temperatura en grados Celsius
+          example: 25
+        latitud:
+          type: number
+          description: Latitud en la que se registró la medición
+          example: -34.6037
+        longitud:
+          type: number
+          description: Longitud en la que se registró la medición
+          example: -58.3816
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Descripción del error
+          example: "Error validando los datos"
