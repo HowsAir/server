@@ -1,8 +1,6 @@
-# Documentación del Backend
+# Estructura del Proyecto
 
-## Estructura del Proyecto
-
-### **Patrón de Arquitectura**
+## **Patrón de Arquitectura**
 
 Hemos seguido una estructura basada en el patrón de arquitectura **MVC (Modelo-Vista-Controlador)**, adaptado para una aplicación backend con una separación clara de responsabilidades:
 
