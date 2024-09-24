@@ -1,4 +1,4 @@
-# Proyecto FreshAir
+# freshair-server
 
 ## Descripción
 
