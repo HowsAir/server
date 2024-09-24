@@ -122,12 +122,38 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
 
    Una vez que los contenedores estén en funcionamiento, puedes acceder a la aplicación a través de tu navegador. El backend de Express servirá los archivos estáticos del frontend, por lo que solo necesitarás visitar la URL correspondiente:
 
-   - Si estás ejecutando la aplicación localmente, visita: `http://localhost:5000`
+   - Si estás ejecutando la aplicación localmente, visita: `http://localhost:3000`
    - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
    - La base de datos MongoDB estará ejecutándose en un contenedor separado y conectada al backend automáticamente a través de la URL configurada.
 
-### ¿Qué ocurre en producción?
+### Solución de Problemas Comunes en Docker
 
-- **Backend**: El backend de Node.js se ejecuta en un contenedor y sirve tanto la API como los archivos estáticos del frontend.
-- **Frontend**: El frontend ya está compilado y es servido como archivos estáticos desde el contenedor del backend.
-- **Base de datos**: MongoDB se ejecuta en su propio contenedor y se comunica con el backend de manera eficiente.
+Si estás utilizando Docker en **Windows**, es posible que encuentres un error relacionado con las credenciales, como:
+
+```plaintext
+error during connect: Post http://docker/credentials:
+error while looking up credential store docker-credential-wincred.exe
+```
+
+Para solucionarlo, sigue estos pasos:
+
+1. **Editar el archivo de configuración de Docker**:
+
+   Abre el archivo `~/.docker/config.json` en un editor de texto.
+
+2. **Cambiar `credsStore` a `credStore`**:
+
+   Dentro del archivo, busca la línea que contiene `"credsStore"` y cámbiala por `"credStore"`. El archivo debería verse algo así:
+
+   ```json
+   {
+     "auths": {
+       "https://index.docker.io/v1/": {}
+     },
+     "credStore": "wincred"
+   }
+   ```
+
+3. Guarda los cambios y reinicia Docker.
+
+Si vuelves a encontrar problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
