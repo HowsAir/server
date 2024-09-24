@@ -156,4 +156,4 @@ Para solucionarlo, sigue estos pasos:
 
 3. Guarda los cambios y reinicia Docker.
 
-Si vuelves a encontrar problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
+> Si vuelves a encontrar problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
