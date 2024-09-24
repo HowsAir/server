@@ -131,5 +131,3 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
 - **Backend**: El backend de Node.js se ejecuta en un contenedor y sirve tanto la API como los archivos estáticos del frontend.
 - **Frontend**: El frontend ya está compilado y es servido como archivos estáticos desde el contenedor del backend.
 - **Base de datos**: MongoDB se ejecuta en su propio contenedor y se comunica con el backend de manera eficiente.
-
-Claro, vamos a añadir un cuarto paso para explicar cómo acceder a la aplicación después de levantar los contenedores en producción. Aquí te dejo la actualización del README:
