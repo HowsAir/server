@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { medicionesService } from "../../src/services/medicionesService";
-import Medicion, { MedicionType } from "../../src/models/Medicion";
+import Medicion, { Medicion as MedicionType } from "../../src/models/Medicion";
 
 // Mock Mongoose Model
 vi.mock("../models/Medicion", () => ({

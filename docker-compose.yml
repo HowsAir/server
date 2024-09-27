@@ -20,7 +20,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/your_database_name
       - PORT=3000
-      - NODE_ENV=production
+      - NODE_ENV=development
       - VITE_API_BASE_URL= #Frontend takes automatically the backend url when fetching data
       - FRONTEND_URL= 
     volumes:
