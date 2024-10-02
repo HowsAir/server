@@ -1,6 +1,13 @@
+/**
+ * @file medicionesService.test.ts
+ * @brief Pruebas unitarias para el servicio de mediciones
+ * @author Juan Diaz
+ * @date 25/09/2024
+ */
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { medicionesService } from "../../src/services/medicionesService";
-import Medicion, { Medicion as MedicionType } from "../../src/models/Medicion";
+import Medicion, { MedicionType } from "../../src/models/Medicion";
 
 // Mock Mongoose Model
 vi.mock("../models/Medicion", () => ({
@@ -10,12 +17,12 @@ vi.mock("../models/Medicion", () => ({
   },
 }));
 
-describe("Mediciones Service", () => {
+describe("medicionesService", () => {
   beforeEach(() => {
     vi.clearAllMocks(); // Reset all mocks before each test
   });
 
-  describe("guardarMedicionService", () => {
+  describe("guardarMedicion()", () => {
     it("debería guardar una nueva medición correctamente", async () => {
       const medicionData: MedicionType = {
         _id: "1",
@@ -61,7 +68,7 @@ describe("Mediciones Service", () => {
     it("debería lanzar un error si los datos de la medición son inválidos", async () => {
       // Simulate invalid data
       const medicionData: Partial<MedicionType> = {
-        ppm: NaN, // Invalid ppm
+        ppm: NaN,
         temperatura: 22,
         latitud: 10,
         longitud: 20,
@@ -79,7 +86,7 @@ describe("Mediciones Service", () => {
     });
   });
 
-  describe("obtenerMedicionesService", () => {
+  describe("obtenerMediciones()", () => {
     it("debería obtener todas las mediciones correctamente", async () => {
       const mockMediciones: MedicionType[] = [
         {
@@ -87,16 +94,16 @@ describe("Mediciones Service", () => {
           ppm: 450,
           fecha: new Date(),
           temperatura: 22,
-          latitud: 10,
-          longitud: 20,
+          latitud: 10.54,
+          longitud: 20.10,
         },
         {
           _id: "2",
           ppm: 460,
           fecha: new Date(),
           temperatura: 23,
-          latitud: 15,
-          longitud: 25,
+          latitud: 15.10,
+          longitud: 25.20,
         },
       ];
 

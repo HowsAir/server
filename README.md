@@ -13,7 +13,6 @@ Asegúrate de crear los archivos `.env` en las carpetas `backend` y `frontend` c
 ```plaintext
 MONGODB_URI=mongodb://localhost:27017/your_database_name
 NODE_ENV=development
-PORT=3000
 FRONTEND_URL=http://localhost:5173
 ```
 

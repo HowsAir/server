@@ -19,8 +19,7 @@ services:
       - ./frontend/.env
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/your_database_name
-      - PORT=3000
-      - NODE_ENV=development
+      - NODE_ENV=production
       - VITE_API_BASE_URL= #Frontend takes automatically the backend url when fetching data
       - FRONTEND_URL= 
     volumes:
@@ -28,5 +27,6 @@ services:
       - /usr/src/app/frontend/node_modules
     profiles:
       - production
+
 volumes:
   mongodb_data:

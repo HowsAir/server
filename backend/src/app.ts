@@ -1,9 +1,16 @@
+/**
+ * @file app.ts
+ * @brief Configura el servidor, las rutas y la conexión a MongoDB para la aplicación
+ * @author Juan Diaz
+ * @date 20/09/2024
+ */
+
 import express from "express";
 import mongoose from "mongoose";
 import "dotenv/config";
 import path from "path";
 import cors from "cors";
-import v1Router from "./routes/v1Router";
+import router from "./routes/router";
 
 const app = express();
 
@@ -27,7 +34,7 @@ mongoose
   .then(() => console.log("Conectado a MongoDB"))
   .catch((error) => console.error("Error conectando a MongoDB:", error));
 
-app.use("/api/v1", v1Router);
+app.use("/api/v1", router);
 
 app.use("/api/*", (req, res) => {
   res.status(404).json({ message: "Endpoint no encontrado" });

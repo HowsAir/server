@@ -1,5 +1,12 @@
+/**
+ * @file medicionesController.ts
+ * @brief Controlador para manejar las operaciones relacionadas con las mediciones
+ * @author Juan Diaz
+ * @date 23/09/2024
+ */
+
 import { Request, Response } from "express";
-import { Medicion } from "../models/Medicion";
+import { MedicionType } from "../models/Medicion";
 import { validationResult } from "express-validator";
 import { medicionesService } from "../services/medicionesService";
 
@@ -13,7 +20,7 @@ import { medicionesService } from "../services/medicionesService";
  */
 const guardarMedicion = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<Response> => {
   try {
     const errores = validationResult(req);
@@ -22,7 +29,7 @@ const guardarMedicion = async (
       return res.status(400).json({ message: errores.array() });
     }
 
-    const medicion: Medicion = req.body;
+    const medicion: MedicionType = req.body;
 
     const medicionCreada = await medicionesService.guardarMedicion(medicion);
 
@@ -42,10 +49,11 @@ const guardarMedicion = async (
  */
 const obtenerMediciones = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<Response> => {
   try {
-    const mediciones: Medicion[] = await medicionesService.obtenerMediciones();
+    const mediciones: MedicionType[] =
+      await medicionesService.obtenerMediciones();
     return res.status(200).json(mediciones);
   } catch (error) {
     return res.status(500).json({ message: "Error interno del servidor" });
