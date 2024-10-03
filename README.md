@@ -125,7 +125,9 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
    - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
    - La base de datos MongoDB estará ejecutándose en un contenedor separado y conectada al backend automáticamente a través de la URL configurada.
 
-### Solución de Problemas Comunes en Docker
+## Solución de Problemas Comunes
+
+### Relacionados con Docker y sus credenciales
 
 Si estás utilizando Docker en **Windows**, es posible que encuentres un error relacionado con las credenciales, como:
 
@@ -161,7 +163,7 @@ Para solucionarlo, sigue estos pasos:
 
 > Si sigues encontrando problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
 
-### Problemas de Conexión al Servidor desde Otro Dispositivo en la Misma Red
+### Relacionado con la comunicación con el Servidor desde otro Dispositivo
 
 Si se está corriendo **Docker Desktop en Windows** y no es posible conectar al servidor desde otro dispositivo en la misma red, como un dispositivo Android que maneja datos de Beacons, se pueden seguir los siguientes pasos para solucionar el problema:
 
