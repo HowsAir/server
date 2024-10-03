@@ -2,6 +2,14 @@ import { MedicionData } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+export const API_ERRORS = {
+    OBTENER_MEDICIONES: "No se pudieron obtener las mediciones",
+    // Aquí puedes agregar más errores específicos para otras funciones
+    // por ejemplo:
+    // CREAR_MEDICION: "No se pudo crear la medición",
+    // ACTUALIZAR_MEDICION: "No se pudo actualizar la medición",
+} as const;
+  
 /**
  * @brief Obtiene todas las mediciones almacenadas desde la API
  * @author Juan Diaz Gutierrez
@@ -31,7 +39,7 @@ export const obtenerMediciones = async (): Promise<MedicionData[]> => {
 
         return response.json();
     } catch (error) {
-        console.error("Error fetching mediciones:", error);
-        throw new Error("No se pudieron obtener las mediciones");
+        console.error("Error:", error);
+        throw new Error(API_ERRORS.OBTENER_MEDICIONES);
     }
 };

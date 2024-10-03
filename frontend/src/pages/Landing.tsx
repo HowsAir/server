@@ -1,43 +1,47 @@
-import { useEffect, useState } from 'react';
-import { obtenerMediciones } from '../api-client';
-import Medicion from '../components/Medicion';
-import { MedicionData } from '../types';
+import { useEffect, useState } from "react";
+import { obtenerMediciones } from "../apiClient";
+import Medicion from "../components/Medicion";
+import { MedicionData } from "../types";
 
 const Landing = () => {
-const [mediciones, setMediciones] = useState<MedicionData[]>([]);
-const [loading, setLoading] = useState(true);
+  const [mediciones, setMediciones] = useState<MedicionData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchMediciones = async () => {
-    try {
-      const data = await obtenerMediciones();
-      setMediciones(data);
-    } catch (error) {
-      console.error('Error obteniendo mediciones:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchMediciones = async () => {
+      try {
+        const data = await obtenerMediciones();
+        setMediciones(data);
+      } catch (error) {
+        //Gestionar error
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Ejecutar la función inmediatamente al montar el componente
-  fetchMediciones();
-
-  // Configurar la actualización cada 10 segundos (10000 ms)
-  const interval = setInterval(() => {
+    // Ejecutar la función inmediatamente al montar el componente
     fetchMediciones();
-  }, 10000);
 
-  // Limpiar el intervalo cuando el componente se desmonte
-  return () => clearInterval(interval);
-}, []);
+    // Configurar la actualización cada 10 segundos (10000 ms)
+    const interval = setInterval(() => {
+      fetchMediciones();
+    }, 10000);
 
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <main className="container mx-auto py-10">
       <div className="container mx-auto flex-1 mb-8">
-        <h1 className="text-center font-semibold text-4xl">Controla la calidad del aire a tu alrededor</h1>
+        <h1 className="text-center font-semibold text-4xl">
+          Controla la calidad del aire a tu alrededor
+        </h1>
       </div>
-      <h2 className="text-xl font-normal mb-4 text-left">Últimas mediciones:</h2>
+      <h2 className="text-xl font-normal mb-4 text-left">
+        Últimas mediciones:
+      </h2>
 
       {loading ? (
         <p className="text-center">Cargando mediciones...</p>
@@ -56,7 +60,9 @@ useEffect(() => {
               />
             ))
           ) : (
-            <p className="text-center col-span-full">No hay mediciones disponibles</p>
+            <p className="text-center col-span-full">
+              No hay mediciones disponibles
+            </p>
           )}
         </div>
       )}
