@@ -39,7 +39,7 @@ En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de dat
    docker-compose --profile default up
    ```
 
-   Esto creará un contenedor de Docker con una base de datos MongoDB local. Si quieres configurar un nombre de base de datos personalizado, entra en el docker-compose.yml y cambia "your_database_name" por el nombre que quieras:
+   Esto creará un contenedor de Docker con una base de datos MongoDB local. Si quieres configurar un nombre de base de datos personalizado, entra en tu .env y cambia "your_database_name" por el nombre que quieras:
 
    ```plaintext
    MONGODB_URI=mongodb://localhost:27017/your_database_name
@@ -160,3 +160,24 @@ Para solucionarlo, sigue estos pasos:
    Si el paso anterior no soluciona el problema, puedes intentar eliminar completamente el archivo `config.json` que se encuentra en `~/.docker/config.json`. Docker generará uno nuevo automáticamente la próxima vez que se ejecute.
 
 > Si sigues encontrando problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
+
+### Problemas de Conexión al Servidor desde Otro Dispositivo en la Misma Red
+
+Si se está corriendo **Docker Desktop en Windows** y no es posible conectar al servidor desde otro dispositivo en la misma red, como un dispositivo Android que maneja datos de Beacons, se pueden seguir los siguientes pasos para solucionar el problema:
+
+1. **Desinstalar WSL**: Desinstalar WSL para eliminar cualquier configuración problemática.
+
+2. **Desinstalar Docker**: Desinstalar Docker Desktop para asegurar una instalación limpia.
+
+3. **Reinstalar WSL y Ubuntu**: Reinstalar WSL y la distribución de Ubuntu para empezar desde una base fresca.
+
+4. **Reinstalar Docker**: Volver a instalar Docker Desktop, siguiendo todos los pasos de instalación recomendados.
+
+5. **Crear un archivo `.wslconfig`**: En la carpeta del usuario, crear un archivo llamado `.wslconfig` con el siguiente contenido:
+
+   ```ini
+   [wsl2]
+   swap=0
+   ```
+
+6. **Configurar el Firewall**: Crear una regla en el Firewall de Windows que permita el tráfico entrante en todas las redes para el puerto 3000.
