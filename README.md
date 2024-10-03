@@ -125,8 +125,6 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
    - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
    - La base de datos MongoDB estará ejecutándose en un contenedor separado y conectada al backend automáticamente a través de la URL configurada.
 
-Aquí tienes la versión actualizada con la solución alternativa de borrar el archivo `config.json`:
-
 ### Solución de Problemas Comunes en Docker
 
 Si estás utilizando Docker en **Windows**, es posible que encuentres un error relacionado con las credenciales, como:
