@@ -162,4 +162,3 @@ Para solucionarlo, sigue estos pasos:
    Si el paso anterior no soluciona el problema, puedes intentar eliminar completamente el archivo `config.json` que se encuentra en `~/.docker/config.json`. Docker generará uno nuevo automáticamente la próxima vez que se ejecute.
 
 > Si sigues encontrando problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
-```
