@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { obtenerMediciones } from "../apiClient";
+import { obtenerMediciones } from "../api/apiClient";
 import Medicion from "../components/Medicion";
 import { MedicionData } from "../types";
 

@@ -1,5 +1,13 @@
+/**
+ * @file apiClient.test.ts
+ * @brief Pruebas unitarias para las funciones del cliente API
+ * @description Las pruebas verifican la correcta obtención de datos desde la API, el manejo de respuestas no exitosas, y la gestión de errores en la llamada de red (fetch).
+ * @author Juan Diaz
+ * @date 03/10/2024
+ */
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as apiClient from "../src/apiClient";
+import * as apiClient from "../src/api/apiClient";
 import { MedicionData } from "../src/types";
 
 describe("obtenerMediciones", () => {
@@ -49,14 +57,18 @@ describe("obtenerMediciones", () => {
       json: () => Promise.resolve({ message: errorMessage }),
     });
 
-    await expect(apiClient.obtenerMediciones()).rejects.toThrow(apiClient.API_ERRORS.OBTENER_MEDICIONES);
+    await expect(apiClient.obtenerMediciones()).rejects.toThrow(
+      apiClient.API_ERRORS.OBTENER_MEDICIONES
+    );
     expect(console.error).toHaveBeenCalled();
   });
 
   it("debería manejar errores del fetch", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("Error de red"));
 
-    await expect(apiClient.obtenerMediciones()).rejects.toThrow(apiClient.API_ERRORS.OBTENER_MEDICIONES);
+    await expect(apiClient.obtenerMediciones()).rejects.toThrow(
+      apiClient.API_ERRORS.OBTENER_MEDICIONES
+    );
     expect(console.error).toHaveBeenCalled();
   });
 });
