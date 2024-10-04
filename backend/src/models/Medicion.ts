@@ -2,7 +2,6 @@
  * @file Medicion.ts
  * @brief Definición del esquema de Mongoose y la interfaz para Medicion
  * @author Juan Diaz
- * @date 22/09/2024
  */
 
 import mongoose from "mongoose";
@@ -38,7 +37,7 @@ const MedicionSchema = new mongoose.Schema<MedicionType>(
     latitud: { type: Number, required: true },
     longitud: { type: Number, required: true },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 // Middleware para asegurarse de que la fecha siempre sea la actual
@@ -51,5 +50,5 @@ MedicionSchema.pre("save", function (next) {
 export default mongoose.model<MedicionType>(
   "Medicion",
   MedicionSchema,
-  "mediciones"
+  "mediciones",
 );

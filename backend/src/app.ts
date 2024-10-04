@@ -2,7 +2,6 @@
  * @file app.ts
  * @brief Configura el servidor, las rutas y la conexión a MongoDB para la aplicación
  * @author Juan Diaz
- * @date 20/09/2024
  */
 
 import express from "express";

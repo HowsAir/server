@@ -1,3 +1,9 @@
+/**
+ * @file apiClient.ts
+ * @brief Pruebas unitarias para las funciones del cliente API
+ * @author Juan Diaz
+ */
+
 import { MedicionData } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";

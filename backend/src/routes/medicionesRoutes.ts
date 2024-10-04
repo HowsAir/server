@@ -2,7 +2,6 @@
  * @file medicionesRoutes.ts
  * @brief Definición de las rutas para las mediciones en la API, incluyendo validación de datos
  * @author Juan Diaz
- * @date 22/09/2024
  */
 
 import { Router } from "express";

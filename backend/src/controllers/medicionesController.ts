@@ -2,7 +2,6 @@
  * @file medicionesController.ts
  * @brief Controlador para manejar las operaciones relacionadas con las mediciones
  * @author Juan Diaz
- * @date 23/09/2024
  */
 
 import { Request, Response } from "express";
@@ -20,7 +19,7 @@ import { medicionesService } from "../services/medicionesService";
  */
 const guardarMedicion = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<Response> => {
   try {
     const errores = validationResult(req);
@@ -49,7 +48,7 @@ const guardarMedicion = async (
  */
 const obtenerMediciones = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<Response> => {
   try {
     const mediciones: MedicionType[] =

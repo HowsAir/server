@@ -2,14 +2,12 @@
  * @file medicionesService.ts
  * @brief Servicio para manejar las operaciones relacionadas con las mediciones
  * @author Juan Diaz
- * @date 26/09/2024
  */
 
 import Medicion, { MedicionType } from "../models/Medicion";
 
 /**
- * @brief Guarda una nueva medición en la base de datos
- * @author Juan Diaz
+ * Guarda una nueva medición en la base de datos
  *
  * medicionData: Medicion -> guardarMedicion() -> Promise<Medicion>
  *
@@ -18,7 +16,7 @@ import Medicion, { MedicionType } from "../models/Medicion";
  * @throws {Error} Si ocurre algún problema durante el guardado de la medición.
  */
 const guardarMedicion = async (
-  medicionData: MedicionType
+  medicionData: MedicionType,
 ): Promise<MedicionType> => {
   try {
     const medicion = new Medicion(medicionData);
@@ -29,8 +27,7 @@ const guardarMedicion = async (
 };
 
 /**
- * @brief Obtiene todas las mediciones almacenadas en la base de datos
- * @author Juan Diaz
+ * Obtiene todas las mediciones almacenadas en la base de datos
  *
  * obtenerMediciones() -> Promise<Medicion[]>
  *

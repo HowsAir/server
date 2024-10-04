@@ -2,7 +2,6 @@
  * @file medicionesService.test.ts
  * @brief Pruebas unitarias para el servicio de mediciones
  * @author Juan Diaz
- * @date 25/09/2024
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -52,7 +51,7 @@ describe("medicionesService", () => {
         longitud: 20,
       };
 
-      // Mock save function to reject with an error
+      // Mock save function to reject with an error, suppose the save operation failed at the database level
       Medicion.prototype.save = vi
         .fn()
         .mockRejectedValue(new Error("Error al guardar"));
@@ -74,6 +73,7 @@ describe("medicionesService", () => {
         longitud: 20,
       };
 
+      // Mock save function to throw an error, suppose the validation failed at the model level
       Medicion.prototype.save = vi.fn().mockImplementation(() => {
         throw new Error("validation failed");
       });
@@ -95,15 +95,15 @@ describe("medicionesService", () => {
           fecha: new Date(),
           temperatura: 22,
           latitud: 10.54,
-          longitud: 20.10,
+          longitud: 20.1,
         },
         {
           _id: "2",
           ppm: 460,
           fecha: new Date(),
           temperatura: 23,
-          latitud: 15.10,
-          longitud: 25.20,
+          latitud: 15.1,
+          longitud: 25.2,
         },
       ];
 

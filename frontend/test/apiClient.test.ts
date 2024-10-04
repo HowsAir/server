@@ -1,9 +1,7 @@
 /**
  * @file apiClient.test.ts
  * @brief Pruebas unitarias para las funciones del cliente API
- * @description Las pruebas verifican la correcta obtención de datos desde la API, el manejo de respuestas no exitosas, y la gestión de errores en la llamada de red (fetch).
  * @author Juan Diaz
- * @date 03/10/2024
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
