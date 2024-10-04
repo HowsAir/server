@@ -14,14 +14,8 @@ services:
       - "3000:3000"
     depends_on:
       - mongodb
-    env_file:
-      - ./backend/.env
-      - ./frontend/.env
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017/your_database_name
-      - NODE_ENV=production
-      - VITE_API_BASE_URL= #Frontend takes automatically the backend url when fetching data
-      - FRONTEND_URL= 
+      - name=value
     volumes:
       - /usr/src/app/backend/node_modules
       - /usr/src/app/frontend/node_modules
