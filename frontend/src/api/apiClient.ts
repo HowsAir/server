@@ -6,7 +6,8 @@
 
 import { MedicionData } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const NODE_ENV = import.meta.env.VITE_NODE_ENV || "development";
+const API_BASE_URL = NODE_ENV === "development" ? "http://localhost:3000" : "";
 
 export const API_ERRORS = {
   OBTENER_MEDICIONES: "No se pudieron obtener las mediciones",
