@@ -6,7 +6,7 @@
 
 ## Configuración de Variables de Entorno
 
-Asegúrate de crear los archivos `.env` en las carpetas `backend` y `frontend` con las siguientes variables:
+Asegúrate de crear los archivos `.env` en las carpetas `backend` y `frontend` con las siguientes variables, ajustando los valores según el entorno en el que estés trabajando.
 
 ### Backend (`backend/.env`)
 
@@ -16,13 +16,19 @@ NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 ```
 
+> En **desarrollo**, asegúrate de que `NODE_ENV` esté configurado en `development`.  
+> En **producción**, cambia `NODE_ENV` a `production`.
+
 > Si deseas usar una base de datos MongoDB en la nube, puedes reemplazar `MONGODB_URI` con la URL de tu propio clúster en MongoDB Atlas u otra solución en la nube.
 
 ### Frontend (`frontend/.env`)
 
 ```plaintext
-API_BASE_URL="http://localhost:3000"
+VITE_NODE_ENV=development
 ```
+
+> En **desarrollo**, `VITE_NODE_ENV` debe estar configurado en `development`.  
+> En **producción**, cambia `VITE_NODE_ENV` a `production`.
 
 ## Parte 1: Desarrollo
 
@@ -113,13 +119,9 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
    - Levantará un contenedor para el backend, que servirá tanto la API como los archivos estáticos del frontend.
    - Levantará un contenedor separado para MongoDB.
 
-3. **Configuración automática de variables de entorno**:
+3. **Acceder a la aplicación**:
 
-   No necesitas modificar los archivos `.env` manualmente para producción, ya que `docker-compose.yml` se encargará de configurar las variables de entorno apropiadas en cada contenedor.
-
-4. **Acceder a la aplicación**:
-
-   Una vez que los contenedores estén en funcionamiento, puedes acceder a la aplicación a través de tu navegador. El backend de Express servirá los archivos estáticos del frontend, por lo que solo necesitarás visitar la URL correspondiente:
+   Una vez que los contenedores estén en funcionamiento, puedes acceder a la aplicación a través de tu navegador.
 
    - Si estás ejecutando la aplicación localmente, visita: `http://localhost:3000`
    - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
