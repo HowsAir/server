@@ -73,7 +73,7 @@ En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de dat
    npm run dev
    ```
 
-   El frontend estará disponible en `http://localhost:5173`.
+   El frontend estará disponible en `http://localhost:5173`.  
    Accede a la url para interactuar con la app.
 
 ### Opción 2: Desarrollo con MongoDB en la Nube
@@ -126,6 +126,30 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
    - Si estás ejecutando la aplicación localmente, visita: `http://localhost:3000`
    - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
    - La base de datos MongoDB estará ejecutándose en un contenedor separado y conectada al backend automáticamente a través de la URL configurada.
+
+## Cómo ejecutar los tests
+
+El proyecto incluye tests tanto en el backend como en el frontend, utilizando **Vitest**. Para ejecutarlos, sigue estos pasos:
+
+1. **Backend**:
+
+   Ve a la carpeta `backend` y ejecuta:
+
+   ```bash
+   cd backend
+   npm test
+   ```
+
+2. **Frontend**:
+
+   Ve a la carpeta `frontend` y ejecuta:
+
+   ```bash
+   cd frontend
+   npm test
+   ```
+
+   Esto correrá los tests en cada una de las partes del proyecto y te permitirá verificar que el código funciona correctamente.
 
 ## Solución de Problemas Comunes
 
@@ -185,3 +209,11 @@ Si se está corriendo **Docker Desktop en Windows** y no es posible conectar al 
    ```
 
 6. **Configurar el Firewall**: Crear una regla en el Firewall de Windows que permita el tráfico entrante en todas las redes para el puerto 3000.
+
+## Otros repositorios relacionados
+
+Este proyecto forma parte de un ecosistema mayor que incluye:
+
+- **FreshAir para Android**: El cliente móvil para gestionar y visualizar las mediciones ambientales, desarrollado en Android. Puedes encontrar el repositorio [aquí](https://github.com/juandiazx/freshair-android).
+
+- **FreshAir para Arduino**: El firmware para los dispositivos Arduino que capturan las mediciones ambientales. Puedes encontrar el repositorio [aquí](https://github.com/juandiazx/freshair-arduino).
