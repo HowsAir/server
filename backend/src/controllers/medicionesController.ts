@@ -1,13 +1,13 @@
 /**
  * @file medicionesController.ts
- * @brief Controlador para manejar las operaciones relacionadas con las mediciones
+ * @brief Controller to handle measurement-related operations.
  * @author Juan Diaz
  */
-
+/*
 import { Request, Response } from "express";
-import { MedicionType } from "../models/Medicion";
 import { validationResult } from "express-validator";
 import { medicionesService } from "../services/medicionesService";
+import { Measurement } from "@prisma/client";
 
 /**
  * Método de medicionesController.ts para guardar una nueva medición en la base de datos.
@@ -17,6 +17,7 @@ import { medicionesService } from "../services/medicionesService";
  *
  * @returns Retorna un objeto JSON con la medición guardada y estado HTTP 201 si es exitoso, o un error en formato JSON con estado HTTP 400 o 500.
  */
+/*
 const guardarMedicion = async (
   req: Request,
   res: Response,
@@ -28,16 +29,16 @@ const guardarMedicion = async (
       return res.status(400).json({ message: errores.array() });
     }
 
-    const medicion: MedicionType = req.body;
+    const medicionData: Omit<Measurement, "id"> = req.body;
 
-    const medicionCreada = await medicionesService.guardarMedicion(medicion);
+    const medicionCreada = await medicionesService.guardarMedicion(medicionData);
 
     return res.status(201).json(medicionCreada);
   } catch (error) {
     return res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-
+*/
 /**
  * Método de medicionesController.ts para obtener todas las mediciones desde la base de datos.
  *
@@ -46,6 +47,7 @@ const guardarMedicion = async (
  *
  * @returns Retorna un array de objetos JSON que representan las mediciones y un estado HTTP 200, o un error en formato JSON con estado HTTP 500.
  */
+/*
 const obtenerMediciones = async (
   req: Request,
   res: Response,
@@ -58,8 +60,10 @@ const obtenerMediciones = async (
     return res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-
+*/
+/*
 export const medicionesController = {
   guardarMedicion,
-  obtenerMediciones,
+  //obtenerMediciones,
 };
+*/

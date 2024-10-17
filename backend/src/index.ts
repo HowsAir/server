@@ -1,6 +1,6 @@
 /**
  * @file index.ts
- * @brief Punto de entrada principal de la aplicación que inicia el servidor Express
+ * @brief Main file for the API, starts the server
  * @author Juan Diaz
  */
 
@@ -9,5 +9,5 @@ import app from "./app";
 const PORT = 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
+  console.log(`Server running on port: ${PORT}`);
 });
