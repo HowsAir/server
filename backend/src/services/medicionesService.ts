@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import Medicion, { MedicionType } from "../models/Medicion";
+//import Medicion, { MedicionType } from "../models/Medicion";
 
 /**
  * Guarda una nueva medición en la base de datos
@@ -15,6 +15,7 @@ import Medicion, { MedicionType } from "../models/Medicion";
  * @returns {Promise<MedicionType>} Una promesa que se resuelve con el objeto Medicion guardado en la base de datos.
  * @throws {Error} Si ocurre algún problema durante el guardado de la medición.
  */
+/*
 const guardarMedicion = async (
   medicionData: MedicionType,
 ): Promise<MedicionType> => {
@@ -25,7 +26,7 @@ const guardarMedicion = async (
     throw error;
   }
 };
-
+*/
 /**
  * Obtiene todas las mediciones almacenadas en la base de datos
  *
@@ -34,6 +35,7 @@ const guardarMedicion = async (
  * @returns {Promise<MedicionType[]>} Una promesa que se resuelve con un array de objetos Medicion que contiene todas las mediciones almacenadas.
  * @throws {Error} Si ocurre algún problema durante la obtención de las mediciones.
  */
+/*
 const obtenerMediciones = async (): Promise<MedicionType[]> => {
   try {
     return await Medicion.find();
@@ -45,4 +47,4 @@ const obtenerMediciones = async (): Promise<MedicionType[]> => {
 export const medicionesService = {
   guardarMedicion,
   obtenerMediciones,
-};
+};*/

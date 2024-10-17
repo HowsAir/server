@@ -1,9 +1,9 @@
 /**
  * @file medicionesRoutes.ts
- * @brief Definición de las rutas para las mediciones en la API, incluyendo validación de datos
+ * @brief Routes definition for the API's measurements operations.
  * @author Juan Diaz
  */
-
+/*
 import { Router } from "express";
 import { medicionesController } from "../controllers/medicionesController";
 import { check } from "express-validator";
@@ -21,6 +21,7 @@ router.post(
   medicionesController.guardarMedicion,
 );
 
-router.get("/", medicionesController.obtenerMediciones);
+//router.get("/", medicionesController.obtenerMediciones);
 
 export default router;
+*/
