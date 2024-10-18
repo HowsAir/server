@@ -34,7 +34,7 @@ app.use("/api/v1", router);
 
 //Response for non-existent endpoints
 app.use("/api/*", (req, res) => {
-  res.status(404).json({ message: "Endpoint no encontrado" });
+  res.status(404).json({ message: "Couldn't find endpoint" });
 });
 
 //Redirect all other routes to the frontend

@@ -1,6 +1,6 @@
 /**
  * @file router.ts
- * @brief Configuración de las rutas principales de la API
+ * @brief API's main routes configuration file
  * @author Juan Diaz
  */
 

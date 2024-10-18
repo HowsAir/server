@@ -1,12 +1,12 @@
-# freshair-server
+# HowsAir-server
 
-## Descripción
+## Description
 
-**FreshAir** es una aplicación para gestionar y visualizar datos de mediciones ambientales. El proyecto cuenta con un backend desarrollado con **Node.js**, **Express**, **Typescript**, **MongoDB** y **Vitest**, y un frontend construido con **React**, **Vite**, **Typescript**, y **Tailwind CSS**.
+**HowsAir** is an application for managing and visualizing environmental measurement data. The project features a backend developed with **Node.js**, **Express**, **Typescript**, **MongoDB** and **Vitest**, and a frontend built with **React**, **Vite**, **Typescript**, and **Tailwind CSS**.
 
-## Configuración de Variables de Entorno
+## Environment Variable Configuration
 
-Asegúrate de crear los archivos `.env` en las carpetas `backend` y `frontend` con las siguientes variables, ajustando los valores según el entorno en el que estés trabajando.
+Make sure to create the `.env` files in both the `backend` and `frontend` folders with the following variables, adjusting the values according to the environment you are working in.
 
 ### Backend (`backend/.env`)
 
@@ -16,10 +16,10 @@ NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 ```
 
-> En **desarrollo**, asegúrate de que `NODE_ENV` esté configurado en `development`.  
-> En **producción**, cambia `NODE_ENV` a `production`.
+> In **development**, ensure that `NODE_ENV` is set to `development`.  
+> In **production**, change `NODE_ENV` to `production`.
 
-> Si deseas usar una base de datos MongoDB en la nube, puedes reemplazar `MONGODB_URI` con la URL de tu propio clúster en MongoDB Atlas u otra solución en la nube.
+> If you wish to use a MongoDB database in the cloud, you can replace `MONGODB_URI` with the URL of your own cluster in MongoDB Atlas or another cloud solution.
 
 ### Frontend (`frontend/.env`)
 
@@ -27,33 +27,33 @@ FRONTEND_URL=http://localhost:5173
 VITE_NODE_ENV=development
 ```
 
-> En **desarrollo**, `VITE_NODE_ENV` debe estar configurado en `development`.  
-> En **producción**, cambia `VITE_NODE_ENV` a `production`.
+> In **development**, `VITE_NODE_ENV` has to be set to `development`.  
+> In **production**, change `VITE_NODE_ENV` to `production`.
 
-## Parte 1: Desarrollo
+## Part 1: Development
 
-En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de datos en la nube como con una base de datos local usando Docker.
+In the **development** environment, you can work with either your own cloud database or a local database using Docker.
 
-### Opción 1: Desarrollo con MongoDB Local en contenedor usando Docker
+### Option 1: Development with Local MongoDB in a Docker Container
 
-1. **Levantar la base de datos local con Docker**:
+1. **Start the local database with Docker:**:
 
-   Ejecuta los siguientes comandos para levantar una instancia local de MongoDB en Docker:
+   Run the following commands to start a local instance of MongoDB in Docker:
 
    ```bash
    docker-compose build
    docker-compose --profile default up
    ```
 
-   Esto creará un contenedor de Docker con una base de datos MongoDB local. Si quieres configurar un nombre de base de datos personalizado, entra en tu .env y cambia "your_database_name" por el nombre que quieras:
+   This will create a Docker container with a local MongoDB database. If you want to set a custom database name, go to your .env file and change "your_database_name" to the name you want:
 
    ```plaintext
    MONGODB_URI=mongodb://localhost:27017/your_database_name
    ```
 
-2. **Instalar Dependencias y Ejecutar el Backend**:
+2. **Install Dependencies and Run the Backend:**:
 
-   Ve a la carpeta del backend y ejecuta los siguientes comandos:
+   Navigate to the backend folder and run the following commands:
 
    ```bash
    cd backend
@@ -61,11 +61,11 @@ En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de dat
    npm run dev
    ```
 
-   Esto levantará el servidor backend en modo de desarrollo en `http://localhost:3000`.
+   This will start the backend server in development mode at `http://localhost:3000`.
 
-3. **Instalar Dependencias y Ejecutar el Frontend**:
+3. **Install Dependencies and Run the Frontend:**:
 
-   Ve a la carpeta del frontend y ejecuta:
+   Navigate to the frontend folder and execute:
 
    ```bash
    cd frontend
@@ -73,34 +73,34 @@ En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de dat
    npm run dev
    ```
 
-   El frontend estará disponible en `http://localhost:5173`.  
-   Accede a la url para interactuar con la app.
+   The frontend will be available at `http://localhost:5173`.
+   Access the URL to interact with the app.
 
-### Opción 2: Desarrollo con MongoDB en la Nube
+### Option 2: Development with MongoDB in the Cloud
 
-Si prefieres no usar Docker para la base de datos, puedes conectarte directamente a un clúster de MongoDB en la nube, como MongoDB Atlas.
+If you prefer not to use Docker for the database, you can connect directly to a MongoDB cluster in the cloud, such as MongoDB Atlas.
 
-1. **Configura el archivo `.env` del backend**:
+1. **Configure the Backend `.env` File**:
 
-   Cambia la variable `MONGODB_URI` en el archivo `.env` del backend para que apunte a tu clúster en la nube:
+   Change the `MONGODB_URI` variable in the backend `.env` file to point to your cloud cluster:
 
    ```plaintext
    MONGODB_URI=mongodb+srv://<usuario>:<password>@cluster0.mongodb.net/myDatabase?retryWrites=true&w=majority
    ```
 
-2. **Instalar dependencias y ejecutar**:
+2. **Install Dependencies and Run:**:
 
-   Sigue los mismos pasos que en **Opción 1.2** y **Opción 1.3** para instalar las dependencias y levantar tanto el backend como el frontend.
+   Follow the same steps as in **Option 1.2** and Option **1.3** to install the dependencies and start both the backend and frontend.
 
-## Parte 2: Producción
+## Parte 2: Production
 
-En el entorno de **producción**, Docker es la opción recomendada para ejecutar tanto el backend como la base de datos MongoDB en contenedores separados. Todo estará encapsulado y configurado para un despliegue sencillo.
+In the **production** environment, Docker is the recommended option for running both the backend and the MongoDB database in separate containers. Everything will be encapsulated and configured for a simple deployment.
 
-### Producción con Docker
+### Production with Docker
 
-1. **Compilar los contenedores para producción**:
+1. **Start the Containers in Production Mode**:
 
-   Ejecuta los siguientes comandos desde la raíz del proyecto:
+   Execute this command to start the backend and MongoDB database in containers:
 
    ```bash
    docker-compose build
@@ -114,26 +114,26 @@ En el entorno de **producción**, Docker es la opción recomendada para ejecutar
    docker-compose --profile production up
    ```
 
-   Esto hará lo siguiente:
+   This will do the following:
 
-   - Levantará un contenedor para el backend, que servirá tanto la API como los archivos estáticos del frontend.
-   - Levantará un contenedor separado para MongoDB.
+   - Start a container for the backend, which will serve both the API and the static files from the frontend.
+   - Start a separate container for MongoDB.
 
-3. **Acceder a la aplicación**:
+3. **Access the Application**:
 
-   Una vez que los contenedores estén en funcionamiento, puedes acceder a la aplicación a través de tu navegador.
+   Once the containers are up and running, you can access the application through your browser.
 
-   - Si estás ejecutando la aplicación localmente, visita: `http://localhost:3000`
-   - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
-   - La base de datos MongoDB estará ejecutándose en un contenedor separado y conectada al backend automáticamente a través de la URL configurada.
+   - If you are running the application locally, visit: `http://localhost:3000`
+   - This is the entry point for both the API and the web application. The frontend is already compiled and will be served from the same Express server that handles the API.
+   - The MongoDB database will be running in a separate container and connected to the backend automatically through the configured URL.
 
-## Cómo ejecutar los tests
+## How to Run Tests
 
-El proyecto incluye tests tanto en el backend como en el frontend, utilizando **Vitest**. Para ejecutarlos, sigue estos pasos:
+The project includes tests for both the backend and the frontend, using **Vitest**. To run them, follow these steps:
 
 1. **Backend**:
 
-   Ve a la carpeta `backend` y ejecuta:
+   Go to the `backend` folder and execute:
 
    ```bash
    cd backend
@@ -142,35 +142,35 @@ El proyecto incluye tests tanto en el backend como en el frontend, utilizando **
 
 2. **Frontend**:
 
-   Ve a la carpeta `frontend` y ejecuta:
+   Go to the `frontend` folder and execute:
 
    ```bash
    cd frontend
    npm test
    ```
 
-   Esto correrá los tests en cada una de las partes del proyecto y te permitirá verificar que el código funciona correctamente.
+   This will run the tests in each part of the project and allow you to verify that the code is working correctly.
 
-## Solución de Problemas Comunes
+## Common Troubleshooting
 
-### Relacionados con Docker y sus credenciales
+### Related to Docker and Credentials
 
-Si estás utilizando Docker en **Windows**, es posible que encuentres un error relacionado con las credenciales, como:
+If you are using Docker on **Windows**, you may encounter an error related to credentials, such as:
 
 ```plaintext
 error during connect: Post http://docker/credentials:
 error while looking up credential store docker-credential-wincred.exe
 ```
 
-Para solucionarlo, sigue estos pasos:
+To resolve this, follow these steps:
 
-1. **Editar el archivo de configuración de Docker**:
+1. **Edit the Docker Configuration File**:
 
-   Abre el archivo `~/.docker/config.json` en un editor de texto.
+   Open the file `~/.docker/config.json` in a text editor.
 
-2. **Cambiar `credsStore` a `credStore`**:
+2. **Change `credsStore` to `credStore`**:
 
-   Dentro del archivo, busca la línea que contiene `"credsStore"` y cámbiala por `"credStore"`. El archivo debería verse algo así:
+   Inside the file, find the line containing `credsStore` and change it to `credStore`. The file should look something like this:
 
    ```json
    {
@@ -181,39 +181,43 @@ Para solucionarlo, sigue estos pasos:
    }
    ```
 
-3. **Guarda los cambios y reinicia Docker**
+3. **Save the Changes and Restart Docker**
 
-4. **Otra Solución: Eliminar el archivo `config.json`**:
+4. **Another Solution: Delete the `config.json` File:**:
 
-   Si el paso anterior no soluciona el problema, puedes intentar eliminar completamente el archivo `config.json` que se encuentra en `~/.docker/config.json`. Docker generará uno nuevo automáticamente la próxima vez que se ejecute.
+   If the previous step does not resolve the issue, you can try completely deleting the `config.json` file located at `~/.docker/config.json.` Docker will generate a new one automatically the next time it runs.
 
-> Si sigues encontrando problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
+> If you continue to encounter problems, ensure that Docker is updated to the latest version and that the credentials are configured correctly.
 
-### Relacionado con la comunicación con el Servidor desde otro Dispositivo
+### Related to Server Communication from Another Device
 
-Si se está corriendo **Docker Desktop en Windows** y no es posible conectar al servidor desde otro dispositivo en la misma red, como un dispositivo Android que maneja datos de Beacons, se pueden seguir los siguientes pasos para solucionar el problema:
+If Docker Desktop is running on **Windows** and you cannot connect to the server from another device on the same network, such as an Android device handling Beacon data, you can follow these steps to troubleshoot the issue:
 
-1. **Desinstalar WSL**: Desinstalar WSL para eliminar cualquier configuración problemática.
+1. **Uninstall WSL**: Uninstall WSL to remove any problematic configuration.
 
-2. **Desinstalar Docker**: Desinstalar Docker Desktop para asegurar una instalación limpia.
+2. **Uninstall Docker**: Uninstall Docker Desktop to ensure a clean installation.
 
-3. **Reinstalar WSL y Ubuntu**: Reinstalar WSL y la distribución de Ubuntu para empezar desde una base fresca.
+3. **Reinstall WSL and Ubuntu**: Reinstall WSL and the Ubuntu distribution to start fresh.
 
-4. **Reinstalar Docker**: Volver a instalar Docker Desktop, siguiendo todos los pasos de instalación recomendados.
+4. **Reinstall Docker**: Reinstall Docker Desktop, following all recommended installation steps.
 
-5. **Crear un archivo `.wslconfig`**: En la carpeta del usuario, crear un archivo llamado `.wslconfig` con el siguiente contenido:
+5. **Create a `.wslconfig` File**: In the user folder, create a file named `.wslconfig` with the following content:
 
    ```ini
    [wsl2]
    swap=0
    ```
 
-6. **Configurar el Firewall**: Crear una regla en el Firewall de Windows que permita el tráfico entrante en todas las redes para el puerto 3000.
+6. **Configure the Firewall**: Create a rule in the Windows Firewall to allow incoming traffic on all networks for port 3000.
 
-## Otros repositorios relacionados
+## Other Related Repositories
 
-Este proyecto forma parte de un ecosistema mayor que incluye:
+This project is part of a larger ecosystem that includes:
 
-- **FreshAir para Android**: El cliente móvil para gestionar y visualizar las mediciones ambientales, desarrollado en Android. Puedes encontrar el repositorio [aquí](https://github.com/juandiazx/freshair-android).
+- **HowsAir for Android**: The mobile client for managing and visualizing environmental measurements, developed for Android. You can find the repository [here](https://github.com/HowsAir/android).
 
-- **FreshAir para Arduino**: El firmware para los dispositivos Arduino que capturan las mediciones ambientales. Puedes encontrar el repositorio [aquí](https://github.com/juandiazx/freshair-arduino).
+- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements. You can find the repository [here](https://github.com/HowsAir/arduino).
+
+- **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/arduino).
+
+
