@@ -11,7 +11,7 @@ import {verifyToken} from "../middleware/auth";
 const router = Router();
 
 
-//router.post("/login", authController.login);
+router.post("/login", authController.login);
 
 // Route for validating JWT, passing through verifyToken middleware
 router.get("/validate", verifyToken, async (req: Request, res: Response) => {
