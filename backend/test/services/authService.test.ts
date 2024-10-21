@@ -17,7 +17,7 @@ test('login should return the user when credentials are valid', async () => {
   const mockUser = {
     email: 'user@prisma.io', 
     name: 'Prisma Fan', 
-    password: 'hashed_password', // Suponemos que la contraseña está encriptada
+    password: 'hashed_password', 
     role: UserRole.BASIC
   };
 

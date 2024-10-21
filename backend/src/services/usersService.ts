@@ -4,10 +4,9 @@
  * @author Juan Diaz
  */
 
-import { PrismaClient, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import prisma from "../libs/prisma";
 
 /**
  * Registers a new user in the database

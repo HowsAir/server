@@ -219,5 +219,3 @@ This project is part of a larger ecosystem that includes:
 - **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements. You can find the repository [here](https://github.com/HowsAir/arduino).
 
 - **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/arduino).
-
-

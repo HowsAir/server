@@ -7,11 +7,19 @@
 import { Router, Request, Response } from "express";
 import { authController } from "../controllers/authController";
 import {verifyToken} from "../middleware/auth";
+import { check } from "express-validator";
 
 const router = Router();
 
 
-router.post("/login", authController.login);
+router.post("/login",
+    [
+        check("email", "Email is required").isEmail(),
+        check("password", "Password with 6 or more characters is required").isLength({
+            min: 6,
+        }),
+    ], authController.login);
+    
 
 // Route for validating JWT, passing through verifyToken middleware
 router.get("/validate", verifyToken, async (req: Request, res: Response) => {
