@@ -7,6 +7,7 @@ import {
 
 import Layout from "./layouts/Layout";
 import Landing from "./pages/Landing";
+import Register from "./pages/Register";
 
 const App = () => {
   return (
@@ -17,6 +18,14 @@ const App = () => {
           element={
             <Layout>
               <Landing />
+            </Layout>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <Layout>
+              <Register />
             </Layout>
           }
         />

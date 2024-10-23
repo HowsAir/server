@@ -1,39 +1,40 @@
 /**
  * @file apiClient.ts
- * @brief Pruebas unitarias para las funciones del cliente API
+ * @brief API client functions for interacting with the backend API
  * @author Juan Diaz
  */
 
-import { MedicionData } from "../types";
+import { MeasurementData } from "./data";
+import { RegisterFormData } from "../types/mainTypes";
+
 
 const NODE_ENV = import.meta.env.VITE_NODE_ENV || "development";
 const API_BASE_URL = NODE_ENV === "development" ? "http://localhost:3000" : "";
 
 export const API_ERRORS = {
-  OBTENER_MEDICIONES: "No se pudieron obtener las mediciones",
-  // Aquí puedes agregar más errores específicos para otras funciones
-  // por ejemplo:
-  // CREAR_MEDICION: "No se pudo crear la medición",
-  // ACTUALIZAR_MEDICION: "No se pudo actualizar la medición",
+  GET_MEASUREMENTS: "Failed to get measurements",
+  REGISTER_USER: "Failed to register user",
+  // Additional error messages for other functions can be added here
 } as const;
 
 /**
- * @brief Obtiene todas las mediciones almacenadas desde la API
- * @author Juan Diaz Gutierrez
+ * @brief Fetches all stored measurements from the API
+ * @author Juan Diaz
  *
- * obtenerMediciones -> Promise<MedicionData[]>
+ * getMeasurements -> Promise<MeasurementData[]>
  *
- * Esta función realiza una solicitud GET al endpoint de la API para obtener
- * todas las mediciones almacenadas. Utiliza fetch para realizar la solicitud
- * HTTP y maneja tanto el éxito como los errores de la respuesta.
+ * This function makes a GET request to the API endpoint to retrieve
+ * all stored measurements. It uses fetch to make the HTTP request and
+ * handles both success and failure responses.
  *
- * @throws Error - Si la solicitud falla o la respuesta no es válida
- * @returns Una promesa que se resuelve con un array de objetos MedicionData
+ * @throws Error - If the request fails or the response is invalid
+ * @returns A promise resolved with an array of MeasurementData objects
  */
-export const obtenerMediciones = async (): Promise<MedicionData[]> => {
+export const getMeasurements = async (): Promise<MeasurementData[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/mediciones`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/measurements`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -41,12 +42,46 @@ export const obtenerMediciones = async (): Promise<MedicionData[]> => {
 
     if (!response.ok) {
       const { message }: { message: string } = await response.json();
-      throw new Error(message || "Error al obtener mediciones");
+      throw new Error(message || "Error fetching measurements");
     }
 
     return response.json();
   } catch (error) {
     console.error("Error:", error);
-    throw new Error(API_ERRORS.OBTENER_MEDICIONES);
+    throw new Error(API_ERRORS.GET_MEASUREMENTS);
+  }
+};
+
+/**
+ * @brief Registers a new user with the provided registration data
+ * @author Juan Diaz
+ *
+ * RegisterData: data -> register -> Promise<void>
+ *
+ * This function makes a POST request to the API to register a new user.
+ * It expects the user's registration details such as name, email, and password.
+ *
+ * @throws Error - If the registration fails or the response is invalid
+ * @param {RegisterData} data - The registration details for the user
+ * @returns A promise that resolves when the registration is successful
+ */
+export const register = async (data: RegisterFormData): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const { message }: { message: string } = await response.json();
+      throw new Error(message || "Error registering user");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    throw new Error(API_ERRORS.REGISTER_USER);
   }
 };
