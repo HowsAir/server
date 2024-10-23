@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        suse: ["Suse", "sans-serif"],
+        sans: ["Outfit", "sans-serif"],
       },
       colors: {
-        primary: "#25CF7A", // Color secundario para acentos
+        primary: "#1074E7",
       },
     },
   },
