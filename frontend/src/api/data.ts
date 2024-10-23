@@ -1,4 +1,4 @@
-export interface MedicionData {
+export interface MeasurementData {
   _id: string;
   fecha: Date;
   ppm: number;

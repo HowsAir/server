@@ -13,7 +13,7 @@ import fs from 'fs';
 const PORT = 3000;
 const IP = "0.0.0.0"
 
-if (process.env.NODE_ENV == "development") {
+if (process.env.NODE_ENV != "development") {
   const options = {
     key: fs.readFileSync(path.join(__dirname, '../server.key')),
     cert: fs.readFileSync(path.join(__dirname, '../server.cert')),

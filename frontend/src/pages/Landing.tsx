@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { obtenerMediciones } from "../api/apiClient";
+import * as apiClient from "../api/apiClient";
 import Medicion from "../components/Medicion";
-import { MedicionData } from "../types";
+import { MeasurementData } from "../api/data";
 
 const Landing = () => {
-  const [mediciones, setMediciones] = useState<MedicionData[]>([]);
+  const [mediciones, setMediciones] = useState<MeasurementData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMediciones = async () => {
       try {
-        const data = await obtenerMediciones();
+        const data = await apiClient.getMeasurements();
         setMediciones(data);
       } catch (error) {
         //Gestionar error
