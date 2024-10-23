@@ -8,12 +8,12 @@ on:
 
 # Definimos el conjunto de jobs a ejecutar
 jobs:
-  # Job para el backend
-  backend-tests:
-    name: Run backend tests
+  # Job para el server
+  server-tests:
+    name: Run server tests
     runs-on: ubuntu-latest
 
-    # Definimos los pasos para ejecutar los tests del backend
+    # Definimos los pasos para ejecutar los tests del server
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,14 +23,12 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: |
-          cd backend
           npm install
 
-      - name: Run backend tests
+      - name: Run tests
         run: |
-          cd backend
           npm test
 
   # Job para el frontend

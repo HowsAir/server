@@ -15,7 +15,7 @@ services:
       timeout: 3s
       retries: 3
 
-  backend:
+  server:
     build: 
       context: .
       dockerfile: Dockerfile
@@ -24,8 +24,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - /usr/src/app/backend/node_modules
-      - /usr/src/app/frontend/node_modules
+      - /usr/src/app/server/node_modules
     profiles:
       - production
 
