@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as apiClient from "../src/api/apiClient";
-import { MedicionData } from "../src/types";
+import { MeasurementData } from "../src/api/data";
 
 describe("obtenerMediciones", () => {
   beforeEach(() => {
@@ -15,7 +15,7 @@ describe("obtenerMediciones", () => {
   });
 
   it("debería obtener mediciones correctamente", async () => {
-    const mockMediciones: MedicionData[] = [
+    const mockMediciones: MeasurementData[] = [
       {
         _id: "1",
         fecha: new Date(),
@@ -39,7 +39,7 @@ describe("obtenerMediciones", () => {
       json: () => Promise.resolve(mockMediciones),
     });
 
-    const result = await apiClient.obtenerMediciones();
+    const result = await apiClient.getMeasurements();
 
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/v1/mediciones"),
@@ -55,8 +55,8 @@ describe("obtenerMediciones", () => {
       json: () => Promise.resolve({ message: errorMessage }),
     });
 
-    await expect(apiClient.obtenerMediciones()).rejects.toThrow(
-      apiClient.API_ERRORS.OBTENER_MEDICIONES
+    await expect(apiClient.getMeasurements()).rejects.toThrow(
+      apiClient.API_ERRORS.GET_MEASUREMENTS
     );
     expect(console.error).toHaveBeenCalled();
   });
@@ -64,8 +64,8 @@ describe("obtenerMediciones", () => {
   it("debería manejar errores del fetch", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("Error de red"));
 
-    await expect(apiClient.obtenerMediciones()).rejects.toThrow(
-      apiClient.API_ERRORS.OBTENER_MEDICIONES
+    await expect(apiClient.getMeasurements()).rejects.toThrow(
+      apiClient.API_ERRORS.GET_MEASUREMENTS
     );
     expect(console.error).toHaveBeenCalled();
   });
