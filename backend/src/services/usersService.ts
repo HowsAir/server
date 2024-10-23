@@ -16,18 +16,14 @@ import prisma from "../libs/prisma";
  * @throws {Error} - Throws an error if the user cannot be created.
  */
 const register = async (userData: Omit<User, "id" | "role">): Promise<User> => {
-  try {
-    // Hash the password before saving the user
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    userData.password = hashedPassword;
-    
-    return await prisma.user.create({
-        data: userData,
-    });
-  } catch (error) {
-    throw error;
-  }
+  // Hash the password before saving the user
+  const hashedPassword = await bcrypt.hash(userData.password, 10);
+  
+  userData.password = hashedPassword;
+  
+  return await prisma.user.create({
+      data: userData,
+  });
 };
 
 /**
@@ -37,13 +33,9 @@ const register = async (userData: Omit<User, "id" | "role">): Promise<User> => {
  * @returns {Promise<User | null>} - A promise that resolves with the found user or null if not found.
  */
 const findUserByEmail = async (email: string): Promise<User | null> => {
-  try {
-    return await prisma.user.findUnique({
-      where: { email },
-    });
-  } catch (error) {
-    throw error;
-  }
+  return await prisma.user.findUnique({
+    where: { email },
+  });
 };
 
 export const usersService = {

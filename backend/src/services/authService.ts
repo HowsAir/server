@@ -19,27 +19,23 @@ import prisma from "../libs/prisma";
  * @returns {Promise<User | null>} - The authenticated user if credentials are valid, otherwise null.
  */
 const login = async (email: string, password: string): Promise<User | null> => {
-  try {
-    // Find user by email
-    const user = await prisma.user.findUnique({ where: { email } });
+  // Find user by email
+  const user = await prisma.user.findUnique({ where: { email } });
 
-    // If user doesn't exist, return null
-    if (!user) {
-      return null;
-    }
-
-    // Compare provided password with hashed password in the database
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    if (!isPasswordValid) {
-      return null;
-    }
-
-    // Return the user if credentials are valid
-    return user;
-  } catch (error) {
-    throw error;
+  // If user doesn't exist, return null
+  if (!user) {
+    return null;
   }
+
+  // Compare provided password with hashed password in the database
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  
+  if (!isPasswordValid) {
+    return null;
+  }
+
+  // Return the user if credentials are valid
+  return user;
 };
 
 export const authService = {
