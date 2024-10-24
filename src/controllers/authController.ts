@@ -62,14 +62,6 @@ const logout = async (req: Request, res: Response): Promise<Response> => {
         .json({ message: 'Logout successful' });
 };
 
-/*
- *
- *FOR LOGIN KEEP IN MIND THAT YOU NEED TO DO VALIDATION
- *CREATE METHOD IN authService TO CHECK IF PASSWORD IS CORRECT
- *THEN USE PUTJWTINRESPONSE TO PUT JWT IN RESPONSE
- *SEE HOW IT IS DONE IN USERS CONTROLLER FOR REGISTER
- *USE BCRYPT TO COMPARE PASSWORDS
- */
 export const authController = {
     login,
     logout,
