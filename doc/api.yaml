@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
-  title: Freshair Backend API Sprint-0
-  description: Diseño de la API para el Sprint 0 del Proyecto de Biometría.
+  title: HowsAir Server API Sprint-0
+  description: Diseño de la API para el Sprint 1 del Proyecto de Biometría.
   version: 1.0.0
 servers:
-  - url: http://localhost:5000/api/v1
+  - url: http://localhost:3000/api/v1
     description: Servidor local para desarrollo
 paths:
   /mediciones:
@@ -24,6 +24,11 @@ paths:
                   $ref: "#/components/schemas/Medicion"
         "500":
           description: Error en el servidor al obtener las mediciones
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
     post:
       tags:
         - Mediciones
@@ -50,6 +55,184 @@ paths:
                 $ref: "#/components/schemas/Error"
         "500":
           description: Error en el servidor al guardar la medición
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticación
+      summary: Inicia sesión de un usuario
+      description: Valida las credenciales del usuario y devuelve un JWT si es exitoso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+                  example: user@example.com
+                password:
+                  type: string
+                  description: Contraseña del usuario
+                  example: password123
+      responses:
+        "200":
+          description: Inicio de sesión exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Error de validación en los datos de inicio de sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials"
+        "500":
+          description: Error en el servidor al iniciar sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/validate:
+    get:
+      tags:
+        - Autenticación
+      summary: Valida el token JWT
+      description: Verifica si el token JWT proporcionado es válido.
+      responses:
+        "200":
+          description: Token es válido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Token is valid"
+        "401":
+          description: Token inválido o no proporcionado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid or missing token"
+        "500":
+          description: Error en el servidor al validar el token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      tags:
+        - Autenticación
+      summary: Cierra la sesión de un usuario
+      description: Elimina el token JWT para cerrar la sesión del usuario.
+      responses:
+        "200":
+          description: Cierre de sesión exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        "500":
+          description: Error en el servidor al cerrar la sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users:
+    post:
+      tags:
+        - Usuarios
+      summary: Registra un nuevo usuario
+      description: Crea un nuevo usuario en el sistema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del nuevo usuario
+                  example: newuser@example.com
+                password:
+                  type: string
+                  description: Contraseña del nuevo usuario
+                  example: password123
+                name:
+                  type: string
+                  description: Nombre del nuevo usuario
+                  example: Juan Perez
+      responses:
+        "201":
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Error de validación en los datos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al registrar al usuario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
   schemas:
     Medicion:
@@ -98,10 +281,20 @@ components:
           type: number
           description: Longitud en la que se registró la medición
           example: -58.3816
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Correo electrónico del usuario
+          example: user@example.com
+        name:
+          type: string
+          description: Nombre del usuario
+          example: Juan Perez
     Error:
       type: object
       properties:
         message:
           type: string
           description: Descripción del error
-          example: "Error validando los datos"
