@@ -11,8 +11,8 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 declare global {
     namespace Express {
         interface Request {
-            userId: string; // Extending Request interface to include userId
-            role: string; // Extending Request interface to include role
+            userId: number; // Extending Request interface to include userId
+            roleId: number; // Extending Request interface to include role
         }
     }
 }
@@ -51,7 +51,7 @@ export const verifyToken = (
 
         // Attach the userId from the decoded token payload to the request object
         req.userId = (decoded as JwtPayload).userId;
-        req.role = (decoded as JwtPayload).role;
+        req.roleId = (decoded as JwtPayload).roleId;
 
         // Proceed to the next middleware or route handler
         next();
@@ -72,9 +72,9 @@ export const verifyToken = (
  *
  * @returns {Function} Returns an Express middleware function that checks the user's role against the allowed roles.
  */
-export const authorizeRoles = (...allowedRoles: string[]) => {
+export const authorizeRoles = (...allowedRoles: Number[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        if (!allowedRoles.includes(req.role)) {
+        if (!allowedRoles.includes(req.roleId)) {
             return res.status(403).json({ message: 'Forbidden' });
         }
         next();

@@ -59,14 +59,14 @@ describe('authMiddleware', () => {
             const next = vi.fn();
 
             // Mock jwt.verify to return a valid decoded token
-            const decodedToken = { userId: '123', role: 'admin' };
+            const decodedToken = { userId: 123, roleId: 1 };
             jwt.verify = vi.fn().mockReturnValue(decodedToken);
 
             verifyToken(req, res, next);
 
             // Verify that userId and role are correctly extracted from the token
-            expect(req.userId).toBe('123');
-            expect(req.role).toBe('admin');
+            expect(req.userId).toBe(123);
+            expect(req.roleId).toBe(1);
             expect(next).toHaveBeenCalled(); // Verify that next is called to continue
         });
     });
@@ -74,11 +74,11 @@ describe('authMiddleware', () => {
     // Tests for the authorizeRoles function
     describe('authorizeRoles()', () => {
         it('should allow access when user role is authorized', () => {
-            const req = { role: 'admin' } as Request; // Simulate a user with 'admin' role
+            const req = { roleId: 1 } as unknown as Request; // Simulate a user with 'admin' role
             const res = {} as Response;
             const next = vi.fn();
 
-            const middleware = authorizeRoles('admin', 'superadmin');
+            const middleware = authorizeRoles(1, 2, 3);
             middleware(req, res, next);
 
             // Verify that next() is called, allowing access
@@ -86,14 +86,14 @@ describe('authMiddleware', () => {
         });
 
         it('should return 403 if user role is not authorized', () => {
-            const req = { role: 'user' } as Request; // Simulate a user with 'user' role
+            const req = { role: 3 } as unknown as Request; // Simulate a user with 'user' role
             const res = {
                 status: vi.fn().mockReturnThis(),
                 json: vi.fn(),
             } as unknown as Response;
             const next = vi.fn();
 
-            const middleware = authorizeRoles('admin', 'superadmin');
+            const middleware = authorizeRoles(1, 2);
             middleware(req, res, next);
 
             // Verify that 403 Forbidden is returned when role is not allowed
