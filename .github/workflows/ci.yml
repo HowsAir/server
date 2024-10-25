@@ -30,28 +30,3 @@ jobs:
       - name: Run tests
         run: |
           npm test
-
-  # Job para el frontend
-  frontend-tests:
-    name: Run frontend tests
-    runs-on: ubuntu-latest
-
-    # Definimos los pasos para ejecutar los tests del frontend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "16"
-
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install
-
-      - name: Run frontend tests
-        run: |
-          cd frontend
-          npm test

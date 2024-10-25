@@ -12,7 +12,7 @@ import { validationResult } from 'express-validator';
 const product = {
     name: 'Breeze',
     description: 'Tu nodo monitor de calidad del aire',
-}
+};
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 /**
@@ -27,13 +27,12 @@ const createCheckoutSession = async (
     res: Response
 ): Promise<Response> => {
     try {
-
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ message: errors.array() });
         }
         const { amount } = req.body;
-        
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'], // Specify the payment method type
             line_items: [

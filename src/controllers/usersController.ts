@@ -44,12 +44,10 @@ const register = async (req: Request, res: Response): Promise<Response> => {
         // Add JWT to response for later token validation
         putJwtInResponse(res, createdUser);
 
-        return res
-            .status(201)
-            .json({
-                message: 'User registered successfully',
-                user: createdUser,
-            });
+        return res.status(201).json({
+            message: 'User registered successfully',
+            user: createdUser,
+        });
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error' });
     }

@@ -12,7 +12,6 @@ vi.mock('jsonwebtoken'); // Mock jsonwebtoken to avoid actual token verification
 
 // Define tests for the auth middleware
 describe('authMiddleware', () => {
-
     // Tests for the verifyToken function
     describe('verifyToken()', () => {
         it('should return 401 if no token is present', () => {
