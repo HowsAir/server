@@ -64,29 +64,18 @@ model Node {
 model Measurement {
   id          Int       @id @default(autoincrement())
   timestamp   DateTime
-  value       Float
+  o3Value     Float
+  no2Value    Float
+  coValue     Float
   latitude    Float
   longitude   Float
   nodeId      Int
-  gasId       Int
   node        Node      @relation(fields: [nodeId], references: [id])
-  gas         Gas       @relation(fields: [gasId], references: [id])
 
   @@index([timestamp])
   @@index([nodeId, timestamp])
 
   @@map("measurements")
-}
-
-model Gas {
-  id            Int            @id @default(autoincrement())
-  name          String
-  low           Float
-  high          Float
-  unit          String
-  measurements  Measurement[]
-
-  @@map("gases")
 }
 
 enum NodeStatus {
