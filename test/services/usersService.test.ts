@@ -1,26 +1,40 @@
 /**
  * @file usersService.test.ts
  * @brief Unit tests for the users service
- * @author Juan Diaz
  */
 
-import { expect, describe, it, vi } from 'vitest'; // Import Vitest functions for testing and mocking
+import { expect, describe, it, vi, beforeEach } from 'vitest'; // Import Vitest functions for testing and mocking
 import { usersService } from '../../src/services/usersService'; // Import the usersService to be tested
-import prisma from '../../src/libs/__mocks__/prisma'; // Import the Prisma mock
+import prisma from '../../src/libs/prisma'; // Import the Prisma mock
 import bcrypt from 'bcryptjs'; // Import bcrypt for password hashing
+import { User } from '@prisma/client'; // Import User type
 
 // Mock the prisma and bcrypt libraries using Vitest's mock functions
 vi.mock('../../src/libs/prisma'); // Mock Prisma to avoid database calls
 vi.mock('bcryptjs'); // Mock bcrypt to avoid actual password hashing
 
 describe('usersService', () => {
+    beforeEach(() => {
+        vi.clearAllMocks(); // Reset all mocks before each test
+    });
+
     describe('register()', () => {
         it('should create a new user and return it', async () => {
-            const user = {
+            const userData = {
                 email: 'user@prisma.io',
                 name: 'Prisma Fan',
                 surnames: 'Prisma',
-                password: 'hashed_password',
+                password: 'plaintext_password',
+            };
+
+            const hashedPassword = 'hashed_password';
+            const createdUser: User = {
+                id: 1,
+                email: userData.email,
+                name: userData.name,
+                surnames: userData.surnames,
+                password: hashedPassword,
+                roleId: 1,
                 photoUrl: null,
                 phone: null,
                 country: null,
@@ -30,63 +44,69 @@ describe('usersService', () => {
             };
 
             // Mock bcrypt.hash to simulate password hashing
-            const hashedPassword = 'hashed_password';
             bcrypt.hash = vi.fn().mockResolvedValue(hashedPassword);
 
-            // Mock the database call to simulate user creation
-            prisma.user.create.mockResolvedValue({
-                ...user,
-                password: hashedPassword,
-                id: 1,
-                roleId: 1
-            });
+            // Mock Prisma user creation to return the created user
+            prisma.user.create = vi.fn().mockResolvedValue(createdUser);
 
             // Call the register function
-            const createdUser = await usersService.register(user);
+            const result = await usersService.register(
+                userData.email,
+                userData.password,
+                userData.name,
+                userData.surnames
+            );
 
-            // Assert that the user is returned with the expected data
-            expect(createdUser).toStrictEqual({
-                ...user,
-                password: hashedPassword,
-                id: 1,
-                roleId: 1,
+            // Assert that the user is created with the expected data
+            expect(result).toStrictEqual(createdUser);
+            expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 10);
+            expect(prisma.user.create).toHaveBeenCalledWith({
+                data: {
+                    email: userData.email,
+                    password: hashedPassword,
+                    name: userData.name,
+                    surnames: userData.surnames,
+                    roleId: 1,
+                    photoUrl: null,
+                    phone: null,
+                    country: null,
+                    city: null,
+                    zipCode: null,
+                    address: null,
+                },
             });
-            expect(bcrypt.hash).toHaveBeenCalled();
         });
 
         it('should throw an error when user creation fails', async () => {
-            const user = {
+            const userData = {
                 email: 'user@prisma.io',
                 name: 'Prisma Fan',
                 surnames: 'Prisma',
-                password: 'hashed_password',
-                photoUrl: null,
-                phone: null,
-                country: null,
-                city: null,
-                zipCode: null,
-                address: null,
+                password: 'plaintext_password',
             };
 
-            // Mock bcrypt.hash to simulate password hashing
             const hashedPassword = 'hashed_password';
             bcrypt.hash = vi.fn().mockResolvedValue(hashedPassword);
 
-            // Mock the database call to simulate a failure in user creation
-            prisma.user.create.mockRejectedValue(
-                new Error('User creation failed')
-            );
+            prisma.user.create = vi.fn().mockRejectedValue(new Error());
 
-            // Call the register function and assert that it throws an error
-            await expect(usersService.register(user)).rejects.toThrow(
-                'User creation failed'
-            );
+            await expect(
+                usersService.register(
+                    userData.email,
+                    userData.password,
+                    userData.name,
+                    userData.surnames
+                )
+            ).rejects.toThrow();
+
+            expect(bcrypt.hash).toHaveBeenCalled();
+            expect(prisma.user.create).toHaveBeenCalled();
         });
     });
 
     describe('findUserByEmail()', () => {
         it('should return the user when found', async () => {
-            const user = {
+            const foundUser: User = {
                 id: 123,
                 email: 'user@prisma.io',
                 name: 'Prisma Fan',
@@ -101,46 +121,38 @@ describe('usersService', () => {
                 address: null,
             };
 
-            // Mock the database call to return the mockUser
-            prisma.user.findUnique.mockResolvedValue(user);
+            prisma.user.findUnique = vi.fn().mockResolvedValue(foundUser);
 
-            // Test inputs
             const email = 'user@prisma.io';
 
-            // Call the findUserByEmail function
-            const createdUser = await usersService.findUserByEmail(email);
+            const result = await usersService.findUserByEmail(email);
 
-            // Assert that the user is returned with the expected data
-            expect(createdUser).toStrictEqual(user);
+            expect(result).toStrictEqual(foundUser);
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { email },
+            });
         });
 
         it('should return null when user is not found', async () => {
-            // Mock the database call to return null, simulating a non-existent user
-            prisma.user.findUnique.mockResolvedValue(null);
+            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
 
-            // Test inputs
             const email = 'nonexistent@example.com';
 
-            // Call the findUserByEmail function
-            const user = await usersService.findUserByEmail(email);
+            const result = await usersService.findUserByEmail(email);
 
-            // Assert that null is returned when no user is found
-            expect(user).toBeNull();
+            expect(result).toBeNull();
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { email },
+            });
         });
 
         it('should throw an error when database call fails', async () => {
-            // Mock the database call to simulate a failure
-            prisma.user.findUnique.mockRejectedValue(
-                new Error('Database error')
-            );
+            prisma.user.findUnique = vi.fn().mockRejectedValue(new Error());
 
-            // Test inputs
             const email = 'error@example.com';
 
-            // Call the findUserByEmail function and assert that it throws an error
-            await expect(usersService.findUserByEmail(email)).rejects.toThrow(
-                'Database error'
-            );
+            await expect(usersService.findUserByEmail(email)).rejects.toThrow();
+            expect(prisma.user.findUnique).toHaveBeenCalled();
         });
     });
 });

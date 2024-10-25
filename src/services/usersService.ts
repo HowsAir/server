@@ -11,20 +11,40 @@ import prisma from '../libs/prisma';
 /**
  * Registers a new user in the database
  *
- * Omit<User, "id" | "role">: userData -> register() -> Promise<User>
+ * email, password, name, surnames -> register() -> Promise<User>
  *
- * @param userData - An object containing the user's data (email, password, name, etc.).
+ * @param email - The user's email.
+ * @param password - The user's password.
+ * @param name - The user's name.
+ * @param surnames - The user's surnames.
  * @returns {Promise<User>} - A promise that resolves with the newly created user.
  * @throws {Error} - Throws an error if the user cannot be created.
  */
 const register = async (
-    userData: Omit<User, 'id' | 'roleId'>
+    email: string,
+    password: string,
+    name: string,
+    surnames: string
 ): Promise<User> => {
     // Hash the password before saving the user
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUserData = { ...userData, password: hashedPassword };
+    // Create the new user data object
+    const newUserData: Omit<User, 'id'> = {
+        email,
+        password: hashedPassword,
+        name,
+        surnames,
+        roleId: 1, // Assuming roleId 1 is for basic users
+        photoUrl: null,
+        phone: null,
+        country: null,
+        city: null,
+        zipCode: null,
+        address: null,
+    };
 
+    // Create the user entry in the database
     return await prisma.user.create({
         data: newUserData,
     });

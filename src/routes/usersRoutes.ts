@@ -21,6 +21,7 @@ router.post(
             min: 6,
         }),
         check('name', 'Name is required').isString(),
+        check('surnames', 'Surnames are required').isString(),
     ],
     usersController.register
 );

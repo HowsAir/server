@@ -25,15 +25,15 @@ const register = async (req: Request, res: Response): Promise<Response> => {
             return res.status(400).json({ message: errors.array() });
         }
 
-        const user: Omit<User, "id" | "roleId"> = req.body;
+        const { email, password, name, surnames } = req.body;
 
         // Use service to handle registration logic
-        const existingUser = await usersService.findUserByEmail(user.email);
+        const existingUser = await usersService.findUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const createdUser = await usersService.register(user);
+        const createdUser = await usersService.register(email, password, name, surnames);
 
         // Add JWT to response for later token validation
         putJwtInResponse(res, createdUser);
@@ -43,6 +43,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
             user: createdUser,
         });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
