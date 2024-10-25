@@ -8,7 +8,6 @@ import { describe, it, expect, vi } from 'vitest'; // Import Vitest functions fo
 import { putJwtInResponse } from '../../src/utils/auth'; // Import the function to be tested
 import jwt from 'jsonwebtoken'; // Mocked jwt library
 import { Response } from 'express'; // Import the Express Response object for type checks
-import { UserRole, User } from '@prisma/client'; // Import user roles from Prisma
 
 vi.mock('jsonwebtoken'); // Mock the jsonwebtoken library to avoid actual token creation
 
@@ -22,12 +21,17 @@ describe('auth utility functions', () => {
 
             const user = {
                 id: 123,
-                dafafdafadf: 'Alice',
-
-                name: 'Alice',
-                email: 'a@gmail.com',
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
                 password: 'hashed_password',
-                role: UserRole.BASIC,
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
             };
 
             // Mock jwt.sign to return a fake token
@@ -39,7 +43,7 @@ describe('auth utility functions', () => {
 
             // Assert: Check if jwt.sign was called with the correct payload
             expect(jwt.sign).toHaveBeenCalledWith(
-                { userId: 123, role: UserRole.BASIC },
+                { userId: user.id, role: user.roleId },
                 process.env.JWT_SECRET_KEY as string,
                 { expiresIn: '2d' }
             );
@@ -66,10 +70,17 @@ describe('auth utility functions', () => {
 
             const user = {
                 id: 123,
-                name: 'Alice',
-                email: 'a@gmail.com',
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
                 password: 'hashed_password',
-                role: UserRole.BASIC,
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
             };
 
             const fakeToken = 'fake_jwt_token';
@@ -96,10 +107,17 @@ describe('auth utility functions', () => {
 
             const user = {
                 id: 123,
-                name: 'Alice',
-                email: 'a@gmail.com',
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
                 password: 'hashed_password',
-                role: UserRole.BASIC,
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
             };
 
             const fakeToken = 'fake_jwt_token';

@@ -25,21 +25,15 @@ const register = async (req: Request, res: Response): Promise<Response> => {
             return res.status(400).json({ message: errors.array() });
         }
 
-        const { email, password, name } = req.body;
+        const user: Omit<User, "id" | "roleId"> = req.body;
 
         // Use service to handle registration logic
-        const existingUser = await usersService.findUserByEmail(email);
+        const existingUser = await usersService.findUserByEmail(user.email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const newUser: Omit<User, 'id' | 'role'> = {
-            email,
-            password,
-            name,
-        };
-
-        const createdUser = await usersService.register(newUser);
+        const createdUser = await usersService.register(user);
 
         // Add JWT to response for later token validation
         putJwtInResponse(res, createdUser);

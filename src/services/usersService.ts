@@ -17,14 +17,16 @@ import prisma from '../libs/prisma';
  * @returns {Promise<User>} - A promise that resolves with the newly created user.
  * @throws {Error} - Throws an error if the user cannot be created.
  */
-const register = async (userData: Omit<User, 'id' | 'role'>): Promise<User> => {
+const register = async (
+    userData: Omit<User, 'id' | 'roleId'>
+): Promise<User> => {
     // Hash the password before saving the user
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    userData.password = hashedPassword;
+    const newUserData = { ...userData, password: hashedPassword };
 
     return await prisma.user.create({
-        data: userData,
+        data: newUserData,
     });
 };
 

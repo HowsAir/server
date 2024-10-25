@@ -8,7 +8,6 @@ import { expect, describe, it, vi } from 'vitest'; // Import vitest functions fo
 import { authService } from '../../src/services/authService'; // Import the authService to be tested
 import prisma from '../../src/libs/__mocks__/prisma'; // Import the Prisma mock
 import bcrypt from 'bcryptjs'; // Import bcrypt for password comparison
-import { UserRole } from '@prisma/client'; // Import user roles from Prisma
 
 // Mock the prisma and bcrypt libraries using Vitest's mock functions
 vi.mock('../../src/libs/prisma'); // Mock Prisma to avoid database calls
@@ -20,8 +19,15 @@ describe('authService', () => {
             const mockUser = {
                 email: 'user@prisma.io',
                 name: 'Prisma Fan',
+                surnames: 'Prisma',
                 password: 'hashed_password',
-                role: UserRole.BASIC,
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
             };
 
             // Mock the database call to find the user by email, returning the mockUser
@@ -58,15 +64,21 @@ describe('authService', () => {
 
         it('should return null when password is invalid', async () => {
             const mockUser = {
-                id: 1,
-                email: 'test@example.com',
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
                 password: 'hashed_password',
-                name: 'pepe',
-                role: UserRole.BASIC,
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
             };
 
             // Mock the database call to return the mockUser
-            prisma.user.findUnique.mockResolvedValue(mockUser);
+            prisma.user.findUnique.mockResolvedValue({ ...mockUser, id: 1 });
 
             // Mock bcrypt comparison to simulate an incorrect password
             bcrypt.compare = vi.fn().mockResolvedValue(false);

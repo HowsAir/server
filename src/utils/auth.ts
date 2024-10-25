@@ -27,7 +27,7 @@ export const putJwtInResponse = (res: Response, user: User): void => {
     const token = jwt.sign(
         {
             userId: user.id,
-            role: user.role,
+            role: user.roleId,
         },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: `${daysExpiration}d` } // Token valid for 2 days

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,66 +7,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Tabla Role en vez de un enum
-model Role {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  users       User[]    // Relación con usuarios
+model Stats {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  date              DateTime
+  dailyActiveHours  Float
+  dailyDistance     Float
+  weeklyDistance    Float
+  monthlyDistance   Float
+  user              User     @relation(fields: [userId], references: [id])
 
-  @@map("roles")  // Map to 'roles' table in the DB
+  @@map("stats")
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  role      Role      @relation(fields: [roleId], references: [id])
-  roleId    Int
-  nodes     Node[]
+  id          Int       @id @default(autoincrement())
+  name        String
+  surnames    String
+  email       String    @unique
+  password    String
+  photoUrl    String?
+  phone       String?
+  country     String?
+  city        String?
+  zipCode     String?
+  address     String?
+  roleId      Int       @default(1)
+  role        Role      @relation(fields: [roleId], references: [id])
+  nodes       Node[]
+  stats       Stats[]
 
-  @@map("users") // Map to 'users' table in the DB
+  @@map("users")
+}
+
+model Role {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  users   User[]
+
+  @@map("roles")
 }
 
 model Node {
-  id              Int         @id @default(autoincrement())
-  registrationDate DateTime
-  user            User        @relation(fields: [userId], references: [id])
-  userId          Int
-  nodeType        NodeType    @relation(fields: [nodeTypeId], references: [id])
-  nodeTypeId      Int
-  measurements    Measurement[]
+  id                Int            @id @default(autoincrement())
+  userId            Int
+  status           NodeStatus
+  lastStatusUpdate DateTime
+  user             User            @relation(fields: [userId], references: [id])
+  measurements     Measurement[]
 
-  @@map("nodes")  // Map to 'nodes' table in the DB
+  @@index([status])
+
+  @@map("nodes")
 }
 
 model Measurement {
-  id              Int       @id @default(autoincrement())
-  date            DateTime
-  latitude        Float
-  longitude       Float
-  value           Float
-  node            Node      @relation(fields: [nodeId], references: [id])
-  nodeId          Int
+  id          Int       @id @default(autoincrement())
+  timestamp   DateTime
+  value       Float
+  latitude    Float
+  longitude   Float
+  nodeId      Int
+  gasId       Int
+  node        Node      @relation(fields: [nodeId], references: [id])
+  gas         Gas       @relation(fields: [gasId], references: [id])
 
-  @@map("measurements")  // Map to 'measurements' table in the DB
+  @@index([timestamp])
+  @@index([nodeId, timestamp])
+
+  @@map("measurements")
 }
 
-model NodeType {
-  id            Int         @id @default(autoincrement())
+model Gas {
+  id            Int            @id @default(autoincrement())
   name          String
-  nodes         Node[]
-  thresholds    Threshold[] // One-to-many relationship with Threshold
+  low           Float
+  high          Float
+  unit          String
+  measurements  Measurement[]
 
-  @@map("node_types")  // Map to 'node_types' table in the DB
+  @@map("gases")
 }
 
-model Threshold {
-  id            Int       @id @default(autoincrement())
-  lowValue      Float
-  highValue     Float
-  nodeType      NodeType  @relation(fields: [nodeTypeId], references: [id])
-  nodeTypeId    Int
-
-  @@map("thresholds")  // Map to 'thresholds' table in the DB
+enum NodeStatus {
+  ACTIVE
+  INACTIVE
 }
