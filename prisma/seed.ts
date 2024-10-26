@@ -4,9 +4,9 @@ const prisma = new PrismaClient();
 async function main() {
   // Crear Roles (el primer rol será 'User' con id 1)
   const userRole = await prisma.role.upsert({
-    where: { id: 1 },
-    update: {},
-    create: { id: 1, name: 'User' },
+      where: { name: 'User' },
+      update: {},
+      create: { name: 'User' },
   });
 
   const adminRole = await prisma.role.upsert({
