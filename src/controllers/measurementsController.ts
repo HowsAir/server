@@ -33,11 +33,11 @@ const createMeasurement = async (
             o3Value,
             latitude,
             longitude,
-        }: { o3Value: number; latitude: number; longitude: number } = req.body;
+        } = req.body;
 
         const userId = req.userId;
 
-        const createdMeasurement = await measurementsService.createMeasurement(
+        const createdMeasurement: Measurement = await measurementsService.createMeasurement(
             o3Value,
             latitude,
             longitude,
@@ -46,6 +46,7 @@ const createMeasurement = async (
 
         return res.status(201).json(createdMeasurement);
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

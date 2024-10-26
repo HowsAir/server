@@ -43,7 +43,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
             user: createdUser,
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

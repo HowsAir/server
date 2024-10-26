@@ -53,7 +53,7 @@ const createCheckoutSession = async (
         // Return the session ID to the client
         return res.status(200).json({ id: session.id });
     } catch (error) {
-        console.error('Error creating payment session:', error);
+        console.error(error);
         return res
             .status(500)
             .json({ message: 'Error creating payment session' });

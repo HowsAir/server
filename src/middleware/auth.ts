@@ -56,6 +56,7 @@ export const verifyToken = (
         // Proceed to the next middleware or route handler
         next();
     } catch (error) {
+        console.error(error);
         // If token verification fails, return an unauthorized error
         return res.status(401).json({ message: 'Unauthorized' });
     }
