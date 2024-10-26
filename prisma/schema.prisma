@@ -7,17 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Stats {
+model DailyStat {
   id                Int      @id @default(autoincrement())
   userId            Int
   date              DateTime
-  dailyActiveHours  Float
-  dailyDistance     Float
-  weeklyDistance    Float
-  monthlyDistance   Float
+  activeHours       Float
+  distance          Float
   user              User     @relation(fields: [userId], references: [id])
 
-  @@map("stats")
+  @@unique([userId, date])
+  @@map("daily_stats")
 }
 
 model User {
@@ -35,7 +34,7 @@ model User {
   roleId      Int       @default(1)
   role        Role      @relation(fields: [roleId], references: [id])
   nodes       Node[]
-  stats       Stats[]
+  stats       DailyStat[]
 
   @@map("users")
 }
