@@ -72,14 +72,12 @@ async function main() {
   );
 
   // Crear Estadísticas para Usuario 1
-  await prisma.stats.create({
+  await prisma.dailyStat.create({
     data: {
       userId: user1.id,
       date: new Date(),
-      dailyActiveHours: 2.5,
-      dailyDistance: 5.1,
-      weeklyDistance: 35.2,
-      monthlyDistance: 140.8,
+      activeHours: 2.5,
+      distance: 5.1,
     },
   });
 
