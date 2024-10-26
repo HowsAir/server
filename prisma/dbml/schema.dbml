@@ -1,0 +1,75 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table daily_stats {
+  id Int [pk, increment]
+  userId Int [not null]
+  date DateTime [not null]
+  activeHours Float [not null]
+  distance Float [not null]
+  user users [not null]
+
+  indexes {
+    (userId, date) [unique]
+  }
+}
+
+Table users {
+  id Int [pk, increment]
+  name String [not null]
+  surnames String [not null]
+  email String [unique, not null]
+  password String [not null]
+  photoUrl String
+  phone String
+  country String
+  city String
+  zipCode String
+  address String
+  roleId Int [not null, default: 1]
+  role roles [not null]
+  node nodes
+  stats daily_stats [not null]
+}
+
+Table roles {
+  id Int [pk, increment]
+  name String [unique, not null]
+  users users [not null]
+}
+
+Table nodes {
+  id Int [pk, increment]
+  userId Int [unique]
+  status NodeStatus [not null]
+  lastStatusUpdate DateTime [not null]
+  user users
+  measurements measurements [not null]
+}
+
+Table measurements {
+  id Int [pk, increment]
+  timestamp DateTime [not null]
+  o3Value Float [not null]
+  no2Value Float [not null]
+  coValue Float [not null]
+  latitude Float [not null]
+  longitude Float [not null]
+  nodeId Int [not null]
+  node nodes [not null]
+}
+
+Enum NodeStatus {
+  ACTIVE
+  INACTIVE
+  UNLINKED
+}
+
+Ref: daily_stats.userId > users.id
+
+Ref: users.roleId > roles.id
+
+Ref: nodes.userId - users.id
+
+Ref: measurements.nodeId > nodes.id
