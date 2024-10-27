@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === 'development') {
         })
     );
 } else {
-    app.use(express.static(path.join(__dirname, '../../frontend/dist'))); // Serve frontend
+    app.use(express.static(path.join(__dirname, '../dist/frontend'))); // Serve frontend
 }
 
 app.use(cookieParser());
