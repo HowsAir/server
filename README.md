@@ -1,59 +1,47 @@
-# HowsAir-server
+# HowsAir Server
 
 ## Description
 
-**HowsAir** is an application for managing and visualizing environmental measurement data. The project features a backend developed with **Node.js**, **Express**, **Typescript**, **MongoDB** and **Vitest**, and a frontend built with **React**, **Vite**, **Typescript**, and **Tailwind CSS**.
+**HowsAir** is an application for managing and visualizing environmental measurement data. The backend is built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL** (via **Prisma** ORM), and **Vitest** for testing.
 
 ## Environment Variable Configuration
 
-Make sure to create the `.env` files in both the `backend` and `frontend` folders with the following variables, adjusting the values according to the environment you are working in.
+Set up the `.env` file in the root of the backend directory with the following environment variables, adjusting values according to your environment:
 
 ### Backend (`backend/.env`)
 
 ```plaintext
-MONGODB_URI=mongodb://localhost:27017/your_database_name
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
+DATABASE_URL="postgresql://user:1234@localhost:5432/howsair_db?schema=main_schema"
+POSTGRES_USER=user
+POSTGRES_PASSWORD=1234
+POSTGRES_DB=howsair_db
+JWT_SECRET_KEY=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxNDc1MDE1MCwiaWF0IjoxNzE0NzUwMTUwfQ.pbXFiJ4n-3wP5o4HtFwgLaL_Twsbxb9Iz0hb2Y2ECeM
+STRIPE_SECRET_KEY=sk_test_51QDRm2CT2jgWOtj9vw2stcD7Dj2K3KVgqdtRldnifAdVmyINteKqHmsOX74HFdiSXPlPqgRu0c66fDU6yXn3cEz700BxB15ypY
 ```
 
-> In **development**, ensure that `NODE_ENV` is set to `development`.  
-> In **production**, change `NODE_ENV` to `production`.
-
-> If you wish to use a MongoDB database in the cloud, you can replace `MONGODB_URI` with the URL of your own cluster in MongoDB Atlas or another cloud solution.
-
-### Frontend (`frontend/.env`)
-
-```plaintext
-VITE_NODE_ENV=development
-```
-
-> In **development**, `VITE_NODE_ENV` has to be set to `development`.  
-> In **production**, change `VITE_NODE_ENV` to `production`.
+- For **development** environments, ensure `NODE_ENV` is set to `development`.
+- For **production** environments, update `NODE_ENV` to `production`.
 
 ## Part 1: Development
 
-In the **development** environment, you can work with either your own cloud database or a local database using Docker.
+### Local Database with Docker
 
-### Option 1: Development with Local MongoDB in a Docker Container
+1. **Start the Local Database in Docker**:
 
-1. **Start the local database with Docker:**:
-
-   Run the following commands to start a local instance of MongoDB in Docker:
+   Run the following commands to start a local instance of PostgreSQL using Docker:
 
    ```bash
    docker-compose build
    docker-compose --profile default up
    ```
 
-   This will create a Docker container with a local MongoDB database. If you want to set a custom database name, go to your .env file and change "your_database_name" to the name you want:
+   This will create a Docker container with PostgreSQL configured according to your `.env` settings.
 
-   ```plaintext
-   MONGODB_URI=mongodb://localhost:27017/your_database_name
-   ```
+2. **Install Dependencies and Run the Backend**:
 
-2. **Install Dependencies and Run the Backend:**:
-
-   Navigate to the backend folder and run the following commands:
+   Navigate to the backend folder and execute:
 
    ```bash
    cd backend
@@ -61,95 +49,126 @@ In the **development** environment, you can work with either your own cloud data
    npm run dev
    ```
 
-   This will start the backend server in development mode at `http://localhost:3000`.
+   The backend server will start in development mode at `http://localhost:3000`.
 
-3. **Install Dependencies and Run the Frontend:**:
+## Part 2: Production
 
-   Navigate to the frontend folder and execute:
+In the **production** environment, Docker is recommended to encapsulate both the backend and database in separate containers.
 
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+1. **Build and Start Production Containers**:
 
-   The frontend will be available at `http://localhost:5173`.
-   Access the URL to interact with the app.
-
-### Option 2: Development with MongoDB in the Cloud
-
-If you prefer not to use Docker for the database, you can connect directly to a MongoDB cluster in the cloud, such as MongoDB Atlas.
-
-1. **Configure the Backend `.env` File**:
-
-   Change the `MONGODB_URI` variable in the backend `.env` file to point to your cloud cluster:
-
-   ```plaintext
-   MONGODB_URI=mongodb+srv://<usuario>:<password>@cluster0.mongodb.net/myDatabase?retryWrites=true&w=majority
-   ```
-
-2. **Install Dependencies and Run:**:
-
-   Follow the same steps as in **Option 1.2** and Option **1.3** to install the dependencies and start both the backend and frontend.
-
-## Parte 2: Production
-
-In the **production** environment, Docker is the recommended option for running both the backend and the MongoDB database in separate containers. Everything will be encapsulated and configured for a simple deployment.
-
-### Production with Docker
-
-1. **Start the Containers in Production Mode**:
-
-   Execute this command to start the backend and MongoDB database in containers:
+   Execute the following commands to build and start containers:
 
    ```bash
    docker-compose build
-   ```
-
-2. **Levantar los contenedores en modo producción**:
-
-   Ejecuta este comando para levantar el backend y la base de datos MongoDB en contenedores:
-
-   ```bash
    docker-compose --profile production up
    ```
 
-   This will do the following:
+   This setup will:
 
-   - Start a container for the backend, which will serve both the API and the static files from the frontend.
-   - Start a separate container for MongoDB.
+   - Start a container for the backend to serve API requests.
+   - Run a separate PostgreSQL container for the database.
 
-3. **Access the Application**:
+2. **HTTPS Configuration for Production**:
 
-   Once the containers are up and running, you can access the application through your browser.
+   To use HTTPS in production, generate a self-signed certificate. 
 
-   - If you are running the application locally, visit: `http://localhost:3000`
-   - This is the entry point for both the API and the web application. The frontend is already compiled and will be served from the same Express server that handles the API.
-   - The MongoDB database will be running in a separate container and connected to the backend automatically through the configured URL.
-
-## How to Run Tests
-
-The project includes tests for both the backend and the frontend, using **Vitest**. To run them, follow these steps:
-
-1. **Backend**:
-
-   Go to the `backend` folder and execute:
+   Open **Git Bash** and run the following command inside the `backend` folder to generate the certificate files:
 
    ```bash
-   cd backend
-   npm test
+   openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365
    ```
 
-2. **Frontend**:
+   This creates a `server.key` and `server.cert` file, which can then be used to set up HTTPS for secure production deployment.
 
-   Go to the `frontend` folder and execute:
+3. **Compile and Deploy the Frontend in Production**:
+
+   In production, it is recommended to compile the frontend and serve it as static files from the `dist/frontend` directory. 
+
+   In the frontend directory, run:
 
    ```bash
-   cd frontend
-   npm test
+   npm run build
    ```
 
-   This will run the tests in each part of the project and allow you to verify that the code is working correctly.
+   This will generate a `dist` folder with all frontend assets. These can be added to your Docker image or served from an NGINX server or similar, pointing to the `dist/frontend` directory.
+
+4. **Access the Application**:
+
+   Once the containers are running, access the API by visiting `http://localhost:3000`.
+
+## Database Management with Prisma
+
+To manage and interact with the database, **Prisma** offers a set of commands that are useful for handling migrations and generating the Prisma Client.
+
+### Prisma Workflow
+
+1. **Applying Migrations in Production**:
+
+   When deploying to production or any other environment, use the following command to apply any pending migrations to the database:
+
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+   This command applies all migrations created in development, ensuring your production database schema is up to date.
+
+2. **Generate Additional Migrations in Development**:
+
+   To generate a new migration after schema changes, use:
+
+   ```bash
+   npx prisma migrate dev --name add_new_field
+   ```
+
+3. **Generate Prisma Client**:
+
+   After any schema updates, regenerate the Prisma Client to reflect the latest schema:
+
+   ```bash
+   npx prisma generate
+   ```
+
+4. **View the Database**:
+
+   You can view and interact with the database using Prisma Studio:
+
+   ```bash
+   npx prisma studio
+   ```
+
+## Code Quality Assessment with SonarQube
+
+To analyze and maintain code quality, use **SonarQube**. Follow these steps to set it up locally:
+
+1. **Run SonarQube in Docker**:
+
+   Start a SonarQube instance with Docker:
+
+   ```bash
+   docker run --name sonarqube -p 9000:9000 -p 9092:9092 -v sonarqube-conf:/opt/sonarqube/conf -v sonarqube-data:/opt/sonarqube/data -v sonarqube-logs:/opt/sonarqube/logs -v sonarqube-extensions:/opt/sonarqube/extensions sonarqube:lts
+   ```
+
+   Open [http://localhost:9000](http://localhost:9000) in your browser and log in with the default credentials `admin/admin`.
+
+2. **Create a New Project and Generate a Token**:
+
+   Within SonarQube, create a new project and generate an authentication token for it.
+
+3. **Install and Run Sonar Scanner**:
+
+   Install **Sonar Scanner** on your machine and run it in the project’s root directory:
+
+   ```bash
+   sonar-scanner -D"sonar.projectKey=HowsAir" -D"sonar.sources=." -D"sonar.host.url=http://localhost:9000" -D"sonar.login=your_generated_token"
+   ```
+
+   > **Note:** If you encounter issues, edit the `sonar.properties` file in the SonarQube `conf` directory to set the following:
+
+   ```plaintext
+   sonar.host.url=http://localhost:9000
+   sonar.web.port=9000
+   ```
 
 ## Common Troubleshooting
 
@@ -183,7 +202,7 @@ To resolve this, follow these steps:
 
 3. **Save the Changes and Restart Docker**
 
-4. **Another Solution: Delete the `config.json` File:**:
+4. **Another Solution: Delete the `config.json` File**:
 
    If the previous step does not resolve the issue, you can try completely deleting the `config.json` file located at `~/.docker/config.json.` Docker will generate a new one automatically the next time it runs.
 
@@ -216,6 +235,8 @@ This project is part of a larger ecosystem that includes:
 
 - **HowsAir for Android**: The mobile client for managing and visualizing environmental measurements, developed for Android. You can find the repository [here](https://github.com/HowsAir/android).
 
-- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements. You can find the repository [here](https://github.com/HowsAir/arduino).
+- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements
 
-- **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/arduino).
+. You can find the repository [here](https://github.com/HowsAir/arduino).
+
+- **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/frontend).
