@@ -11,7 +11,7 @@ import { auth_token } from '../middleware/auth';
 import { User } from '@prisma/client';
 
 // Number of days the JWT token will be valid
-const daysExpiration = 2;
+const daysExpiration = 15;
 
 /**
  * Function to generate a JWT token and attach it to the response as a cookie.
