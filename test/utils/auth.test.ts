@@ -45,7 +45,7 @@ describe('auth utility functions', () => {
             expect(jwt.sign).toHaveBeenCalledWith(
                 { userId: user.id, role: user.roleId },
                 process.env.JWT_SECRET_KEY as string,
-                { expiresIn: '2d' }
+                { expiresIn: '15d' }
             );
 
             // Assert: Check if the token was added to the response as a cookie with correct settings
@@ -55,7 +55,7 @@ describe('auth utility functions', () => {
                 {
                     httpOnly: true, // Security flag
                     secure: process.env.NODE_ENV === 'production', // Secure flag depends on environment
-                    maxAge: 2 * 24 * 60 * 60 * 1000, // Expiration in milliseconds (2 days)
+                    maxAge: 15 * 24 * 60 * 60 * 1000, // Expiration in milliseconds (2 days)
                 }
             );
         });
