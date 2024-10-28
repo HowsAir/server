@@ -1,3 +1,7 @@
+Sure! Here’s how you can add a section on how to run the tests using Vitest to your existing documentation for the **HowsAir Server** project:
+
+---
+
 # HowsAir Server
 
 ## Description
@@ -51,7 +55,45 @@ STRIPE_SECRET_KEY=sk_test_51QDRm2CT2jgWOtj9vw2stcD7Dj2K3KVgqdtRldnifAdVmyINteKqH
 
    The backend server will start in development mode at `http://localhost:3000`.
 
-## Part 2: Production
+## Part 2: Running Tests
+
+### Running Tests with Vitest
+
+To ensure your application is working as expected, you can run tests using **Vitest**. Follow these steps:
+
+1. **Run Tests**:
+
+   In the backend directory, execute the following command:
+
+   ```bash
+   npm run test
+   ```
+
+   This command will run all the test files in the project. By default, Vitest looks for files with the `.test.ts` or `.spec.ts` extension.
+
+2. **Run Tests in Watch Mode**:
+
+   If you want to continuously run your tests and re-run them whenever you make changes, use:
+
+   ```bash
+   npm run test:watch
+   ```
+
+3. **Viewing Test Results**:
+
+   After running the tests, Vitest will display the results in the terminal. You will see which tests passed, which failed, and any error messages for the failing tests.
+
+4. **Debugging Tests**:
+
+   If a test fails, you can run Vitest in debug mode to get more insights:
+
+   ```bash
+   npx vitest --debug
+   ```
+
+   This will provide more detailed output about the test execution, helping you identify the root cause of any failures.
+
+## Part 3: Production
 
 In the **production** environment, Docker is recommended to encapsulate both the backend and database in separate containers.
 
@@ -210,7 +252,9 @@ To resolve this, follow these steps:
 
 ### Related to Server Communication from Another Device
 
-If Docker Desktop is running on **Windows** and you cannot connect to the server from another device on the same network, such as an Android device handling Beacon data, you can follow these steps to troubleshoot the issue:
+If Docker Desktop is running on **Windows** and you cannot connect to the server
+
+ from another device on the same network, such as an Android device handling Beacon data, you can follow these steps to troubleshoot the issue:
 
 1. **Uninstall WSL**: Uninstall WSL to remove any problematic configuration.
 
@@ -235,8 +279,10 @@ This project is part of a larger ecosystem that includes:
 
 - **HowsAir for Android**: The mobile client for managing and visualizing environmental measurements, developed for Android. You can find the repository [here](https://github.com/HowsAir/android).
 
-- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements
-
-. You can find the repository [here](https://github.com/HowsAir/arduino).
+- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements. You can find the repository [here](https://github.com/HowsAir/arduino).
 
 - **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/frontend).
+
+---
+
+Feel free to adjust any part of this section to better fit your project's style or details!
