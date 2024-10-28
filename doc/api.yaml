@@ -1,13 +1,13 @@
 openapi: 3.0.3
 info:
-  title: Freshair Backend API Sprint-0
-  description: Diseño de la API para el Sprint 0 del Proyecto de Biometría.
+  title: HowsAir Server API Sprint-0
+  description: Diseño de la API para el Sprint 1 del Proyecto de Biometría.
   version: 1.0.0
 servers:
-  - url: http://localhost:5000/api/v1
+  - url: http://localhost:3000/api/v1
     description: Servidor local para desarrollo
 paths:
-  /mediciones:
+  /measurements:
     get:
       tags:
         - Mediciones
@@ -21,9 +21,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Medicion"
+                  $ref: "#/components/schemas/Measurement"
         "500":
           description: Error en el servidor al obtener las mediciones
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
     post:
       tags:
         - Mediciones
@@ -34,14 +39,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MedicionInput"
+              $ref: "#/components/schemas/MeasurementInput"
       responses:
         "201":
           description: Medición creada correctamente
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Medicion"
+                $ref: "#/components/schemas/Measurement"
         "400":
           description: Error de validación en los datos de la medición
           content:
@@ -50,58 +55,323 @@ paths:
                 $ref: "#/components/schemas/Error"
         "500":
           description: Error en el servidor al guardar la medición
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticación
+      summary: Inicia sesión de un usuario
+      description: Valida las credenciales del usuario y devuelve un JWT en una cookie de nombre `auth_token` si es exitoso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+                  example: user@example.com
+                password:
+                  type: string
+                  description: Contraseña del usuario
+                  example: password123
+      responses:
+        "200":
+          description: Inicio de sesión exitoso, `auth_token` guardado en la cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Error de validación en los datos de inicio de sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials"
+        "500":
+          description: Error en el servidor al iniciar sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/validate:
+    get:
+      tags:
+        - Autenticación
+      summary: Valida el token JWT
+      description: Verifica si el token JWT proporcionado es válido.
+      responses:
+        "200":
+          description: Token es válido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Token is valid"
+        "401":
+          description: Token inválido o no proporcionado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid or missing token"
+        "500":
+          description: Error en el servidor al validar el token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      tags:
+        - Autenticación
+      summary: Cierra la sesión de un usuario
+      description: Elimina el token JWT para cerrar la sesión del usuario. La cookie `auth_token` es eliminada.
+      responses:
+        "200":
+          description: Cierre de sesión exitoso, `auth_token` eliminado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        "500":
+          description: Error en el servidor al cerrar la sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users:
+    post:
+      tags:
+        - Usuarios
+      summary: Registra un nuevo usuario
+      description: Crea un nuevo usuario en el sistema y devuelve un JWT en la cookie `auth_token`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+                - surnames
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del nuevo usuario
+                  example: newuser@example.com
+                password:
+                  type: string
+                  description: Contraseña del nuevo usuario
+                  example: password123
+                name:
+                  type: string
+                  description: Nombre del nuevo usuario
+                  example: Juan
+                surnames:
+                  type: string
+                  description: Apellidos del nuevo usuario
+                  example: Perez Garcia
+      responses:
+        "201":
+          description: Usuario registrado exitosamente, `auth_token` guardado en la cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Error de validación en los datos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al registrar al usuario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /nodes/{nodeId}/link:
+    put:
+      tags:
+        - Nodos
+      summary: Asocia un nodo con una medición
+      description: Vincula un nodo existente a una medición.
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          description: ID del nodo a vincular
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Nodo vinculado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Node linked successfully"
+                  node:
+                    $ref: "#/components/schemas/Node"
+        "400":
+          description: Error al vincular el nodo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al vincular el nodo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
   schemas:
-    Medicion:
+    Measurement:
       type: object
       properties:
-        _id:
-          type: string
+        id:
+          type: integer
           description: ID único de la medición
-        fecha:
+        timestamp:
           type: string
           format: date-time
           description: Fecha y hora en que se registró la medición
-        ppm:
+        o3Value:
           type: number
-          description: Niveles de partículas por millón (PPM)
-        temperatura:
+          description: Nivel de ozono (O3) medido
+        no2Value:
           type: number
-          description: Temperatura registrada en la medición
-        latitud:
+          description: Nivel de dióxido de nitrógeno (NO2) medido
+        coValue:
+          type: number
+          description: Nivel de monóxido de carbono (CO) medido
+        latitude:
           type: number
           description: Latitud en la que se tomó la medición
-        longitud:
+        longitude:
           type: number
           description: Longitud en la que se tomó la medición
-    MedicionInput:
+        nodeId:
+          type: integer
+          description: ID del nodo asociado a la medición
+
+    MeasurementInput:
       type: object
       required:
-        - ppm
-        - temperatura
-        - latitud
-        - longitud
+        - o3Value
+        - no2Value
+        - coValue
+        - latitude
+        - longitude
       properties:
-        ppm:
+        o3Value:
           type: number
-          description: Niveles de partículas por millón (PPM)
-          example: 50
-        temperatura:
+          description: Nivel de ozono (O3) en ppm
+        no2Value:
           type: number
-          description: Temperatura en grados Celsius
-          example: 25
-        latitud:
+          description: Nivel de dióxido de nitrógeno (NO2) en ppm
+        coValue:
+          type: number
+          description: Nivel de monóxido de carbono (CO) en ppm
+        latitude:
           type: number
           description: Latitud en la que se registró la medición
-          example: -34.6037
-        longitud:
+        longitude:
           type: number
           description: Longitud en la que se registró la medición
-          example: -58.3816
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único del usuario
+        email:
+          type: string
+          description: Correo electrónico del usuario
+        name:
+          type: string
+          description: Nombre del usuario
+        surnames:
+          type: string
+          description: Apellidos del usuario
+
+    Node:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único del nodo
+        name:
+          type: string
+          description: Nombre del nodo
+          example: Node A
+        location:
+          type: string
+          description: Ubicación del nodo
+          example: "50.1234, -0.1234"
+        status:
+          type: string
+          description: Estado del nodo
+          example: "active"
+
     Error:
       type: object
       properties:
         message:
           type: string
-          description: Descripción del error
-          example: "Error validando los datos"
+          description: Mensaje de error
+          example: "An error occurred"

@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DailyStat {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  date        DateTime
+  activeHours Float
+  distance    Float
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@map("daily_stats")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  surnames String
+  email    String  @unique
+  password String
+  photoUrl String?
+  phone    String?
+  country  String?
+  city     String?
+  zipCode  String?
+  address  String?
+  roleId   Int     @default(1)
+  role     Role    @relation(fields: [roleId], references: [id])
+  node     Node?   @relation("UserNode")
+  stats    DailyStat[]
+
+  @@map("users")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+
+  @@map("roles")
+}
+
+model Node {
+  id                Int       @id @default(autoincrement())
+  userId            Int?      @unique  // `userId` es opcional y único si está presente
+  status            NodeStatus
+  lastStatusUpdate  DateTime
+  user              User?     @relation("UserNode", fields: [userId], references: [id])
+  measurements      Measurement[]
+
+  @@index([status])
+  @@map("nodes")
+}
+
+model Measurement {
+  id         Int       @id @default(autoincrement())
+  timestamp  DateTime
+  o3Value    Float
+  no2Value   Float
+  coValue    Float
+  latitude   Float
+  longitude  Float
+  nodeId     Int
+  node       Node      @relation(fields: [nodeId], references: [id])
+
+  @@index([timestamp])
+  @@index([nodeId, timestamp])
+
+  @@map("measurements")
+}
+
+enum NodeStatus {
+  ACTIVE
+  INACTIVE
+  UNLINKED
+}

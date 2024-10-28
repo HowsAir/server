@@ -1,59 +1,47 @@
-# freshair-server
+# HowsAir Server
 
-## Descripción
+## Description
 
-**FreshAir** es una aplicación para gestionar y visualizar datos de mediciones ambientales. El proyecto cuenta con un backend desarrollado con **Node.js**, **Express**, **Typescript**, **MongoDB** y **Vitest**, y un frontend construido con **React**, **Vite**, **Typescript**, y **Tailwind CSS**.
+**HowsAir** is an application for managing and visualizing environmental measurement data. The backend is built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL** (via **Prisma** ORM), and **Vitest** for testing.
 
-## Configuración de Variables de Entorno
+## Environment Variable Configuration
 
-Asegúrate de crear los archivos `.env` en las carpetas `backend` y `frontend` con las siguientes variables, ajustando los valores según el entorno en el que estés trabajando.
+Set up the `.env` file in the root of the backend directory with the following environment variables, adjusting values according to your environment:
 
 ### Backend (`backend/.env`)
 
 ```plaintext
-MONGODB_URI=mongodb://localhost:27017/your_database_name
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
+DATABASE_URL="postgresql://user:1234@localhost:5432/howsair_db?schema=main_schema"
+POSTGRES_USER=user
+POSTGRES_PASSWORD=1234
+POSTGRES_DB=howsair_db
+JWT_SECRET_KEY=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxNDc1MDE1MCwiaWF0IjoxNzE0NzUwMTUwfQ.pbXFiJ4n-3wP5o4HtFwgLaL_Twsbxb9Iz0hb2Y2ECeM
+STRIPE_SECRET_KEY=sk_test_51QDRm2CT2jgWOtj9vw2stcD7Dj2K3KVgqdtRldnifAdVmyINteKqHmsOX74HFdiSXPlPqgRu0c66fDU6yXn3cEz700BxB15ypY
 ```
 
-> En **desarrollo**, asegúrate de que `NODE_ENV` esté configurado en `development`.  
-> En **producción**, cambia `NODE_ENV` a `production`.
+- For **development** environments, ensure `NODE_ENV` is set to `development`.
+- For **production** environments, update `NODE_ENV` to `production`.
 
-> Si deseas usar una base de datos MongoDB en la nube, puedes reemplazar `MONGODB_URI` con la URL de tu propio clúster en MongoDB Atlas u otra solución en la nube.
+## Part 1: Development
 
-### Frontend (`frontend/.env`)
+### Local Database with Docker
 
-```plaintext
-VITE_NODE_ENV=development
-```
+1. **Start the Local Database in Docker**:
 
-> En **desarrollo**, `VITE_NODE_ENV` debe estar configurado en `development`.  
-> En **producción**, cambia `VITE_NODE_ENV` a `production`.
-
-## Parte 1: Desarrollo
-
-En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de datos en la nube como con una base de datos local usando Docker.
-
-### Opción 1: Desarrollo con MongoDB Local en contenedor usando Docker
-
-1. **Levantar la base de datos local con Docker**:
-
-   Ejecuta los siguientes comandos para levantar una instancia local de MongoDB en Docker:
+   Run the following commands to start a local instance of PostgreSQL using Docker:
 
    ```bash
    docker-compose build
    docker-compose --profile default up
    ```
 
-   Esto creará un contenedor de Docker con una base de datos MongoDB local. Si quieres configurar un nombre de base de datos personalizado, entra en tu .env y cambia "your_database_name" por el nombre que quieras:
+   This will create a Docker container with PostgreSQL configured according to your `.env` settings.
 
-   ```plaintext
-   MONGODB_URI=mongodb://localhost:27017/your_database_name
-   ```
+2. **Install Dependencies and Run the Backend**:
 
-2. **Instalar Dependencias y Ejecutar el Backend**:
-
-   Ve a la carpeta del backend y ejecuta los siguientes comandos:
+   Navigate to the backend folder and execute:
 
    ```bash
    cd backend
@@ -61,92 +49,147 @@ En el entorno de **desarrollo**, puedes trabajar tanto con tu propia base de dat
    npm run dev
    ```
 
-   Esto levantará el servidor backend en modo de desarrollo en `http://localhost:3000`.
+   The backend server will start in development mode at `http://localhost:3000`.
 
-3. **Instalar Dependencias y Ejecutar el Frontend**:
+## Part 2: Production
 
-   Ve a la carpeta del frontend y ejecuta:
+In the **production** environment, Docker is recommended to encapsulate both the backend and database in separate containers.
 
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+1. **Build and Start Production Containers**:
 
-   El frontend estará disponible en `http://localhost:5173`.
-   Accede a la url para interactuar con la app.
-
-### Opción 2: Desarrollo con MongoDB en la Nube
-
-Si prefieres no usar Docker para la base de datos, puedes conectarte directamente a un clúster de MongoDB en la nube, como MongoDB Atlas.
-
-1. **Configura el archivo `.env` del backend**:
-
-   Cambia la variable `MONGODB_URI` en el archivo `.env` del backend para que apunte a tu clúster en la nube:
-
-   ```plaintext
-   MONGODB_URI=mongodb+srv://<usuario>:<password>@cluster0.mongodb.net/myDatabase?retryWrites=true&w=majority
-   ```
-
-2. **Instalar dependencias y ejecutar**:
-
-   Sigue los mismos pasos que en **Opción 1.2** y **Opción 1.3** para instalar las dependencias y levantar tanto el backend como el frontend.
-
-## Parte 2: Producción
-
-En el entorno de **producción**, Docker es la opción recomendada para ejecutar tanto el backend como la base de datos MongoDB en contenedores separados. Todo estará encapsulado y configurado para un despliegue sencillo.
-
-### Producción con Docker
-
-1. **Compilar los contenedores para producción**:
-
-   Ejecuta los siguientes comandos desde la raíz del proyecto:
+   Execute the following commands to build and start containers:
 
    ```bash
    docker-compose build
-   ```
-
-2. **Levantar los contenedores en modo producción**:
-
-   Ejecuta este comando para levantar el backend y la base de datos MongoDB en contenedores:
-
-   ```bash
    docker-compose --profile production up
    ```
 
-   Esto hará lo siguiente:
+   This setup will:
 
-   - Levantará un contenedor para el backend, que servirá tanto la API como los archivos estáticos del frontend.
-   - Levantará un contenedor separado para MongoDB.
+   - Start a container for the backend to serve API requests.
+   - Run a separate PostgreSQL container for the database.
 
-3. **Acceder a la aplicación**:
+2. **HTTPS Configuration for Production**:
 
-   Una vez que los contenedores estén en funcionamiento, puedes acceder a la aplicación a través de tu navegador.
+   To use HTTPS in production, generate a self-signed certificate. 
 
-   - Si estás ejecutando la aplicación localmente, visita: `http://localhost:3000`
-   - Este es el punto de entrada tanto para la API como para la aplicación web. El frontend ya está compilado y se servirá desde el mismo servidor Express que maneja la API.
-   - La base de datos MongoDB estará ejecutándose en un contenedor separado y conectada al backend automáticamente a través de la URL configurada.
+   Open **Git Bash** and run the following command inside the `backend` folder to generate the certificate files:
 
-## Solución de Problemas Comunes
+   ```bash
+   openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365
+   ```
 
-### Relacionados con Docker y sus credenciales
+   This creates a `server.key` and `server.cert` file, which can then be used to set up HTTPS for secure production deployment.
 
-Si estás utilizando Docker en **Windows**, es posible que encuentres un error relacionado con las credenciales, como:
+3. **Compile and Deploy the Frontend in Production**:
+
+   In production, it is recommended to compile the frontend and serve it as static files from the `dist/frontend` directory. 
+
+   In the frontend directory, run:
+
+   ```bash
+   npm run build
+   ```
+
+   This will generate a `dist` folder with all frontend assets. These can be added to your Docker image or served from an NGINX server or similar, pointing to the `dist/frontend` directory.
+
+4. **Access the Application**:
+
+   Once the containers are running, access the API by visiting `http://localhost:3000`.
+
+## Database Management with Prisma
+
+To manage and interact with the database, **Prisma** offers a set of commands that are useful for handling migrations and generating the Prisma Client.
+
+### Prisma Workflow
+
+1. **Applying Migrations in Production**:
+
+   When deploying to production or any other environment, use the following command to apply any pending migrations to the database:
+
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+   This command applies all migrations created in development, ensuring your production database schema is up to date.
+
+2. **Generate Additional Migrations in Development**:
+
+   To generate a new migration after schema changes, use:
+
+   ```bash
+   npx prisma migrate dev --name add_new_field
+   ```
+
+3. **Generate Prisma Client**:
+
+   After any schema updates, regenerate the Prisma Client to reflect the latest schema:
+
+   ```bash
+   npx prisma generate
+   ```
+
+4. **View the Database**:
+
+   You can view and interact with the database using Prisma Studio:
+
+   ```bash
+   npx prisma studio
+   ```
+
+## Code Quality Assessment with SonarQube
+
+To analyze and maintain code quality, use **SonarQube**. Follow these steps to set it up locally:
+
+1. **Run SonarQube in Docker**:
+
+   Start a SonarQube instance with Docker:
+
+   ```bash
+   docker run --name sonarqube -p 9000:9000 -p 9092:9092 -v sonarqube-conf:/opt/sonarqube/conf -v sonarqube-data:/opt/sonarqube/data -v sonarqube-logs:/opt/sonarqube/logs -v sonarqube-extensions:/opt/sonarqube/extensions sonarqube:lts
+   ```
+
+   Open [http://localhost:9000](http://localhost:9000) in your browser and log in with the default credentials `admin/admin`.
+
+2. **Create a New Project and Generate a Token**:
+
+   Within SonarQube, create a new project and generate an authentication token for it.
+
+3. **Install and Run Sonar Scanner**:
+
+   Install **Sonar Scanner** on your machine and run it in the project’s root directory:
+
+   ```bash
+   sonar-scanner -D"sonar.projectKey=HowsAir" -D"sonar.sources=." -D"sonar.host.url=http://localhost:9000" -D"sonar.login=your_generated_token"
+   ```
+
+   > **Note:** If you encounter issues, edit the `sonar.properties` file in the SonarQube `conf` directory to set the following:
+
+   ```plaintext
+   sonar.host.url=http://localhost:9000
+   sonar.web.port=9000
+   ```
+
+## Common Troubleshooting
+
+### Related to Docker and Credentials
+
+If you are using Docker on **Windows**, you may encounter an error related to credentials, such as:
 
 ```plaintext
 error during connect: Post http://docker/credentials:
 error while looking up credential store docker-credential-wincred.exe
 ```
 
-Para solucionarlo, sigue estos pasos:
+To resolve this, follow these steps:
 
-1. **Editar el archivo de configuración de Docker**:
+1. **Edit the Docker Configuration File**:
 
-   Abre el archivo `~/.docker/config.json` en un editor de texto.
+   Open the file `~/.docker/config.json` in a text editor.
 
-2. **Cambiar `credsStore` a `credStore`**:
+2. **Change `credsStore` to `credStore`**:
 
-   Dentro del archivo, busca la línea que contiene `"credsStore"` y cámbiala por `"credStore"`. El archivo debería verse algo así:
+   Inside the file, find the line containing `credsStore` and change it to `credStore`. The file should look something like this:
 
    ```json
    {
@@ -157,31 +200,43 @@ Para solucionarlo, sigue estos pasos:
    }
    ```
 
-3. **Guarda los cambios y reinicia Docker**
+3. **Save the Changes and Restart Docker**
 
-4. **Otra Solución: Eliminar el archivo `config.json`**:
+4. **Another Solution: Delete the `config.json` File**:
 
-   Si el paso anterior no soluciona el problema, puedes intentar eliminar completamente el archivo `config.json` que se encuentra en `~/.docker/config.json`. Docker generará uno nuevo automáticamente la próxima vez que se ejecute.
+   If the previous step does not resolve the issue, you can try completely deleting the `config.json` file located at `~/.docker/config.json.` Docker will generate a new one automatically the next time it runs.
 
-> Si sigues encontrando problemas, asegúrate de que Docker esté actualizado a su última versión y que las credenciales estén correctamente configuradas.
+> If you continue to encounter problems, ensure that Docker is updated to the latest version and that the credentials are configured correctly.
 
-### Relacionado con la comunicación con el Servidor desde otro Dispositivo
+### Related to Server Communication from Another Device
 
-Si se está corriendo **Docker Desktop en Windows** y no es posible conectar al servidor desde otro dispositivo en la misma red, como un dispositivo Android que maneja datos de Beacons, se pueden seguir los siguientes pasos para solucionar el problema:
+If Docker Desktop is running on **Windows** and you cannot connect to the server from another device on the same network, such as an Android device handling Beacon data, you can follow these steps to troubleshoot the issue:
 
-1. **Desinstalar WSL**: Desinstalar WSL para eliminar cualquier configuración problemática.
+1. **Uninstall WSL**: Uninstall WSL to remove any problematic configuration.
 
-2. **Desinstalar Docker**: Desinstalar Docker Desktop para asegurar una instalación limpia.
+2. **Uninstall Docker**: Uninstall Docker Desktop to ensure a clean installation.
 
-3. **Reinstalar WSL y Ubuntu**: Reinstalar WSL y la distribución de Ubuntu para empezar desde una base fresca.
+3. **Reinstall WSL and Ubuntu**: Reinstall WSL and the Ubuntu distribution to start fresh.
 
-4. **Reinstalar Docker**: Volver a instalar Docker Desktop, siguiendo todos los pasos de instalación recomendados.
+4. **Reinstall Docker**: Reinstall Docker Desktop, following all recommended installation steps.
 
-5. **Crear un archivo `.wslconfig`**: En la carpeta del usuario, crear un archivo llamado `.wslconfig` con el siguiente contenido:
+5. **Create a `.wslconfig` File**: In the user folder, create a file named `.wslconfig` with the following content:
 
    ```ini
    [wsl2]
    swap=0
    ```
 
-6. **Configurar el Firewall**: Crear una regla en el Firewall de Windows que permita el tráfico entrante en todas las redes para el puerto 3000.
+6. **Configure the Firewall**: Create a rule in the Windows Firewall to allow incoming traffic on all networks for port 3000.
+
+## Other Related Repositories
+
+This project is part of a larger ecosystem that includes:
+
+- **HowsAir for Android**: The mobile client for managing and visualizing environmental measurements, developed for Android. You can find the repository [here](https://github.com/HowsAir/android).
+
+- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements
+
+. You can find the repository [here](https://github.com/HowsAir/arduino).
+
+- **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/frontend).

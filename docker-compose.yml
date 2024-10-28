@@ -1,26 +1,32 @@
 services:
-  mongodb:
-    image: mongo:latest
+  postgres:
+    image: postgres:latest
     ports:
-      - "27017:27017"
+      - "5432:5432"
     volumes:
-      - mongodb_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
-  backend:
+  server:
     build: 
       context: .
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     depends_on:
-      - mongodb
-    environment:
-      - name=value
+      - postgres
     volumes:
-      - /usr/src/app/backend/node_modules
-      - /usr/src/app/frontend/node_modules
+      - /usr/src/app/server/node_modules
     profiles:
       - production
 
 volumes:
-  mongodb_data:
+  postgres_data:

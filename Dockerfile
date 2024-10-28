@@ -7,16 +7,12 @@ WORKDIR /usr/src/app
 # Copia todo el repositorio
 COPY . .
 
-# Instala las dependencias y compila el backend
-WORKDIR /usr/src/app/backend
+# Instala las dependencias y compila el server
+WORKDIR /usr/src/app/server
 RUN npm run build
 
-# Cambia al directorio del frontend, instala dependencias y compila
-WORKDIR /usr/src/app/frontend
-RUN npm run build
-
-# Establece el directorio de trabajo en el backend compilado
-WORKDIR /usr/src/app/backend
+# Establece el directorio de trabajo en el server compilado
+WORKDIR /usr/src/app/server
 
 # Expone el puerto en el que se ejecutará Express
 EXPOSE 3000
