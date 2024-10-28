@@ -1,7 +1,3 @@
-Sure! Here’s how you can add a section on how to run the tests using Vitest to your existing documentation for the **HowsAir Server** project:
-
----
-
 # HowsAir Server
 
 ## Description
@@ -282,7 +278,3 @@ This project is part of a larger ecosystem that includes:
 - **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements. You can find the repository [here](https://github.com/HowsAir/arduino).
 
 - **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/frontend).
-
----
-
-Feel free to adjust any part of this section to better fit your project's style or details!
