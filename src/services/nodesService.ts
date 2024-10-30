@@ -65,7 +65,7 @@ const findNodeById = async (nodeId: number): Promise<Node | null> => {
  * @returns {Promise<Boolean>} A promise that resolves to true if the node is active, or false otherwise.
  * @throws {Error} If there is an issue while checking the node's linked status.
  */
-const checkIfNodeIsActive = async (nodeId: number): Promise<Boolean> => {
+const checkIfNodeIsActive = async (nodeId: number): Promise<boolean> => {
     const activeNode = await prisma.node.findFirst({
         where: { id: nodeId, NOT: { status: NodeStatus.UNLINKED } },
     });
