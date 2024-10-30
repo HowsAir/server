@@ -73,7 +73,7 @@ export const verifyToken = (
  *
  * @returns {Function} Returns an Express middleware function that checks the user's role against the allowed roles.
  */
-export const authorizeRoles = (...allowedRoles: Number[]) => {
+export const authorizeRoles = (...allowedRoles: number[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
         if (!allowedRoles.includes(req.roleId)) {
             return res.status(403).json({ message: 'Forbidden' });

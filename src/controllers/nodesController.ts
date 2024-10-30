@@ -31,8 +31,6 @@ const linkNodeToUser = async (
         const { nodeId: nodeIdString } = req.params;
         const nodeId = parseInt(nodeIdString, 10);
 
-        const userId = req.userId;
-
         const existingNode = await nodesService.findNodeById(nodeId);
 
         if (!existingNode) {
@@ -48,6 +46,8 @@ const linkNodeToUser = async (
                 });
         }
 
+        const userId = req.userId;
+        
         const linkedNode = await nodesService.linkNodeToUser(
             nodeId,
             userId

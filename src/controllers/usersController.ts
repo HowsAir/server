@@ -7,7 +7,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { usersService } from '../services/usersService';
-import { User } from '@prisma/client';
 import { putJwtInResponse } from '../utils/auth';
 
 /**
