@@ -30,23 +30,6 @@ const linkNodeToUser = async (
 };
 
 /**
- * Creates a new node in the database in an "unlinked" state.
- *
- * @param status - Status of the node, typically set to "INACTIVE" until linked to a user.
- * @param lastStatusUpdate - Timestamp of the last status update.
- * @returns {Promise<Node>} A promise that resolves to the newly created node object.
- * @throws {Error} If there is an issue while saving the node.
- */
-const createNode = async (): Promise<Node> => {
-    return await prisma.node.create({
-        data: {
-            status: NodeStatus.UNLINKED,
-            lastStatusUpdate: new Date(),
-        },
-    });
-};
-
-/**
  * Retrieves a node by its ID.
  *
  * @param nodeId - The ID of the node to be retrieved.
@@ -75,7 +58,6 @@ const checkIfNodeIsActive = async (nodeId: number): Promise<boolean> => {
 
 export const nodesService = {
     linkNodeToUser,
-    createNode,
     findNodeById,
     checkIfNodeIsActive,
 };
