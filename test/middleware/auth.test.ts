@@ -44,11 +44,17 @@ describe('authMiddleware', () => {
                 throw new Error('Invalid token');
             });
 
+            // Silence console.error during this test to avoid noisy output
+            const originalConsoleError = console.error;
+            console.error = vi.fn();
+
             verifyToken(req, res, next);
 
-            // Verify that 401 Unauthorized is returned when the token is invalid
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+
+            // Restore console.error after the test
+            console.error = originalConsoleError;
         });
 
         it('should extract userId and role from a valid token', () => {
