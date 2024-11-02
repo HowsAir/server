@@ -1,7 +1,7 @@
 /**
  * @file measurementService.ts
  * @brief Service to manage operations related to measurements
- * @autor
+ * @autor Juan Diaz
  */
 
 import { Measurement, NodeStatus } from '@prisma/client';

@@ -1,7 +1,6 @@
 /**
  * @file auth.ts
  * @brief Utility functions for Authentication in the API
- *
  * @author Juan Diaz
  */
 

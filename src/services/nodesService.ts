@@ -1,7 +1,7 @@
 /**
  * @file nodesService.ts
  * @brief Service to manage operations related to nodes.
- * @autor
+ * @author Juan Diaz
  */
 
 import { Node, NodeStatus } from '@prisma/client';

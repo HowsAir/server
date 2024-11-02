@@ -1,7 +1,6 @@
 /**
  * @file auth.ts
  * @brief Middleware for JWT token verification and user authentication
- *
  * @author Juan Diaz
  */
 

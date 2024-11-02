@@ -1,10 +1,7 @@
 /**
  * @file errorHandler.ts
  * @brief Middleware for centralized error handling in the application.
- *
- * This middleware intercepts errors that occur in controller methods or other middleware
- * and sends a standard HTTP 500 response. It also logs the error for debugging purposes.
- * Place this middleware after all route handlers to ensure it catches any unhandled errors.
+ * @author Juan Diaz
  */
 
 import { Request, Response, NextFunction } from 'express';
