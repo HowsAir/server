@@ -7,6 +7,7 @@
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
+import cloudinaryService, {CloudinaryFolders} from './cloudinaryService';
 
 /**
  * Registers a new user in the database
@@ -108,9 +109,52 @@ const changePassword = async (userId: number, currentPassword: string, newPasswo
     return true;
 };
 
+/**
+ * Updates the user's profile photo using Cloudinary
+ *
+ * Number: userId, File: photo -> updateProfilePhoto() -> Promise<User>
+ *
+ * @param userId - The ID of the user whose profile photo is being updated.
+ * @param photo - The uploaded image file as an Express.Multer.File.
+ * @returns {Promise<User>} - A promise that resolves with the updated user object or null if 
+ * @throws {Error} - Throws an error if the upload fails or the user is not found.
+ */
+const updateProfilePhoto = async (
+    userId: number, 
+    photo: Express.Multer.File
+): Promise<User | null> => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return null;
+
+    // Upload the new profile photo to Cloudinary
+    let newPhotoUrl: string;
+    newPhotoUrl = await cloudinaryService.uploadImageToCloudinary(photo, CloudinaryFolders.PROFILE_PHOTOS);
+
+    const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { photoUrl: newPhotoUrl },
+    });
+
+    if (user.photoUrl) {
+        try {
+            await cloudinaryService.deleteImageFromCloudinary(user.photoUrl, CloudinaryFolders.PROFILE_PHOTOS);
+        } catch (error) {
+            console.error(
+                'Failed to delete previous user profile photo from Cloudinary: ',
+                error
+            );
+            // Log the error but don’t throw it, as the main operation has succeeded
+        }
+    }
+
+    return updatedUser;
+};
+
+
 export const usersService = {
     register,
     findUserByEmail,
     updateProfile,
     changePassword,
+    updateProfilePhoto,
 };
