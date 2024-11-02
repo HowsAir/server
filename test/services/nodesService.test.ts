@@ -1,6 +1,7 @@
 /**
  * @file nodesService.test.ts
  * @brief Unit tests for the nodes service
+ * @author Juan Diaz
  */
 
 import { expect, describe, it, vi, beforeEach } from 'vitest';
