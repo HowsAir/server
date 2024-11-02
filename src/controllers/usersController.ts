@@ -19,54 +19,49 @@ import { auth_token } from '../middleware/auth';
  * @returns Returns a JSON object with the registered user and status 201 on success, or an error message with status 400 or 500.
  */
 const register = async (req: Request, res: Response): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array() });
-        }
-
-        const {
-            email,
-            password,
-            name,
-            surnames,
-            phone,
-            country,
-            city,
-            address,
-            zipCode,
-        } = req.body;
-
-        const userData = {
-            email,
-            password,
-            name,
-            surnames,
-            phone,
-            country,
-            city,
-            zipCode,
-            address,
-        };
-        // Use service to handle registration logic
-        const existingUser = await usersService.findUserByEmail(email);
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const createdUser = await usersService.register(userData);
-
-        // Add JWT to response for later token validation
-        putJwtInResponse(res, createdUser);
-
-        return res.status(201).json({
-            message: 'User registered successfully',
-            user: createdUser,
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
     }
+
+    const {
+        email,
+        password,
+        name,
+        surnames,
+        phone,
+        country,
+        city,
+        address,
+        zipCode,
+    } = req.body;
+
+    const userData = {
+        email,
+        password,
+        name,
+        surnames,
+        phone,
+        country,
+        city,
+        zipCode,
+        address,
+    };
+    // Use service to handle registration logic
+    const existingUser = await usersService.findUserByEmail(email);
+    if (existingUser) {
+        return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const createdUser = await usersService.register(userData);
+
+    // Add JWT to response for later token validation
+    putJwtInResponse(res, createdUser);
+
+    return res.status(201).json({
+        message: 'User registered successfully',
+        user: createdUser,
+    });
 };
 
 /**
@@ -82,32 +77,27 @@ const updateProfile = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array() });
-        }
-
-        const { name, surnames } = req.body;
-        const userId = req.userId;
-
-        const updatedUser = await usersService.updateProfile(userId, {
-            name,
-            surnames,
-        });
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        return res.status(200).json({
-            message: 'Profile updated successfully',
-            user: updatedUser,
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
     }
+
+    const { name, surnames } = req.body;
+    const userId = req.userId;
+
+    const updatedUser = await usersService.updateProfile(userId, {
+        name,
+        surnames,
+    });
+
+    if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({
+        message: 'Profile updated successfully',
+        user: updatedUser,
+    });
 };
 
 /**
@@ -121,38 +111,33 @@ const changePassword = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const { currentPassword, newPassword } = req.body;
-        const userId = req.userId;
-
-        const passwordChanged = await usersService.changePassword(
-            userId,
-            currentPassword,
-            newPassword
-        );
-
-        if (!passwordChanged) {
-            return res
-                .status(400)
-                .json({ message: 'Incorrect current password' });
-        }
-
-        return res
-            .cookie(auth_token, '', {
-                httpOnly: true,
-                expires: new Date(0), // Set the cookie expiration to the past to remove it
-            })
-            .status(200)
-            .json({ message: 'Password updated successfully' });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
+
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.userId;
+
+    const passwordChanged = await usersService.changePassword(
+        userId,
+        currentPassword,
+        newPassword
+    );
+
+    if (!passwordChanged) {
+        return res
+            .status(400)
+            .json({ message: 'Incorrect current password' });
+    }
+
+    return res
+        .cookie(auth_token, '', {
+            httpOnly: true,
+            expires: new Date(0), // Set the cookie expiration to the past to remove it
+        })
+        .status(200)
+        .json({ message: 'Password updated successfully' });
 };
 
 /**

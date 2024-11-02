@@ -21,38 +21,33 @@ const linkNodeToUser = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
+    const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array() });
-        }
-
-        const { nodeId: nodeIdString } = req.params;
-        const nodeId = parseInt(nodeIdString, 10);
-
-        const existingNode = await nodesService.findNodeById(nodeId);
-
-        if (!existingNode) {
-            return res.status(400).json({ message: 'Node not found' });
-        }
-
-        const nodeIsActive = await nodesService.checkIfNodeIsActive(nodeId);
-        if (nodeIsActive) {
-            return res.status(400).json({
-                message: 'Node is already linked to an active user',
-            });
-        }
-
-        const userId = req.userId;
-
-        const linkedNode = await nodesService.linkNodeToUser(nodeId, userId);
-
-        return res.status(200).json(linkedNode);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
     }
+
+    const { nodeId: nodeIdString } = req.params;
+    const nodeId = parseInt(nodeIdString, 10);
+
+    const existingNode = await nodesService.findNodeById(nodeId);
+
+    if (!existingNode) {
+        return res.status(400).json({ message: 'Node not found' });
+    }
+
+    const nodeIsActive = await nodesService.checkIfNodeIsActive(nodeId);
+    if (nodeIsActive) {
+        return res.status(400).json({
+            message: 'Node is already linked to an active user',
+        });
+    }
+
+    const userId = req.userId;
+
+    const linkedNode = await nodesService.linkNodeToUser(nodeId, userId);
+
+    return res.status(200).json(linkedNode);
 };
 
 export const nodesController = {

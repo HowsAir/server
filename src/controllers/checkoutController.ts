@@ -20,44 +20,37 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
  *
  * @param req - The HTTP request containing the amount in the body.
  * @param res - The HTTP response object to send the session ID.
- * @returns {Promise<Response>} - Returns the session ID or an error message.
+ * @returns {Promise<Response>} - Returns the session ID
  */
 const createCheckoutSession = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array() });
-        }
-        const { amount } = req.body;
-
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'], // Specify the payment method type
-            line_items: [
-                {
-                    price_data: {
-                        currency: 'eur', // Change the currency as per your requirement
-                        product_data: product,
-                        unit_amount: amount * 100, // Amount in cents
-                    },
-                    quantity: 1, // Quantity of the product
-                },
-            ],
-            mode: 'payment', // Set the mode to payment
-            success_url: `${process.env.FRONTEND_URL}/payment-success`, // URL to redirect on successful payment
-            cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`, // URL to redirect if payment is canceled
-        });
-
-        // Return the session ID to the client
-        return res.status(200).json({ id: session.id });
-    } catch (error) {
-        console.error(error);
-        return res
-            .status(500)
-            .json({ message: 'Error creating payment session' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
     }
+    const { amount } = req.body;
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'], // Specify the payment method type
+        line_items: [
+            {
+                price_data: {
+                    currency: 'eur', // Change the currency as per your requirement
+                    product_data: product,
+                    unit_amount: amount * 100, // Amount in cents
+                },
+                quantity: 1, // Quantity of the product
+            },
+        ],
+        mode: 'payment', // Set the mode to payment
+        success_url: `${process.env.FRONTEND_URL}/payment-success`, // URL to redirect on successful payment
+        cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`, // URL to redirect if payment is canceled
+    });
+
+    // Return the session ID to the client
+    return res.status(200).json({ id: session.id });
 };
 
 export const checkoutController = {

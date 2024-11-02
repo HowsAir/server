@@ -20,29 +20,24 @@ import { authService } from '../services/authService';
  * @returns {Promise<Response>} - Returns a JSON response with the user details and token if successful, or an error message if not.
  */
 const login = async (req: Request, res: Response): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array() });
-        }
-
-        const { email, password } = req.body;
-
-        // Authenticate user using authService
-        const user = await authService.login(email, password);
-
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // Add JWT to response for authentication cookie for 2 days
-        putJwtInResponse(res, user);
-
-        return res.status(200).json({ message: 'Login successful', user });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
     }
+
+    const { email, password } = req.body;
+
+    // Authenticate user using authService
+    const user = await authService.login(email, password);
+
+    if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Add JWT to response for authentication cookie for 2 days
+    putJwtInResponse(res, user);
+
+    return res.status(200).json({ message: 'Login successful', user });
 };
 
 /**

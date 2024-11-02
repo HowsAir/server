@@ -22,30 +22,25 @@ const createMeasurement = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
-    try {
-        const errors = validationResult(req);
+    const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array() });
-        }
-
-        const { o3Value, latitude, longitude } = req.body;
-
-        const userId = req.userId;
-
-        const createdMeasurement: Measurement =
-            await measurementsService.createMeasurement(
-                o3Value,
-                latitude,
-                longitude,
-                userId
-            );
-
-        return res.status(201).json(createdMeasurement);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
     }
+
+    const { o3Value, latitude, longitude } = req.body;
+
+    const userId = req.userId;
+
+    const createdMeasurement: Measurement =
+        await measurementsService.createMeasurement(
+            o3Value,
+            latitude,
+            longitude,
+            userId
+        );
+
+    return res.status(201).json(createdMeasurement);
 };
 
 /**
@@ -61,13 +56,9 @@ const getMeasurements = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
-    try {
-        const measurements: Measurement[] =
-            await measurementsService.getMeasurements();
-        return res.status(200).json(measurements);
-    } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' });
-    }
+    const measurements: Measurement[] =
+        await measurementsService.getMeasurements();
+    return res.status(200).json(measurements);
 };
 
 export const measurementsController = {
