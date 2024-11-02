@@ -18,7 +18,7 @@ const upload = multer({
     storage: storage,
     limits: {
         fileSize: 1024 * 1024 * fileSizeLimitInMb,
-    }
+    },
 });
 
 //TERMINAR ADMIN REGISTRY
@@ -34,13 +34,9 @@ router.post(
             .isLength({ min: 6 })
             .withMessage('Password needs to be 6 characters long')
             .matches(/[A-Z]/)
-            .withMessage(
-                'Password needs to have at least one capital letter'
-            )
+            .withMessage('Password needs to have at least one capital letter')
             .matches(/[a-z]/)
-            .withMessage(
-                'Password needs to have at least one normal letter'
-            )
+            .withMessage('Password needs to have at least one normal letter')
             .matches(/\d/)
             .withMessage('Password needs to have at least one number')
             .matches(/[@$!%*?&]/)
@@ -52,26 +48,15 @@ router.post(
             'surnames',
             'Surnames are required and cannot be empty'
         ).notEmpty(),
-        check(
-            'phone',
-            'Phone is required and cannot be empty'
-        ).notEmpty().isNumeric(),
-        check(
-            'country',
-            'Country is required and cannot be empty'
-        ).notEmpty(),
-        check(
-            'city',
-            'City is required and cannot be empty'
-        ).notEmpty(),
-        check(
-            'address',
-            'Address is required and cannot be empty'
-        ).notEmpty(),
-        check(
-            'zipCode',
-            'Zip code is required and cannot be empty'
-        ).notEmpty().isNumeric(),
+        check('phone', 'Phone is required and cannot be empty')
+            .notEmpty()
+            .isNumeric(),
+        check('country', 'Country is required and cannot be empty').notEmpty(),
+        check('city', 'City is required and cannot be empty').notEmpty(),
+        check('address', 'Address is required and cannot be empty').notEmpty(),
+        check('zipCode', 'Zip code is required and cannot be empty')
+            .notEmpty()
+            .isNumeric(),
     ],
     usersController.register
 );
@@ -129,8 +114,6 @@ router.put(
     usersController.changePassword
 );
 
-
-
 router.put(
     '/photo',
     verifyToken,
@@ -154,7 +137,6 @@ router.put(
     ],
     usersController.updateProfilePhoto
 );
-
 
 /*
 const authorizeAdminRole = authorizeRoles(2)

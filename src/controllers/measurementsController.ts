@@ -29,20 +29,17 @@ const createMeasurement = async (
             return res.status(400).json({ message: errors.array() });
         }
 
-        const {
-            o3Value,
-            latitude,
-            longitude,
-        } = req.body;
+        const { o3Value, latitude, longitude } = req.body;
 
         const userId = req.userId;
 
-        const createdMeasurement: Measurement = await measurementsService.createMeasurement(
-            o3Value,
-            latitude,
-            longitude,
-            userId
-        );
+        const createdMeasurement: Measurement =
+            await measurementsService.createMeasurement(
+                o3Value,
+                latitude,
+                longitude,
+                userId
+            );
 
         return res.status(201).json(createdMeasurement);
     } catch (error) {

@@ -42,7 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1', router);
 
 //Middleware for error handling, log error and 500 http internal server error
-app.use(errorHandler)
+app.use(errorHandler);
 
 //Response for non-existent endpoints
 app.use('/api/*', (req, res) => {

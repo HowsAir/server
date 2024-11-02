@@ -15,7 +15,11 @@ const router = Router();
  */
 router.post(
     '/',
-    [check('amount', 'Amount is required and should be numeric').isNumeric().notEmpty()],
+    [
+        check('amount', 'Amount is required and should be numeric')
+            .isNumeric()
+            .notEmpty(),
+    ],
     checkoutController.createCheckoutSession
 );
 

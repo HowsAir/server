@@ -39,19 +39,14 @@ const linkNodeToUser = async (
 
         const nodeIsActive = await nodesService.checkIfNodeIsActive(nodeId);
         if (nodeIsActive) {
-            return res
-                .status(400)
-                .json({
-                    message: 'Node is already linked to an active user',
-                });
+            return res.status(400).json({
+                message: 'Node is already linked to an active user',
+            });
         }
 
         const userId = req.userId;
-        
-        const linkedNode = await nodesService.linkNodeToUser(
-            nodeId,
-            userId
-        );
+
+        const linkedNode = await nodesService.linkNodeToUser(nodeId, userId);
 
         return res.status(200).json(linkedNode);
     } catch (error) {

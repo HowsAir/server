@@ -334,11 +334,7 @@ describe('usersService', () => {
             prisma.user.update = vi.fn().mockRejectedValue(new Error());
 
             await expect(
-                usersService.changePassword(
-                    1,
-                    'old_password',
-                    'new_password'
-                )
+                usersService.changePassword(1, 'old_password', 'new_password')
             ).rejects.toThrow();
             expect(prisma.user.update).toHaveBeenCalled();
         });

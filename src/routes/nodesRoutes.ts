@@ -14,9 +14,7 @@ const router = Router();
 router.put(
     '/:nodeId/link',
     verifyToken,
-    [
-        check('nodeId', 'Node ID is required').isInt(),
-    ],
+    [check('nodeId', 'Node ID is required').isInt()],
     nodesController.linkNodeToUser
 );
 

@@ -78,7 +78,10 @@ const register = async (req: Request, res: Response): Promise<Response> => {
  * @returns Returns a JSON object with the updated user information and status 200 on success,
  * or an error message with status 400 or 500 if there was a validation error or server error.
  */
-const updateProfile = async (req: Request, res: Response): Promise<Response> => {
+const updateProfile = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -88,7 +91,10 @@ const updateProfile = async (req: Request, res: Response): Promise<Response> => 
         const { name, surnames } = req.body;
         const userId = req.userId;
 
-        const updatedUser = await usersService.updateProfile(userId, { name, surnames });
+        const updatedUser = await usersService.updateProfile(userId, {
+            name,
+            surnames,
+        });
 
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -111,22 +117,31 @@ const updateProfile = async (req: Request, res: Response): Promise<Response> => 
  * @param res - Express response object.
  * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
  */
-const changePassword = async (req: Request, res: Response): Promise<Response> => {
+const changePassword = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-    
+
         const { currentPassword, newPassword } = req.body;
         const userId = req.userId;
-    
-        const passwordChanged = await usersService.changePassword(userId, currentPassword, newPassword);
-    
+
+        const passwordChanged = await usersService.changePassword(
+            userId,
+            currentPassword,
+            newPassword
+        );
+
         if (!passwordChanged) {
-            return res.status(400).json({ message: 'Incorrect current password' });
+            return res
+                .status(400)
+                .json({ message: 'Incorrect current password' });
         }
-    
+
         return res
             .cookie(auth_token, '', {
                 httpOnly: true,
@@ -134,8 +149,7 @@ const changePassword = async (req: Request, res: Response): Promise<Response> =>
             })
             .status(200)
             .json({ message: 'Password updated successfully' });
-    }
-    catch (error) {
+    } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
@@ -159,10 +173,7 @@ const updateProfilePhoto = async (
     const userId = req.userId;
     const photo = req.file as Express.Multer.File;
 
-    const updatedUser = await usersService.updateProfilePhoto(
-        userId,
-        photo
-    );
+    const updatedUser = await usersService.updateProfilePhoto(userId, photo);
 
     return res.status(200).json({
         message: 'Profile photo updated successfully',
