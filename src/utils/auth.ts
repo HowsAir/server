@@ -23,23 +23,21 @@ const daysExpiration = 15;
  * It is stored in the cookies with the 'httpOnly' and 'secure' flags for security, ensuring it's only accessible via HTTP requests.
  */
 export const putJwtInResponse = (res: Response, user: User): void => {
-    // Hide the userId inside the token for security and future use
     const token = jwt.sign(
         {
             userId: user.id,
             role: user.roleId,
         },
         process.env.JWT_SECRET_KEY as string,
-        { expiresIn: `${daysExpiration}d` } // Token valid for 2 days
+        { expiresIn: `${daysExpiration}d` }
     );
 
-    // Convert 2 days to milliseconds for maxAge
-    const maxAge = daysExpiration * 24 * 60 * 60 * 1000; // 2 days in milliseconds
+    const maxAge = daysExpiration * 24 * 60 * 60 * 1000;
 
     // Add the token as a cookie in the response, with security configurations
     res.cookie(auth_token, token, {
-        httpOnly: true, // Cookie is only accessible via HTTP
+        httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // Secure flag only in production
-        maxAge: maxAge, // Cookie expires in 2 days
+        maxAge: maxAge,
     });
 };

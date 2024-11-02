@@ -53,11 +53,9 @@ export const verifyToken = (
         req.userId = (decoded as JwtPayload).userId;
         req.roleId = (decoded as JwtPayload).roleId;
 
-        // Proceed to the next middleware or route handler
         next();
     } catch (error) {
         console.error(error);
-        // If token verification fails, return an unauthorized error
         return res.status(401).json({ message: 'Unauthorized' });
     }
 };

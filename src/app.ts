@@ -11,7 +11,7 @@ import cors from 'cors';
 import router from './routes/router';
 import cookieParser from 'cookie-parser';
 import { v2 as cloudinary } from 'cloudinary';
-import errorHandler from './middleware/errorhandler';
+import errorHandler from './middleware/errorHandler';
 
 const app = express();
 
@@ -28,6 +28,7 @@ if (process.env.NODE_ENV === 'development') {
     app.use(express.static(path.join(__dirname, '../dist/frontend'))); // Serve frontend
 }
 
+//Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
