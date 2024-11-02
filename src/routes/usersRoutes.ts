@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { check, body } from 'express-validator';
 import { usersController } from '../controllers/usersController';
 import { verifyToken, authorizeRoles } from '../middleware/auth';
@@ -18,10 +18,12 @@ const upload = multer({
     storage: storage,
     limits: {
         fileSize: 1024 * 1024 * fileSizeLimitInMb,
-    },
+    }
 });
 
-//TERMINAR PHOTO Y ADMIN REGISTRY
+//TERMINAR ADMIN REGISTRY
+//TESTEAR UPDATE PHOTO Y CLOUDINARY
+//TESTEAR FALLO INTERNAL EN CUALQUIER ENDPOINT
 router.post(
     '/',
     [
@@ -128,23 +130,31 @@ router.put(
 );
 
 
-/*
+
 router.put(
     '/photo',
     verifyToken,
     upload.single('photo'),
     [
-        check('photo').custom(
-            (_, { req }) => {
-                if (!req.file) {
-                    throw new Error('Photo is required and needs to be valid');
-                }
-                return true
+        check('photo').custom((_, { req }) => {
+            const file = req.file;
+
+            if (!file) {
+                throw new Error('Photo is required and needs to be valid');
             }
-        )
+
+            if (
+                file.mimetype !== 'image/jpeg' &&
+                file.mimetype !== 'image/png'
+            ) {
+                throw new Error('Only JPEG and PNG files are allowed');
+            }
+            return true;
+        }),
     ],
     usersController.updateProfilePhoto
-);*/
+);
+
 
 /*
 const authorizeAdminRole = authorizeRoles(2)
