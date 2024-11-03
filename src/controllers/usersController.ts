@@ -1,7 +1,7 @@
 /**
  * @file usersController.ts
  * @brief Controller for managing user-related operations
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { Request, Response } from 'express';
@@ -64,7 +64,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
         res,
         createdUser,
         parseInt(process.env.AUTH_TOKEN_DAYS_EXP as string),
-        process.env.AUTH_TOKEN
+        process.env.AUTH_TOKEN as string
     );
 
     return res.status(201).json({
@@ -139,7 +139,7 @@ const changePassword = async (
     }
 
     return res
-        .cookie(auth_token, '', {
+        .cookie(process.env.AUTH_TOKEN as string, '', {
             httpOnly: true,
             expires: new Date(0), // Set the cookie expiration to the past to remove it
         })

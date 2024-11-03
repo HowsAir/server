@@ -1,7 +1,7 @@
 /**
  * @file usersService.ts
  * @brief Service to handle user-related operations
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { User } from '@prisma/client';

@@ -6,7 +6,6 @@
 
 import jwt from 'jsonwebtoken';
 import { Response } from 'express';
-import { auth_token } from '../middleware/auth';
 import { User } from '@prisma/client';
 
 /**
@@ -22,7 +21,7 @@ export const putJwtInResponse = (
     res: Response,
     user: User,
     expirationMinutes: number,
-    cookieName: string = auth_token
+    cookieName: string
 ): void => {
     const token = jwt.sign(
         {

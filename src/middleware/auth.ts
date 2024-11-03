@@ -6,6 +6,9 @@
 
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { config } from 'dotenv';
+
+config();
 
 declare global {
     namespace Express {
@@ -15,8 +18,6 @@ declare global {
         }
     }
 }
-
-export const auth_token = 'auth_token'; // Cookie name for the JWT token
 
 /**
  * Middleware to verify the JWT token from cookies.

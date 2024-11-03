@@ -1,14 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { config } from 'dotenv';
 
-export const password_reset_token = 'password_reset_token';
+config();
 
 export const verifyResetPasswordToken = (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies[password_reset_token];
+    const token = req.cookies[process.env.RESET_PASSWORD_TOKEN as string];
 
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized' });
