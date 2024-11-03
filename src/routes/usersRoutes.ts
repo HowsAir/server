@@ -8,6 +8,7 @@ import { Router, Request } from 'express';
 import { check, body } from 'express-validator';
 import { usersController } from '../controllers/usersController';
 import { verifyToken, authorizeRoles } from '../middleware/auth';
+import { verifyResetPasswordToken } from '../middleware/resetPasswordAuth';
 import multer from 'multer';
 
 const router = Router();
@@ -110,6 +111,27 @@ router.put(
             ),
     ],
     usersController.changePassword
+);
+
+router.post(
+    '/reset-password',
+    [
+        verifyResetPasswordToken,
+        body('newPassword')
+            .isLength({ min: 8 })
+            .withMessage('Password must be at least 8 characters long')
+            .matches(/[A-Z]/)
+            .withMessage('Password must contain at least one uppercase letter')
+            .matches(/[a-z]/)
+            .withMessage('Password must contain at least one lowercase letter')
+            .matches(/[0-9]/)
+            .withMessage('Password must contain at least one number')
+            .matches(/[!@#$%^&*]/)
+            .withMessage(
+                'Password must contain at least one special character (!@#$%^&*)'
+            ),
+    ],
+    usersController.resetPassword
 );
 
 router.put(

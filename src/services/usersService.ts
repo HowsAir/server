@@ -114,6 +114,33 @@ const changePassword = async (
 };
 
 /**
+ * Resets the password for a user that forgot their password
+ *
+ * Number: userId, Text: newPassword -> ResetPassword() -> Promise<boolean>
+ *
+ * @param userId - The unique identifier of the user.
+ * @param newPassword - The new password to set.
+ * @returns {Promise<boolean>} - A promise that resolves to `true` if the password was changed, `false` otherwise.
+ * @throws {Error} - Throws an error if there is an issue updating the password.
+ */
+const resetPassword = async (
+    userId: number,
+    newPassword: string
+): Promise<boolean> => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return false;
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedNewPassword },
+    });
+
+    return true;
+};
+
+/**
  * Updates the user's profile photo using Cloudinary
  *
  * Number: userId, File: photo -> updateProfilePhoto() -> Promise<User>
@@ -165,5 +192,6 @@ export const usersService = {
     findUserByEmail,
     updateProfile,
     changePassword,
+    resetPassword,
     updateProfilePhoto,
 };

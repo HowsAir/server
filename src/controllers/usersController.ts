@@ -148,6 +148,40 @@ const changePassword = async (
 };
 
 /**
+ * Controller method for resetting an user's password.
+ *
+ * @param req - Express request object containing newPassword in body.
+ * @param res - Express response object.
+ * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
+ */
+const resetPassword = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
+    const { newPassword } = req.body;
+    const userId = req.userId;
+
+    const passwordReset = await usersService.resetPassword(userId, newPassword);
+
+    if (!passwordReset) {
+        return res.status(400).json({ message: 'Failed to reset password' });
+    }
+
+    return res
+        .cookie(process.env.RESET_PASSWORD_TOKEN as string, '', {
+            httpOnly: true,
+            expires: new Date(0), // Remove the reset token cookie
+        })
+        .status(200)
+        .json({ message: 'Password reset successfully' });
+};
+
+/**
  * Controller method for updating an user's profile photo.
  *
  * @param req - Express request object containing photo in the body.
@@ -196,6 +230,7 @@ export const usersController = {
     register,
     updateProfile,
     changePassword,
+    resetPassword,
     updateProfilePhoto,
     getTodayTotalDistance,
 };
