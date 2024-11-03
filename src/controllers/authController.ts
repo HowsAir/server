@@ -1,7 +1,7 @@
 /**
  * @file authController.ts
  * @brief Controller for handling authentication-related operations.
- * @author Juan Diaz & Manuel Borregales
+ * @author Manuel Borregales & Juan Diaz
  */
 
 import { Request, Response } from 'express';
@@ -58,7 +58,39 @@ const logout = async (req: Request, res: Response): Promise<Response> => {
         .json({ message: 'Logout successful' });
 };
 
+/**
+ * Handles initiating the password reset process.
+ *
+ * This controller method receives the user's email, validates it, and calls the password reset service.
+ * A generic success message is returned regardless of whether the email exists in the database to prevent
+ * revealing user information.
+ *
+ * @param req - The HTTP request object containing the user's email in the request body.
+ * @param res - The HTTP response object used to send a generic confirmation message back to the client.
+ * @returns {Promise<Response>} - Returns a JSON response indicating that, if the email exists, instructions will be sent.
+ */
+const forgotPassword = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    await authService.initiatePasswordReset(email);
+
+    // Sends a generic response to prevent information disclosure about user existence
+    return res.status(200).json({
+        message:
+            'If your email is registered, you will receive password reset instructions.',
+    });
+};
+
 export const authController = {
     login,
     logout,
+    forgotPassword,
 };

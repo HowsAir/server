@@ -1,7 +1,7 @@
 /**
  * @file auth.ts
  * @brief Utility functions for Authentication in the API
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import jwt from 'jsonwebtoken';
@@ -39,4 +39,18 @@ export const putJwtInResponse = (res: Response, user: User): void => {
         secure: process.env.NODE_ENV === 'production', // Secure flag only in production
         maxAge: maxAge,
     });
+};
+
+/**
+ * Generates a 6-digit numeric reset code.
+ *
+ * This code is used for password reset purposes. It generates a random number
+ * between 100000 and 999999, ensuring it is always a 6-digit code.
+ *
+ * @returns {string} - A string representation of a 6-digit code.
+ */
+export const generateResetCode = (): string => {
+    return Math.floor(100000 + Math.random() * 900000)
+        .toString()
+        .padStart(6, '0');
 };

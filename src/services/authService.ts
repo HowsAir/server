@@ -7,6 +7,8 @@
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
+import { sendPasswordResetEmail } from '../utils/emailService';
+import { generateResetCode } from '../utils/auth';
 
 /**
  * Validates the login credentials and returns the user if successful.
@@ -38,6 +40,35 @@ const login = async (email: string, password: string): Promise<User | null> => {
     return user;
 };
 
+/**
+ * Sends and email to the user with a password reset code.
+ *
+ *      Text:email   ---> initiatePasswordReset() --->  void || error
+ *
+ * @param email - The email of the user attempting to login.
+ * @param password - The password provided for login.
+ * @returns {Promise<void | error>} - an error if the email failed.
+ */
+const initiatePasswordReset = async (email: string): Promise<void> => {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+        return;
+    }
+
+    const resetCode = generateResetCode();
+    await prisma.passwordResetToken.create({
+        data: {
+            userId: user.id,
+            code: resetCode,
+            timestamp: new Date(),
+        },
+    });
+
+    await sendPasswordResetEmail(email, resetCode);
+};
+
 export const authService = {
     login,
+    initiatePasswordReset,
 };

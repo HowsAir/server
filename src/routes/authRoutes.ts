@@ -32,4 +32,10 @@ router.get('/validate', verifyToken, async (req: Request, res: Response) => {
 
 router.post('/logout', authController.logout);
 
+router.post(
+    '/forgot-password',
+    [check('email', 'Valid email is required').isEmail()],
+    authController.forgotPassword
+);
+
 export default router;
