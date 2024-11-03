@@ -9,8 +9,9 @@ import { usersService } from '../../src/services/usersService'; // Import the us
 import prisma from '../../src/libs/prisma'; // Import the Prisma mock
 import bcrypt from 'bcryptjs'; // Import bcrypt for password hashing
 import { User } from '@prisma/client'; // Import User type
-import cloudinaryService, {CloudinaryFolders} from '../../src/services/cloudinaryService'; // Import the Cloudinary service mock
-
+import cloudinaryService, {
+    CloudinaryFolders,
+} from '../../src/services/cloudinaryService'; // Import the Cloudinary service mock
 
 // Mock the prisma and bcrypt libraries using Vitest's mock functions
 vi.mock('../../src/libs/prisma'); // Mock Prisma to avoid database calls
@@ -344,6 +345,115 @@ describe('usersService', () => {
         });
     });
 
+    describe('resetPassword()', () => {
+        it('should successfully reset the password when user exists and new password is different', async () => {
+            const user: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'old_hashed_password',
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            const hashedNewPassword = 'new_hashed_password';
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(user);
+            bcrypt.compare = vi.fn().mockResolvedValue(false); // New password is different
+            bcrypt.hash = vi.fn().mockResolvedValue(hashedNewPassword);
+            prisma.user.update = vi.fn().mockResolvedValue(user);
+
+            const result = await usersService.resetPassword(1, 'new_password');
+
+            expect(result).toEqual({ status: 'success' });
+            expect(bcrypt.compare).toHaveBeenCalledWith(
+                'new_password',
+                user.password
+            );
+            expect(bcrypt.hash).toHaveBeenCalledWith('new_password', 10);
+            expect(prisma.user.update).toHaveBeenCalledWith({
+                where: { id: 1 },
+                data: { password: hashedNewPassword },
+            });
+        });
+
+        it('should return status "match" if new password matches current password', async () => {
+            const user: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'current_hashed_password',
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(user);
+            bcrypt.compare = vi.fn().mockResolvedValue(true); // New password matches current
+
+            const result = await usersService.resetPassword(1, 'same_password');
+
+            expect(result).toEqual({ status: 'match' });
+            expect(bcrypt.compare).toHaveBeenCalledWith(
+                'same_password',
+                user.password
+            );
+            expect(prisma.user.update).not.toHaveBeenCalled();
+        });
+
+        it('should return status "fail" if user is not found', async () => {
+            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
+
+            const result = await usersService.resetPassword(
+                999,
+                'new_password'
+            );
+
+            expect(result).toEqual({ status: 'fail' });
+            expect(prisma.user.update).not.toHaveBeenCalled();
+        });
+
+        it('should throw an error if password reset fails during update', async () => {
+            const user: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'old_hashed_password',
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(user);
+            bcrypt.compare = vi.fn().mockResolvedValue(false);
+            bcrypt.hash = vi.fn().mockResolvedValue('new_hashed_password');
+            prisma.user.update = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                usersService.resetPassword(1, 'new_password')
+            ).rejects.toThrow();
+            expect(prisma.user.update).toHaveBeenCalled();
+        });
+    });
+
     describe('updateProfilePhoto()', () => {
         it('should upload a new profile photo, update the user, and delete the old photo', async () => {
             const mockUser: User = {
@@ -369,24 +479,37 @@ describe('usersService', () => {
 
             // Mocks for Prisma and Cloudinary methods
             prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-            cloudinaryService.uploadImageToCloudinary = vi.fn().mockResolvedValue(newPhotoUrl);
-            prisma.user.update = vi.fn().mockResolvedValue({ ...mockUser, photoUrl: newPhotoUrl });
-            cloudinaryService.deleteImageFromCloudinary = vi.fn().mockResolvedValue(undefined);
+            cloudinaryService.uploadImageToCloudinary = vi
+                .fn()
+                .mockResolvedValue(newPhotoUrl);
+            prisma.user.update = vi
+                .fn()
+                .mockResolvedValue({ ...mockUser, photoUrl: newPhotoUrl });
+            cloudinaryService.deleteImageFromCloudinary = vi
+                .fn()
+                .mockResolvedValue(undefined);
 
             // Call the function
-            const result = await usersService.updateProfilePhoto(mockUser.id, mockPhoto);
+            const result = await usersService.updateProfilePhoto(
+                mockUser.id,
+                mockPhoto
+            );
 
             // Assertions
-            expect(result).toStrictEqual({ ...mockUser, photoUrl: newPhotoUrl });
-            expect(cloudinaryService.uploadImageToCloudinary).toHaveBeenCalledWith(
-                mockPhoto,
-                CloudinaryFolders.PROFILE_PHOTOS
-            );
+            expect(result).toStrictEqual({
+                ...mockUser,
+                photoUrl: newPhotoUrl,
+            });
+            expect(
+                cloudinaryService.uploadImageToCloudinary
+            ).toHaveBeenCalledWith(mockPhoto, CloudinaryFolders.PROFILE_PHOTOS);
             expect(prisma.user.update).toHaveBeenCalledWith({
                 where: { id: mockUser.id },
                 data: { photoUrl: newPhotoUrl },
             });
-            expect(cloudinaryService.deleteImageFromCloudinary).toHaveBeenCalledWith(
+            expect(
+                cloudinaryService.deleteImageFromCloudinary
+            ).toHaveBeenCalledWith(
                 mockUser.photoUrl,
                 CloudinaryFolders.PROFILE_PHOTOS
             );
@@ -400,11 +523,16 @@ describe('usersService', () => {
 
             prisma.user.findUnique = vi.fn().mockResolvedValue(null);
 
-            const result = await usersService.updateProfilePhoto(999, mockPhoto);
+            const result = await usersService.updateProfilePhoto(
+                999,
+                mockPhoto
+            );
 
             expect(result).toBeNull();
             expect(prisma.user.update).not.toHaveBeenCalled();
-            expect(cloudinaryService.uploadImageToCloudinary).not.toHaveBeenCalled();
+            expect(
+                cloudinaryService.uploadImageToCloudinary
+            ).not.toHaveBeenCalled();
         });
 
         it('should throw an error if the photo upload fails', async () => {
@@ -429,11 +557,17 @@ describe('usersService', () => {
             } as Express.Multer.File;
 
             prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-            cloudinaryService.uploadImageToCloudinary = vi.fn().mockRejectedValue(new Error('Upload failed'));
+            cloudinaryService.uploadImageToCloudinary = vi
+                .fn()
+                .mockRejectedValue(new Error('Upload failed'));
 
-            await expect(usersService.updateProfilePhoto(mockUser.id, mockPhoto)).rejects.toThrow('Upload failed');
+            await expect(
+                usersService.updateProfilePhoto(mockUser.id, mockPhoto)
+            ).rejects.toThrow('Upload failed');
             expect(prisma.user.update).not.toHaveBeenCalled();
-            expect(cloudinaryService.deleteImageFromCloudinary).not.toHaveBeenCalled();
+            expect(
+                cloudinaryService.deleteImageFromCloudinary
+            ).not.toHaveBeenCalled();
         });
 
         it('should log an error if deleting the old photo fails, but still update the user', async () => {
@@ -460,17 +594,31 @@ describe('usersService', () => {
 
             // Mocks
             prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-            cloudinaryService.uploadImageToCloudinary = vi.fn().mockResolvedValue(newPhotoUrl);
-            prisma.user.update = vi.fn().mockResolvedValue({ ...mockUser, photoUrl: newPhotoUrl });
-            cloudinaryService.deleteImageFromCloudinary = vi.fn().mockRejectedValue(new Error('Deletion failed'));
+            cloudinaryService.uploadImageToCloudinary = vi
+                .fn()
+                .mockResolvedValue(newPhotoUrl);
+            prisma.user.update = vi
+                .fn()
+                .mockResolvedValue({ ...mockUser, photoUrl: newPhotoUrl });
+            cloudinaryService.deleteImageFromCloudinary = vi
+                .fn()
+                .mockRejectedValue(new Error('Deletion failed'));
 
-            const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            const consoleErrorSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
 
             // Call the function
-            const result = await usersService.updateProfilePhoto(mockUser.id, mockPhoto);
+            const result = await usersService.updateProfilePhoto(
+                mockUser.id,
+                mockPhoto
+            );
 
             // Assertions
-            expect(result).toStrictEqual({ ...mockUser, photoUrl: newPhotoUrl });
+            expect(result).toStrictEqual({
+                ...mockUser,
+                photoUrl: newPhotoUrl,
+            });
             expect(consoleErrorSpy).toHaveBeenCalledWith(
                 'Failed to delete previous user profile photo from Cloudinary: ',
                 expect.any(Error)
