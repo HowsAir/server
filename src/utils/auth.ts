@@ -9,9 +9,6 @@ import { Response } from 'express';
 import { auth_token } from '../middleware/auth';
 import { User } from '@prisma/client';
 
-// Number of days the JWT token will be valid
-const daysExpiration = 15;
-
 /**
  * Function to generate a JWT token and attach it to the response as a cookie.
  *
@@ -21,22 +18,26 @@ const daysExpiration = 15;
  * The token is signed with the user's ID for security reasons and set to expire in a configurable number of days.
  * It is stored in the cookies with the 'httpOnly' and 'secure' flags for security, ensuring it's only accessible via HTTP requests.
  */
-export const putJwtInResponse = (res: Response, user: User): void => {
+export const putJwtInResponse = (
+    res: Response,
+    user: User,
+    expirationMinutes: number,
+    cookieName: string = auth_token
+): void => {
     const token = jwt.sign(
         {
             userId: user.id,
             role: user.roleId,
         },
         process.env.JWT_SECRET_KEY as string,
-        { expiresIn: `${daysExpiration}d` }
+        { expiresIn: `${expirationMinutes}m` }
     );
 
-    const maxAge = daysExpiration * 24 * 60 * 60 * 1000;
+    const maxAge = expirationMinutes * 60 * 1000; // Convert minutes to milliseconds
 
-    // Add the token as a cookie in the response, with security configurations
-    res.cookie(auth_token, token, {
+    res.cookie(cookieName, token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Secure flag only in production
+        secure: process.env.NODE_ENV === 'production',
         maxAge: maxAge,
     });
 };
