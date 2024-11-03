@@ -1,7 +1,7 @@
 /**
  * @file usersService.test.ts
  * @brief Unit tests for the users service
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { expect, describe, it, vi, beforeEach } from 'vitest'; // Import Vitest functions for testing and mocking
