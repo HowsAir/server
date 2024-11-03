@@ -9,6 +9,9 @@ import { validationResult } from 'express-validator';
 import { auth_token } from '../middleware/auth';
 import { putJwtInResponse } from '../utils/auth';
 import { authService } from '../services/authService';
+import { config } from 'dotenv';
+
+config();
 
 /**
  * Login controller method.
@@ -34,8 +37,13 @@ const login = async (req: Request, res: Response): Promise<Response> => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Add JWT to response for authentication cookie for 2 days
-    putJwtInResponse(res, user);
+    // Add JWT to response for authentication cookie for 15 days
+    putJwtInResponse(
+        res,
+        user,
+        parseInt(process.env.AUTH_TOKEN_DAYS_EXP || '0'),
+        process.env.AUTH_TOKEN
+    );
 
     return res.status(200).json({ message: 'Login successful', user });
 };
@@ -89,8 +97,41 @@ const forgotPassword = async (
     });
 };
 
+const verifyResetCode = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
+    const { email, code } = req.body;
+
+    const user = await authService.verifyResetCode(email, code);
+
+    if (!user) {
+        return res
+            .status(400)
+            .json({ message: 'Invalid or expired reset code' });
+    }
+
+    // Use the utility function with 15 minutes expiration
+    putJwtInResponse(
+        res,
+        user,
+        parseInt(process.env.RESET_PASSWORD_TOKEN_MINUTES_EXP || '0'),
+        process.env.RESET_PASSWORD_TOKEN
+    );
+
+    return res
+        .status(200)
+        .json({ message: 'Reset code verified successfully' });
+};
+
 export const authController = {
     login,
     logout,
     forgotPassword,
+    verifyResetCode,
 };

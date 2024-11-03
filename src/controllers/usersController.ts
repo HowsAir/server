@@ -10,6 +10,9 @@ import { usersService } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { auth_token } from '../middleware/auth';
 import { measurementsService } from '../services/measurementsService';
+import { config } from 'dotenv';
+
+config();
 
 /**
  * Controller method for user registration.
@@ -57,7 +60,12 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     const createdUser = await usersService.register(userData);
 
     // Add JWT to response for later token validation
-    putJwtInResponse(res, createdUser);
+    putJwtInResponse(
+        res,
+        createdUser,
+        parseInt(process.env.AUTH_TOKEN_DAYS_EXP || '0'),
+        process.env.AUTH_TOKEN
+    );
 
     return res.status(201).json({
         message: 'User registered successfully',
@@ -127,9 +135,7 @@ const changePassword = async (
     );
 
     if (!passwordChanged) {
-        return res
-            .status(400)
-            .json({ message: 'Incorrect current password' });
+        return res.status(400).json({ message: 'Incorrect current password' });
     }
 
     return res
