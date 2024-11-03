@@ -36,7 +36,7 @@ export const verifyToken = (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies[auth_token];
+    const token = req.cookies[process.env.AUTH_TOKEN as string];
 
     // If no token is provided in the cookies, return an unauthorized error
     if (!token) {
