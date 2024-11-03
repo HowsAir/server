@@ -38,4 +38,16 @@ router.post(
     authController.forgotPassword
 );
 
+router.post(
+    '/verify-reset-code',
+    [
+        check('email', 'Valid email is required').isEmail(),
+        check('code', 'Six digit reset code is required').isLength({
+            min: 6,
+            max: 6,
+        }),
+    ],
+    authController.verifyResetCode
+);
+
 export default router;

@@ -24,7 +24,6 @@ const login = async (email: string, password: string): Promise<User | null> => {
     // Find user by email
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // If user doesn't exist, return null
     if (!user) {
         return null;
     }
@@ -36,7 +35,6 @@ const login = async (email: string, password: string): Promise<User | null> => {
         return null;
     }
 
-    // Return the user if credentials are valid
     return user;
 };
 
@@ -68,7 +66,50 @@ const initiatePasswordReset = async (email: string): Promise<void> => {
     await sendPasswordResetEmail(email, resetCode);
 };
 
+/**
+ * Verifies the password reset code for a given email.
+ *
+ * This function retrieves the user associated with the provided email and checks the most recent
+ * password reset token. It determines if the token is still valid (i.e., within 15 minutes)
+ * and matches the provided code.
+ *
+ * @param email - The user's email address to verify the reset code against.
+ * @param code - The 6-digit reset code provided by the user.
+ * @returns {Promise<User | null>} - Returns the user object if the reset code is valid; otherwise, returns null.
+ */
+const verifyResetCode = async (
+    email: string,
+    code: string
+): Promise<User | null> => {
+    const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+            passwordResetTokens: {
+                // Order the tokens by timestamp and take the most recent one
+                orderBy: { timestamp: 'desc' },
+                take: 1,
+            },
+        },
+    });
+
+    if (!user || user.passwordResetTokens.length === 0) {
+        return null;
+    }
+
+    const latestToken = user.passwordResetTokens[0];
+    const tokenAge = Date.now() - latestToken.timestamp.getTime();
+    const isTokenValid = tokenAge <= 15 * 60 * 1000; // 15 minutes in milliseconds
+
+    if (!isTokenValid || latestToken.code !== code) {
+        return null;
+    }
+
+    // If the token is valid and matches the code, return the user object
+    return user;
+};
+
 export const authService = {
     login,
     initiatePasswordReset,
+    verifyResetCode,
 };
