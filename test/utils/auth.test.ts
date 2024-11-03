@@ -7,7 +7,10 @@
 import { describe, it, expect, vi } from 'vitest'; // Import Vitest functions for testing and mocking
 import { putJwtInResponse } from '../../src/utils/auth'; // Import the function to be tested
 import jwt from 'jsonwebtoken'; // Mocked jwt library
-import { Response } from 'express'; // Import the Express Response object for type checks
+import { Response } from 'express';
+import { config } from 'dotenv'; // Import the Express Response object for type checks
+
+config();
 
 vi.mock('jsonwebtoken'); // Mock the jsonwebtoken library to avoid actual token creation
 
@@ -39,13 +42,18 @@ describe('auth utility functions', () => {
             jwt.sign = vi.fn().mockReturnValue(fakeToken);
 
             // Act: Call the function
-            putJwtInResponse(res, user);
+            putJwtInResponse(
+                res,
+                user,
+                parseInt(process.env.AUTH_TOKEN_DAYS_EXP as string),
+                process.env.AUTH_TOKEN
+            );
 
             // Assert: Check if jwt.sign was called with the correct payload
             expect(jwt.sign).toHaveBeenCalledWith(
                 { userId: user.id, role: user.roleId },
                 process.env.JWT_SECRET_KEY as string,
-                { expiresIn: '15d' }
+                { expiresIn: '21600m' }
             );
 
             // Assert: Check if the token was added to the response as a cookie with correct settings
@@ -87,7 +95,12 @@ describe('auth utility functions', () => {
             jwt.sign = vi.fn().mockReturnValue(fakeToken);
 
             // Act: Call the function
-            putJwtInResponse(res, user);
+            putJwtInResponse(
+                res,
+                user,
+                parseInt(process.env.AUTH_TOKEN_DAYS_EXP as string),
+                process.env.AUTH_TOKEN
+            );
 
             // Assert: Check if secure flag is set to true in production
             expect(res.cookie).toHaveBeenCalledWith(
@@ -124,7 +137,12 @@ describe('auth utility functions', () => {
             jwt.sign = vi.fn().mockReturnValue(fakeToken);
 
             // Act: Call the function
-            putJwtInResponse(res, user);
+            putJwtInResponse(
+                res,
+                user,
+                parseInt(process.env.AUTH_TOKEN_DAYS_EXP as string),
+                process.env.AUTH_TOKEN
+            );
 
             // Assert: Check if secure flag is set to false in non-production
             expect(res.cookie).toHaveBeenCalledWith(

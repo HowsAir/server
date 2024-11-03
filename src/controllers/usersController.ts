@@ -63,7 +63,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     putJwtInResponse(
         res,
         createdUser,
-        parseInt(process.env.AUTH_TOKEN_DAYS_EXP || '0'),
+        parseInt(process.env.AUTH_TOKEN_DAYS_EXP as string),
         process.env.AUTH_TOKEN
     );
 
