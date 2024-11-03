@@ -148,7 +148,7 @@ const changePassword = async (
 };
 
 /**
- * Controller method for resetting an user's password.
+ * Controller method for resetting a user's password.
  *
  * @param req - Express request object containing newPassword in body.
  * @param res - Express response object.
@@ -166,10 +166,19 @@ const resetPassword = async (
     const { newPassword } = req.body;
     const userId = req.userId;
 
-    const passwordReset = await usersService.resetPassword(userId, newPassword);
+    const { status } = await usersService.resetPassword(userId, newPassword);
 
-    if (!passwordReset) {
+    if (status === 'fail') {
         return res.status(400).json({ message: 'Failed to reset password' });
+    }
+
+    if (status === 'match') {
+        return res
+            .status(400)
+            .json({
+                message:
+                    'New password cannot be the same as the current password',
+            });
     }
 
     return res

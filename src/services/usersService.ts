@@ -114,21 +114,28 @@ const changePassword = async (
 };
 
 /**
- * Resets the password for a user that forgot their password
- *
- * Number: userId, Text: newPassword -> ResetPassword() -> Promise<boolean>
+ * Resets the password for a user that forgot their password.
  *
  * @param userId - The unique identifier of the user.
  * @param newPassword - The new password to set.
- * @returns {Promise<boolean>} - A promise that resolves to `true` if the password was changed, `false` otherwise.
- * @throws {Error} - Throws an error if there is an issue updating the password.
+ * @returns {Promise<{ status: string }>} - A promise that resolves with `{ status: "success" }` if password was changed,
+ * `{ status: "match" }` if the new password matches the current password, or `{ status: "fail" }` if unsuccessful.
  */
 const resetPassword = async (
     userId: number,
     newPassword: string
-): Promise<boolean> => {
+): Promise<{ status: string }> => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) return false;
+
+    if (!user) {
+        return { status: 'fail' };
+    }
+
+    const isMatch = await bcrypt.compare(newPassword, user.password);
+
+    if (isMatch) {
+        return { status: 'match' }; // Indicates the new password is the same as the current one
+    }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
@@ -137,7 +144,7 @@ const resetPassword = async (
         data: { password: hashedNewPassword },
     });
 
-    return true;
+    return { status: 'success' }; // Indicates the password was reset successfully
 };
 
 /**
