@@ -39,6 +39,7 @@ model User {
   role     Role    @relation(fields: [roleId], references: [id])
   node     Node?   @relation("UserNode")
   stats    DailyStat[]
+  passwordResetTokens  PasswordResetToken[]
 
   @@map("users")
 }
@@ -78,6 +79,18 @@ model Measurement {
   @@index([nodeId, timestamp])
 
   @@map("measurements")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String   @unique    // 6-digit code sent to the user
+  timestamp DateTime @default(now()) // Timestamp for code creation
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+  @@map("password_reset_tokens")
 }
 
 enum NodeStatus {
