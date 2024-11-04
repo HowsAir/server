@@ -9,6 +9,8 @@ import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
 import cloudinaryService, { CloudinaryFolders } from './cloudinaryService';
 
+const saltQuantity = 10;
+
 /**
  * Registers a new user in the database
  *
@@ -28,7 +30,7 @@ const register = async (userData: {
     address: string;
 }): Promise<User> => {
     // Hash the password before saving the user
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await bcrypt.hash(userData.password, saltQuantity);
 
     // Create the new user data object
     const newUserData: Omit<User, 'id'> = {
@@ -103,7 +105,7 @@ const changePassword = async (
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) return false;
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltQuantity);
 
     await prisma.user.update({
         where: { id: userId },
@@ -137,7 +139,7 @@ const resetPassword = async (
         return { status: 'match' }; // Indicates the new password is the same as the current one
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltQuantity);
 
     await prisma.user.update({
         where: { id: userId },
