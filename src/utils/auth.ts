@@ -8,6 +8,19 @@ import jwt from 'jsonwebtoken';
 import { Response } from 'express';
 import { User } from '@prisma/client';
 
+export const jwtConfig = {
+    auth_token: {
+        name: 'auth_token',
+        expirationMinutes: 21600,
+    },
+    password_reset_token: {
+        name: 'password_reset_token',
+        expirationMinutes: 15,
+    },
+} as const;
+
+type JwtConfigKey = keyof typeof jwtConfig;
+
 /**
  * Function to generate a JWT token and attach it to the response as a cookie.
  *
@@ -20,24 +33,20 @@ import { User } from '@prisma/client';
 export const putJwtInResponse = (
     res: Response,
     user: User,
-    expirationMinutes: number,
-    cookieName: string
+    configKey: JwtConfigKey
 ): void => {
+    const { name, expirationMinutes } = jwtConfig[configKey];
+
     const token = jwt.sign(
-        {
-            userId: user.id,
-            role: user.roleId,
-        },
+        { userId: user.id, role: user.roleId },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: `${expirationMinutes}m` }
     );
 
-    const maxAge = expirationMinutes * 60 * 1000; // Convert minutes to milliseconds
-
-    res.cookie(cookieName, token, {
+    res.cookie(name, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: maxAge,
+        maxAge: expirationMinutes * 60 * 1000, // Convert minutes to ms
     });
 };
 

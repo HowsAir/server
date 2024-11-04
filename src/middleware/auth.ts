@@ -8,8 +8,8 @@ import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import {} from 'dotenv';
 
-const auth_token = 'auth_token';
-const password_reset_token = 'password_reset_token';
+export const auth_token = 'auth_token';
+export const password_reset_token = 'password_reset_token';
 
 declare global {
     namespace Express {
