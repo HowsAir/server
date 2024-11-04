@@ -7,8 +7,12 @@
 import { Router, Request } from 'express';
 import { check, body } from 'express-validator';
 import { usersController } from '../controllers/usersController';
-import { verifyToken, authorizeRoles } from '../middleware/auth';
-import { verifyResetPasswordToken } from '../middleware/resetPasswordAuth';
+import {
+    verifyToken,
+    verifyResetPasswordToken,
+    authorizeRoles,
+} from '../middleware/auth';
+import { passwordValidationRules } from '../utils/validators';
 import multer from 'multer';
 
 const router = Router();
@@ -87,28 +91,9 @@ router.put(
         check('currentPassword')
             .notEmpty()
             .withMessage('Current password is required')
-            .isLength({ min: 6 })
-            .withMessage('Current password needs to be 6 characters long'),
-
-        check('newPassword')
-            .notEmpty()
-            .withMessage('New password is required')
-            .isLength({ min: 6 })
-            .withMessage('New password needs to be 6 characters long')
-            .matches(/[A-Z]/)
-            .withMessage(
-                'New password needs to have at least one capital letter'
-            )
-            .matches(/[a-z]/)
-            .withMessage(
-                'New password needs to have at least one normal letter'
-            )
-            .matches(/\d/)
-            .withMessage('New password needs to have at least one number')
-            .matches(/[@$!%*?&.]/)
-            .withMessage(
-                'New password needs to have at least one special character'
-            ),
+            .isLength({ min: 8 })
+            .withMessage('Current password needs to be 8 characters long'),
+        ...passwordValidationRules('newPassword'), // Using the validation function here
     ],
     usersController.changePassword
 );
@@ -117,19 +102,7 @@ router.post(
     '/reset-password',
     [
         verifyResetPasswordToken,
-        body('newPassword')
-            .isLength({ min: 8 })
-            .withMessage('Password must be at least 8 characters long')
-            .matches(/[A-Z]/)
-            .withMessage('Password must contain at least one uppercase letter')
-            .matches(/[a-z]/)
-            .withMessage('Password must contain at least one lowercase letter')
-            .matches(/[0-9]/)
-            .withMessage('Password must contain at least one number')
-            .matches(/[!@#$%^&*]/)
-            .withMessage(
-                'Password must contain at least one special character (!@#$%^&*)'
-            ),
+        ...passwordValidationRules('newPassword'), // Reusing the same validation rules
     ],
     usersController.resetPassword
 );
