@@ -8,11 +8,9 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { usersService } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
-import { auth_token } from '../middleware/auth';
 import { measurementsService } from '../services/measurementsService';
 import { config } from 'dotenv';
-
-config();
+import { auth_token, password_reset_token } from '../middleware/auth';
 
 /**
  * Controller method for user registration.
@@ -60,12 +58,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     const createdUser = await usersService.register(userData);
 
     // Add JWT to response for later token validation
-    putJwtInResponse(
-        res,
-        createdUser,
-        parseInt(process.env.AUTH_TOKEN_DAYS_EXP as string),
-        process.env.AUTH_TOKEN as string
-    );
+    putJwtInResponse(res, createdUser, auth_token);
 
     return res.status(201).json({
         message: 'User registered successfully',
@@ -139,7 +132,7 @@ const changePassword = async (
     }
 
     return res
-        .cookie(process.env.AUTH_TOKEN as string, '', {
+        .cookie(auth_token, '', {
             httpOnly: true,
             expires: new Date(0), // Set the cookie expiration to the past to remove it
         })
@@ -173,16 +166,13 @@ const resetPassword = async (
     }
 
     if (status === 'match') {
-        return res
-            .status(400)
-            .json({
-                message:
-                    'New password cannot be the same as the current password',
-            });
+        return res.status(400).json({
+            message: 'New password cannot be the same as the current password',
+        });
     }
 
     return res
-        .cookie(process.env.RESET_PASSWORD_TOKEN as string, '', {
+        .cookie(password_reset_token, '', {
             httpOnly: true,
             expires: new Date(0), // Remove the reset token cookie
         })

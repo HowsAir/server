@@ -7,8 +7,8 @@
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
-import { sendPasswordResetEmail } from '../utils/emailService';
-import { generateResetCode } from '../utils/auth';
+import { sendPasswordResetEmail } from '../utils/emailSender';
+import { generateResetCode, jwtConfig } from '../utils/auth';
 
 /**
  * Validates the login credentials and returns the user if successful.
@@ -98,7 +98,10 @@ const verifyResetCode = async (
 
     const latestToken = user.passwordResetTokens[0];
     const tokenAge = Date.now() - latestToken.timestamp.getTime();
-    const isTokenValid = tokenAge <= 15 * 60 * 1000; // 15 minutes in milliseconds
+
+    const isTokenValid =
+        tokenAge <=
+        jwtConfig.password_reset_token.expirationMinutes * 60 * 1000; // 15 minutes in milliseconds
 
     if (!isTokenValid || latestToken.code !== code) {
         return null;

@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { putJwtInResponse } from '../utils/auth';
 import { authService } from '../services/authService';
-import {} from 'dotenv';
+import { auth_token, password_reset_token } from '../middleware/auth';
 
 /**
  * Login controller method.
@@ -35,12 +35,7 @@ const login = async (req: Request, res: Response): Promise<Response> => {
     }
 
     // Add JWT to response for authentication cookie for 15 days
-    putJwtInResponse(
-        res,
-        user,
-        parseInt(process.env.AUTH_TOKEN_DAYS_EXP || '0'),
-        process.env.AUTH_TOKEN as string
-    );
+    putJwtInResponse(res, user, auth_token);
 
     return res.status(200).json({ message: 'Login successful', user });
 };
@@ -55,7 +50,7 @@ const login = async (req: Request, res: Response): Promise<Response> => {
  */
 const logout = async (req: Request, res: Response): Promise<Response> => {
     return res
-        .cookie(process.env.AUTH_TOKEN as string, '', {
+        .cookie(auth_token, '', {
             httpOnly: true,
             expires: new Date(0), // Set the cookie expiration to the past to remove it
         })
@@ -114,12 +109,7 @@ const verifyResetCode = async (
     }
 
     // Use the utility function with 15 minutes expiration
-    putJwtInResponse(
-        res,
-        user,
-        parseInt(process.env.RESET_PASSWORD_TOKEN_MINUTES_EXP || '0'),
-        process.env.RESET_PASSWORD_TOKEN as string
-    );
+    putJwtInResponse(res, user, password_reset_token);
 
     return res
         .status(200)
