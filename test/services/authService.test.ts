@@ -9,14 +9,17 @@ import { authService } from '../../src/services/authService';
 import prisma from '../../src/libs/prisma';
 import bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
-import { sendPasswordResetEmail } from '../../src/utils/emailService';
+import { sendPasswordResetEmail } from '../../src/utils/emailSender';
 import { generateResetCode } from '../../src/utils/auth';
 
 // Mock dependencies
 vi.mock('../../src/libs/prisma');
 vi.mock('bcryptjs');
-vi.mock('../../src/utils/emailService');
 vi.mock('../../src/utils/auth');
+
+vi.mock('../../src/utils/emailSender', () => ({
+    sendPasswordResetEmail: vi.fn(),
+}));
 
 describe('authService', () => {
     beforeEach(() => {
@@ -186,7 +189,7 @@ describe('authService', () => {
 
         it('should do nothing when user does not exist', async () => {
             // Arrange
-            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
+            vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
 
             // Act
             await authService.initiatePasswordReset('nonexistent@example.com');
