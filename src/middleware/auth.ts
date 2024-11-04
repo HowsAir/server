@@ -1,14 +1,15 @@
 /**
  * @file auth.ts
  * @brief Middleware for JWT token verification and user authentication
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { config } from 'dotenv';
+import {} from 'dotenv';
 
-config();
+const auth_token = 'auth_token';
+const password_reset_token = 'password_reset_token';
 
 declare global {
     namespace Express {
@@ -37,7 +38,7 @@ export const verifyToken = (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies[process.env.AUTH_TOKEN as string];
+    const token = req.cookies[auth_token];
 
     // If no token is provided in the cookies, return an unauthorized error
     if (!token) {
@@ -53,6 +54,41 @@ export const verifyToken = (
         req.userId = (decoded as JwtPayload).userId;
         req.roleId = (decoded as JwtPayload).roleId;
 
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+};
+
+/**
+ * Middleware to verify the JWT token received from a succesful six digit code validation when resetting password.
+ *
+ * This middleware checks if the token exists in the cookies sent by the client and verifies its validity.
+ * If the token is valid, it extracts the `userId` from the token payload and attaches it to the request object.
+ * If the token is missing or invalid, it sends a 401 Unauthorized response.
+ *
+ * @param req - The HTTP Request object. Expects a JWT token in the cookies.
+ * @param res - The HTTP Response object used to return error messages in case of unauthorized access.
+ * @param next - The NextFunction to pass control to the next middleware/controller if the token is valid.
+ *
+ * @returns Sends a 401 status code with an error message if the token is invalid or missing. Otherwise, it passes the control to the next handler.
+ */
+export const verifyResetPasswordToken = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const token = req.cookies[password_reset_token];
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
+        // adds the userId to the request object, even tho it's not in the body of the request
+        req.userId = (decoded as JwtPayload).userId;
         next();
     } catch (error) {
         console.error(error);

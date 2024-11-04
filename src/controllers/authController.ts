@@ -8,9 +8,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { putJwtInResponse } from '../utils/auth';
 import { authService } from '../services/authService';
-import { config } from 'dotenv';
-
-config();
+import {} from 'dotenv';
 
 /**
  * Login controller method.
