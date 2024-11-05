@@ -9,6 +9,7 @@ import { validationResult } from 'express-validator';
 import { usersService } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { auth_token } from '../middleware/auth';
+import { measurementsService } from '../services/measurementsService';
 
 /**
  * Controller method for user registration.
@@ -166,9 +167,29 @@ const updateProfilePhoto = async (
     });
 };
 
+/**
+ * Controller method for getting the total distance covered by the user today.
+ *
+ * @param req - The HTTP Request object containing user information, with userId extracted from the token.
+ * @param res - The HTTP Response object used to return the total distance to the client.
+ *
+ * @returns Returns a JSON object with the total distance and status 200 on success,
+ * or an error message with status 500 if there was an issue retrieving the distance.
+ */
+const getTodayTotalDistance = async (req: Request, res: Response): Promise<Response> => {
+    const userId = req.userId;
+
+    const totalDistance = await measurementsService.getTodayTotalDistance(userId);
+    return res.status(200).json({
+        message: 'Total distance for today retrieved successfully',
+        totalDistance,
+    });
+};
+
 export const usersController = {
     register,
     updateProfile,
     changePassword,
     updateProfilePhoto,
+    getTodayTotalDistance,
 };
