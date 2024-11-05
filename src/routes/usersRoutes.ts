@@ -136,6 +136,12 @@ router.put(
     usersController.updateProfilePhoto
 );
 
+router.get(
+    '/today-total-distance',
+    verifyToken,
+    usersController.getTodayTotalDistance
+);
+
 /*
 const authorizeAdminRole = authorizeRoles(2)
 router.get(
