@@ -6,7 +6,7 @@
 
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { usersService } from '../services/usersService';
+import { usersService, PasswordResetStatus } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { measurementsService } from '../services/measurementsService';
 import { config } from 'dotenv';
@@ -161,23 +161,34 @@ const resetPassword = async (
 
     const { status } = await usersService.resetPassword(userId, newPassword);
 
-    if (status === 'fail') {
-        return res.status(400).json({ message: 'Failed to reset password' });
-    }
+    switch (status) {
+        case PasswordResetStatus.FAIL:
+            return res
+                .status(400)
+                .json({ message: 'Failed to reset password' });
 
-    if (status === 'match') {
-        return res.status(400).json({
-            message: 'New password cannot be the same as the current password',
-        });
-    }
+        case PasswordResetStatus.MATCH:
+            return res.status(400).json({
+                message:
+                    'New password cannot be the same as the current password',
+            });
 
-    return res
-        .cookie(password_reset_token, '', {
-            httpOnly: true,
-            expires: new Date(0), // Remove the reset token cookie
-        })
-        .status(200)
-        .json({ message: 'Password reset successfully' });
+        case PasswordResetStatus.SUCCESS:
+            return res
+                .cookie(password_reset_token, '', {
+                    httpOnly: true,
+                    expires: new Date(0),
+                })
+                .cookie(auth_token, '', {
+                    httpOnly: true,
+                    expires: new Date(0),
+                })
+                .status(200)
+                .json({ message: 'Password reset successfully' });
+
+        default:
+            return res.status(500).json({ message: 'Unknown error' });
+    }
 };
 
 /**

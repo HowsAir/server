@@ -11,6 +11,12 @@ import cloudinaryService, { CloudinaryFolders } from './cloudinaryService';
 
 const saltQuantity = 10;
 
+export enum PasswordResetStatus {
+    FAIL = 'fail',
+    MATCH = 'match',
+    SUCCESS = 'success',
+}
+
 /**
  * Registers a new user in the database
  *
@@ -126,17 +132,17 @@ const changePassword = async (
 const resetPassword = async (
     userId: number,
     newPassword: string
-): Promise<{ status: string }> => {
+): Promise<{ status: PasswordResetStatus }> => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-        return { status: 'fail' };
+        return { status: PasswordResetStatus.FAIL };
     }
 
     const isMatch = await bcrypt.compare(newPassword, user.password);
 
     if (isMatch) {
-        return { status: 'match' }; // Indicates the new password is the same as the current one
+        return { status: PasswordResetStatus.MATCH }; // New password matches the current password
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, saltQuantity);
@@ -146,7 +152,7 @@ const resetPassword = async (
         data: { password: hashedNewPassword },
     });
 
-    return { status: 'success' }; // Indicates the password was reset successfully
+    return { status: PasswordResetStatus.SUCCESS }; // Password reset successfully
 };
 
 /**
