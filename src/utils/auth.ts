@@ -55,6 +55,16 @@ export const putJwtInResponse = (
     });
 };
 
+/**
+ * Function to generate a JWT token with the user's email and attach it to the response as a cookie.
+ *
+ * @param res - The HTTP response object where the JWT token will be stored as a cookie.
+ * @param email - The email to be embedded inside the JWT token.
+ *
+ * This function creates a JWT token containing the user's email, signed with a secret key,
+ * and sets it to expire based on configuration. The token is stored in a cookie with
+ * 'httpOnly' and 'secure' flags for security, ensuring access only via HTTP requests.
+ */
 export const putJwtWithEmailInResponse = (
     res: Response,
     email: string
@@ -74,6 +84,15 @@ export const putJwtWithEmailInResponse = (
     });
 };
 
+/**
+ * Function to retrieve the email embedded within a JWT token.
+ *
+ * @param token - The JWT token containing the encoded email.
+ * @returns {string} - Returns the email address decoded from the JWT token payload.
+ *
+ * This function verifies the JWT token using a secret key and extracts the email field
+ * from the payload. The returned email can then be used for further validation or processing.
+ */
 export const getEmailFromToken = (token: string): string => {
     const decoded = jwt.verify(
         token as string,

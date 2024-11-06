@@ -10,6 +10,7 @@ import {} from 'dotenv';
 
 export const auth_token = 'auth_token';
 export const password_reset_token = 'password_reset_token';
+export const email_verified_token = 'email_verified_token';
 
 declare global {
     namespace Express {
@@ -93,6 +94,47 @@ export const verifyResetPasswordToken = (
     } catch (error) {
         console.error(error);
         return res.status(401).json({ message: 'Unauthorized' });
+    }
+};
+
+/**
+ * Middleware to verify if the email of the body matches the email of the JWT token received from the confirmation email link.
+ *
+ * This middleware checks if the email from the body matches the email encrypted on the cookies sent by the client
+ * and verifies its validity. If the token is valid, it extracts the `email` from the token payload and verifies it's
+ * the same email, if that's the case continues to the next function.
+ * If the token is missing or invalid, it sends a 401 response where tells the user the email is requires.
+ *
+ * @param req - The HTTP Request object. Expects a JWT token in the cookies and an email in the body.
+ * @param res - The HTTP Response object used to return error messages in case of unauthorized access.
+ * @param next - The NextFunction to pass control to the next middleware/controller if the token is valid.
+ *
+ * @returns Sends a 401 status code with an error message if the token is invalid or missing. Otherwise, it passes the control to the next handler.
+ */
+export const verifyEmailConfirmedToken = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const emailToken = req.cookies[email_verified_token];
+
+    if (!emailToken) {
+        return res.status(401).json({ message: 'Email verification required' });
+    }
+
+    try {
+        const decoded = jwt.verify(
+            emailToken,
+            process.env.JWT_SECRET_KEY as string
+        ) as JwtPayload;
+
+        req.body.decodedEmail = decoded.email;
+        next();
+    } catch (error) {
+        console.error('Email verification error:', error);
+        return res
+            .status(401)
+            .json({ message: 'Invalid or expired verification' });
     }
 };
 

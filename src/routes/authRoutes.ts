@@ -6,7 +6,7 @@
 
 import { Router, Request, Response } from 'express';
 import { authController } from '../controllers/authController';
-import { verifiedEmailMatches, verifyToken } from '../middleware/auth';
+import { verifyEmailConfirmedToken, verifyToken } from '../middleware/auth';
 import { check } from 'express-validator';
 
 const router = Router();
@@ -64,12 +64,12 @@ router.post(
     authController.createEmailVerificationToken
 );
 
-// // Receives the email from the first endpoint, to verify if it matches with the email encrypted on the cookie.
-// router.post(
-//     '/confirm-email',
-//     [check('email', 'Valid email is required').isEmail()],
-//     verifiedEmailMatches,
-//     authController.confirmEmail
-// );
+// Receives the email from the first endpoint, to verify if it matches with the email encrypted on the cookie.
+router.post(
+    '/confirm-email',
+    [check('email', 'Valid email is required').isEmail()],
+    verifyEmailConfirmedToken,
+    authController.confirmEmail
+);
 
 export default router;

@@ -50,7 +50,6 @@ const login = async (email: string, password: string): Promise<User | null> => {
  *      Text:email   ---> initiatePasswordReset() --->  void || error
  *
  * @param email - The email of the user attempting to login.
- * @param password - The password provided for login.
  * @returns {Promise<void | error>} - an error if the email failed.
  */
 const initiatePasswordReset = async (email: string): Promise<void> => {
@@ -117,6 +116,18 @@ const verifyResetCode = async (
     return user;
 };
 
+/**
+ * Function to send a verification email to the user.
+ *
+ * @param email - The email address to which the verification link will be sent.
+ * @returns {Promise<User | void>} - Returns the existing user if found, or void if the email is new and an email is sent.
+ *
+ * This function first checks if the email already belongs to an existing user in the database.
+ * If it does, it returns the user and skips sending the verification email.
+ * Otherwise, it encrypts the user's email, with an expiration time and adds it to a verification
+ * URL as a query parameter, which is then included in the email sent to the user.
+ * The user can click the link to verify their email address.
+ */
 const sendVerificationEmail = async (email: string): Promise<User | void> => {
     const existingUser = await findUserByEmail(email);
 
@@ -135,10 +146,32 @@ const sendVerificationEmail = async (email: string): Promise<User | void> => {
     await sendEmailVerification(email, verificationUrl);
 };
 
+/**
+ * Confirms that the provided email matches the decoded email.
+ *
+ * This function is used to verify that the email provided by the user matches the email
+ * extracted from the verification token. If the emails match, it returns true,
+ * indicating that the email is confirmed.
+ *
+ * @param email - The email address provided by the user in the request.
+ * @param decodedEmail - The email address decoded from the verification token.
+ * @returns {Promise<boolean>} - Returns true if the emails match, false otherwise.
+ */
+const confirmEmail = async (
+    email: string,
+    decodedEmail: string
+): Promise<boolean> => {
+    if (email !== decodedEmail) {
+        return false;
+    }
+
+    return true;
+};
+
 export const authService = {
     login,
     initiatePasswordReset,
     verifyResetCode,
     sendVerificationEmail,
-    // confirmEmail,
+    confirmEmail,
 };

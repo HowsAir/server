@@ -97,6 +97,16 @@ const forgotPassword = async (
     });
 };
 
+/**
+ * Verifies the reset code for a user.
+ *
+ * This function checks the provided reset code against the stored code for the given email.
+ * If the code is valid and not expired, it issues a password reset token by setting a cookie.
+ *
+ * @param req - The HTTP request containing the user's email and reset code in the body.
+ * @param res - The HTTP response to send a success message and set a reset token if verification is successful.
+ * @returns {Promise<Response>} - Returns a JSON response indicating whether the reset code was verified.
+ */
 const verifyResetCode = async (
     req: Request,
     res: Response
@@ -116,7 +126,6 @@ const verifyResetCode = async (
             .json({ message: 'Invalid or expired reset code' });
     }
 
-    // Use the utility function with 15 minutes expiration
     putJwtInResponse(res, user, password_reset_token);
 
     return res
@@ -124,6 +133,16 @@ const verifyResetCode = async (
         .json({ message: 'Reset code verified successfully' });
 };
 
+/**
+ * Sends a confirmation email with a verification link to the user's email.
+ *
+ * This controller method generates a verification link and sends it to the user's email
+ * if the email is not already associated with an account.
+ *
+ * @param req - The HTTP request containing the user's email in the body.
+ * @param res - The HTTP response to send a success or error message.
+ * @returns {Promise<Response>} - Returns a JSON response indicating if the email was sent or if the email is already registered.
+ */
 const sendConfirmationEmail = async (
     req: Request,
     res: Response
@@ -148,7 +167,21 @@ const sendConfirmationEmail = async (
     });
 };
 
-const createEmailVerificationToken = async (req: Request, res: Response) => {
+/**
+ * Creates an email verification token and sets it as a cookie.
+ *
+ * This function is called when the user clicks on the verification link. It decodes the
+ * email from the token in the query, sets a cookie with the email for verification, and
+ * confirms the email if everything is valid.
+ *
+ * @param req - The HTTP request containing the token in the query.
+ * @param res - The HTTP response to set the verification cookie and return a success message.
+ * @returns {Promise<Response>} - Returns a JSON response indicating the email was verified.
+ */
+const createEmailVerificationToken = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
     const { token } = req.query;
 
     const decodedEmail = getEmailFromToken(token as string);
@@ -158,12 +191,32 @@ const createEmailVerificationToken = async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Email verified successfully' });
 };
 
-// Update the authController export
+/**
+ * Confirms that the user's email matches the verified email.
+ *
+ * This function checks if the email submitted in the request matches the decoded email in the cookie.
+ * If they match, the function clears the email verification cookie and confirms the email.
+ *
+ * @param req - The HTTP request containing the email from the client and the decoded email from the cookie.
+ * @param res - The HTTP response to clear the email verification cookie and confirm the email.
+ * @returns {Promise<Response>} - Returns a JSON response indicating the email was confirmed or not.
+ */
+const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
+    if (
+        !(await authService.confirmEmail(req.body.email, req.body.decodedEmail))
+    ) {
+        return res.status(400).json({ message: 'Emails do not match' });
+    }
+    res.clearCookie(email_verified_token);
+    return res.status(200).json({ message: 'Email confirmed successfully' });
+};
+
 export const authController = {
     login,
     logout,
     forgotPassword,
     verifyResetCode,
     sendConfirmationEmail,
-    createEmailVerificationToken, // this should use putJwtWithEmailInResponse(res, email); //I already created this function
+    createEmailVerificationToken,
+    confirmEmail,
 };
