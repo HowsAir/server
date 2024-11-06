@@ -1,5 +1,5 @@
 /**
- * @file emailService.ts
+ * @file emailSender.ts
  * @brief Service to handle sending emails from HowsAir requests.
  * @author Manuel Borregales
  */
