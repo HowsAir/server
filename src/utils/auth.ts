@@ -4,9 +4,10 @@
  * @author Juan Diaz & Manuel Borregales
  */
 
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Response } from 'express';
 import { User } from '@prisma/client';
+import { email_verified_token } from '../middleware/auth';
 
 export const jwtConfig = {
     auth_token: {
@@ -15,6 +16,10 @@ export const jwtConfig = {
     },
     password_reset_token: {
         name: 'password_reset_token',
+        expirationMinutes: 15,
+    },
+    email_verified_token: {
+        name: email_verified_token,
         expirationMinutes: 15,
     },
 } as const;
@@ -48,6 +53,33 @@ export const putJwtInResponse = (
         secure: process.env.NODE_ENV === 'production',
         maxAge: expirationMinutes * 60 * 1000, // Convert minutes to ms
     });
+};
+
+export const putJwtWithEmailInResponse = (
+    res: Response,
+    email: string
+): void => {
+    const { name, expirationMinutes } = jwtConfig.email_verified_token;
+
+    const token = jwt.sign(
+        { email: email },
+        process.env.JWT_SECRET_KEY as string,
+        { expiresIn: `${expirationMinutes}m` }
+    );
+
+    res.cookie(name, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: expirationMinutes * 60 * 1000, // Convert minutes to ms
+    });
+};
+
+export const getEmailFromToken = (token: string): string => {
+    const decoded = jwt.verify(
+        token as string,
+        process.env.JWT_SECRET_KEY as string
+    ) as JwtPayload;
+    return decoded.email as string;
 };
 
 /**

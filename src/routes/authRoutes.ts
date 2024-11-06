@@ -6,7 +6,7 @@
 
 import { Router, Request, Response } from 'express';
 import { authController } from '../controllers/authController';
-import { verifyToken } from '../middleware/auth';
+import { verifiedEmailMatches, verifyToken } from '../middleware/auth';
 import { check } from 'express-validator';
 
 const router = Router();
@@ -50,10 +50,26 @@ router.post(
     authController.verifyResetCode
 );
 
+// Sends an email to the user with its own email encrypted on a link that looks like this:
 router.post(
-    '/confirm-email',
+    '/send-confirmation-email',
     [check('email', 'Valid email is required').isEmail()],
-    authController.confirmEmail
+    authController.sendConfirmationEmail
 );
+
+// Receives the token from the link obtained in the email of confirm-email, gets the email from the link after decrypting the token.
+// You will access this endpoint by this URL: http://localhost:3000/verify-email-token?token=encryptedEmail.
+router.post(
+    '/create-email-verification-token',
+    authController.createEmailVerificationToken
+);
+
+// // Receives the email from the first endpoint, to verify if it matches with the email encrypted on the cookie.
+// router.post(
+//     '/confirm-email',
+//     [check('email', 'Valid email is required').isEmail()],
+//     verifiedEmailMatches,
+//     authController.confirmEmail
+// );
 
 export default router;

@@ -7,8 +7,14 @@
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
-import { sendPasswordResetEmail } from '../utils/emailSender';
+import {
+    sendPasswordResetEmail,
+    sendEmailVerification,
+} from '../utils/emailSender';
+import jwt from 'jsonwebtoken';
 import { generateResetCode, jwtConfig } from '../utils/auth';
+import { findUserByEmail } from './usersService';
+import {} from 'dotenv';
 
 /**
  * Validates the login credentials and returns the user if successful.
@@ -111,8 +117,28 @@ const verifyResetCode = async (
     return user;
 };
 
+const sendVerificationEmail = async (email: string): Promise<User | void> => {
+    const existingUser = await findUserByEmail(email);
+
+    if (existingUser !== null) {
+        return existingUser;
+    }
+
+    // Generate a JWT token with the user's email
+    const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY as string, {
+        expiresIn: '15m',
+    });
+
+    const verificationUrl = `${process.env.BACKEND_URL}/api/v1/auth/create-email-verification-token?token=${token}`;
+
+    // Send the verification email
+    await sendEmailVerification(email, verificationUrl);
+};
+
 export const authService = {
     login,
     initiatePasswordReset,
     verifyResetCode,
+    sendVerificationEmail,
+    // confirmEmail,
 };

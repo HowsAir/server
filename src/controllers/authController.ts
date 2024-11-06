@@ -6,7 +6,11 @@
 
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { putJwtInResponse } from '../utils/auth';
+import {
+    putJwtInResponse,
+    putJwtWithEmailInResponse,
+    getEmailFromToken,
+} from '../utils/auth';
 import { authService } from '../services/authService';
 import {
     auth_token,
@@ -120,7 +124,10 @@ const verifyResetCode = async (
         .json({ message: 'Reset code verified successfully' });
 };
 
-const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
+const sendConfirmationEmail = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ message: errors.array() });
@@ -128,7 +135,7 @@ const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
 
     const { email } = req.body;
 
-    const existingUser = await authService.confirmEmail(email);
+    const existingUser = await authService.sendVerificationEmail(email);
 
     if (existingUser != null) {
         return res
@@ -141,11 +148,22 @@ const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
     });
 };
 
+const createEmailVerificationToken = async (req: Request, res: Response) => {
+    const { token } = req.query;
+
+    const decodedEmail = getEmailFromToken(token as string);
+
+    putJwtWithEmailInResponse(res, decodedEmail);
+
+    return res.status(200).json({ message: 'Email verified successfully' });
+};
+
 // Update the authController export
 export const authController = {
     login,
     logout,
     forgotPassword,
     verifyResetCode,
-    confirmEmail,
+    sendConfirmationEmail,
+    createEmailVerificationToken, // this should use putJwtWithEmailInResponse(res, email); //I already created this function
 };
