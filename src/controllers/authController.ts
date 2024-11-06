@@ -8,7 +8,11 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { putJwtInResponse } from '../utils/auth';
 import { authService } from '../services/authService';
-import { auth_token, password_reset_token } from '../middleware/auth';
+import {
+    auth_token,
+    password_reset_token,
+    email_verified_token,
+} from '../middleware/auth';
 
 /**
  * Login controller method.
@@ -116,9 +120,32 @@ const verifyResetCode = async (
         .json({ message: 'Reset code verified successfully' });
 };
 
+const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    const existingUser = await authService.confirmEmail(email);
+
+    if (existingUser != null) {
+        return res
+            .status(400)
+            .json({ message: 'Email already attached to an account' });
+    }
+
+    return res.status(200).json({
+        message: 'Verification email sent successfully',
+    });
+};
+
+// Update the authController export
 export const authController = {
     login,
     logout,
     forgotPassword,
     verifyResetCode,
+    confirmEmail,
 };

@@ -19,6 +19,52 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
+ * Sends an email verification link to the user's email address.
+ *
+ * @async
+ * @function sendVerificationEmail
+ * @param {string} email - The recipient's email address.
+ * @returns {Promise<string>} - The JWT token used in the verification link.
+ * @throws Will throw an error if the email could not be sent.
+ *
+ * @description
+ * This function generates a JWT token containing the user's encrypted email, which expires after 15 minutes.
+ * It then constructs an email with a link that includes the token and sends it to the user's email.
+ */
+export const sendEmailVerification = async (
+    email: string,
+    verificationUrl: string
+): Promise<void> => {
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Verify Your Email</h2>
+            <p>Please click the link below to verify your email address:</p>
+            <a href="${verificationUrl}" 
+               style="display: inline-block; padding: 10px 20px; background-color: #007bff; 
+                      color: white; text-decoration: none; border-radius: 5px;">
+                Verify Email
+            </a>
+            <p>This link will expire in 15 minutes.</p>
+            <p style="color: #666; font-size: 14px;">
+                If you didn't request this verification, please ignore this email.
+            </p>
+        </div>
+    `;
+
+    try {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Verify Your Email',
+            html: html,
+        });
+    } catch (error) {
+        console.error('Error sending verification email:', error);
+        throw new Error('Failed to send verification email');
+    }
+};
+
+/**
  * Sends a password reset email to the specified user email address.
  *
  * @async

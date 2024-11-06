@@ -60,7 +60,7 @@ const register = async (userData: {
  * @param email - The email of the user to search for.
  * @returns {Promise<User | null>} - A promise that resolves with the found user or null if not found.
  */
-const findUserByEmail = async (email: string): Promise<User | null> => {
+export const findUserByEmail = async (email: string): Promise<User | null> => {
     return await prisma.user.findUnique({
         where: { email },
     });

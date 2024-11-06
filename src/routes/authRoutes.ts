@@ -1,7 +1,7 @@
 /**
  * @file authRoutes.ts
  * @brief Definition of the routes for authentication in the API
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { Router, Request, Response } from 'express';
@@ -48,6 +48,12 @@ router.post(
         }),
     ],
     authController.verifyResetCode
+);
+
+router.post(
+    '/confirm-email',
+    [check('email', 'Valid email is required').isEmail()],
+    authController.confirmEmail
 );
 
 export default router;
