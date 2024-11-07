@@ -52,7 +52,7 @@ describe('auth utility functions', () => {
 
             // Assert: Check if the token was added to the response as a cookie with correct settings
             expect(res.cookie).toHaveBeenCalledWith(
-                'auth_token', // Cookie name
+                auth_token, // Cookie name
                 fakeToken, // JWT token
                 {
                     httpOnly: true, // Security flag
@@ -93,7 +93,7 @@ describe('auth utility functions', () => {
 
             // Assert: Check if secure flag is set to true in production
             expect(res.cookie).toHaveBeenCalledWith(
-                'auth_token',
+                auth_token,
                 fakeToken,
                 expect.objectContaining({ secure: true })
             );
@@ -130,7 +130,7 @@ describe('auth utility functions', () => {
 
             // Assert: Check if secure flag is set to false in non-production
             expect(res.cookie).toHaveBeenCalledWith(
-                'auth_token',
+                auth_token,
                 fakeToken,
                 expect.objectContaining({ secure: false })
             );

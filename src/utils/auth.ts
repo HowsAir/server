@@ -7,15 +7,15 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Response } from 'express';
 import { User } from '@prisma/client';
-import { email_verified_token } from '../middleware/auth';
+import { email_verified_token, auth_token, password_reset_token } from '../middleware/auth';
 
 export const jwtConfig = {
     auth_token: {
-        name: 'auth_token',
+        name: auth_token,
         expirationMinutes: 21600,
     },
     password_reset_token: {
-        name: 'password_reset_token',
+        name: password_reset_token,
         expirationMinutes: 15,
     },
     email_verified_token: {
@@ -88,17 +88,23 @@ export const putJwtWithEmailInResponse = (
  * Function to retrieve the email embedded within a JWT token.
  *
  * @param token - The JWT token containing the encoded email.
- * @returns {string} - Returns the email address decoded from the JWT token payload.
+ * @returns {string} - Returns the email address decoded from the JWT token payload or empty string if invalid.
  *
  * This function verifies the JWT token using a secret key and extracts the email field
  * from the payload. The returned email can then be used for further validation or processing.
  */
 export const getEmailFromToken = (token: string): string => {
-    const decoded = jwt.verify(
-        token as string,
-        process.env.JWT_SECRET_KEY as string
-    ) as JwtPayload;
-    return decoded.email as string;
+    try {
+        const decoded = jwt.verify(
+            token as string,
+            process.env.JWT_SECRET_KEY as string
+        ) as JwtPayload;
+        return decoded.email as string;
+    }
+    catch (error) {
+        console.error(error);
+        return '';
+    }
 };
 
 /**
