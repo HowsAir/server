@@ -76,18 +76,18 @@ router.put(
         check('currentPassword')
             .notEmpty()
             .withMessage('Current password is required')
-            .isLength({ min: 8 })
-            .withMessage('Current password needs to be 8 characters long'),
-        ...passwordValidationRules('newPassword'), // Using the validation function here
+            .isLength({ min: 6 })
+            .withMessage('Current password needs to be 6 characters long'),
+        ...passwordValidationRules('newPassword'),
     ],
     usersController.changePassword
 );
 
-router.post(
+router.put(
     '/reset-password',
     verifyResetPasswordToken,
     [
-        ...passwordValidationRules('newPassword'), // Reusing the same validation rules
+        ...passwordValidationRules('newPassword'),
     ],
     usersController.resetPassword
 );

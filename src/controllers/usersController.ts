@@ -164,7 +164,6 @@ const resetPassword = async (
         case PasswordResetStatus.FAIL:
             return res
                 .status(400)
-                .json({ message: 'Failed to reset password' });
 
         case PasswordResetStatus.MATCH:
             return res.status(400).json({
