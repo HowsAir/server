@@ -308,7 +308,7 @@ describe('getCoordinatesDistance()', () => {
             lat2,
             lon2
         );
-        console.log(distance);
+
         // Expected small distance, less than 100 meters
         expect(distance).toBeLessThan(14);
         expect(distance).toBeGreaterThan(13);
