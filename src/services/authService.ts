@@ -140,7 +140,7 @@ const sendVerificationEmail = async (email: string): Promise<User | void> => {
         expiresIn: '15m',
     });
 
-    const verificationUrl = `${process.env.BACKEND_URL}/api/v1/auth/create-email-verification-token?token=${token}`;
+    const verificationUrl = `${process.env.BACKEND_URL}/api/v1/auth/email-confirmation-token?token=${token}`;
 
     // Send the verification email
     await sendEmailVerification(email, verificationUrl);

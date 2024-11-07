@@ -434,7 +434,8 @@ describe('authService', () => {
             vi.mocked(process.env).JWT_SECRET_KEY = testJwtSecret;
             const testToken = 'test_token';
             jwt.sign = vi.fn().mockReturnValue(testToken);
-
+            const testBackendURL = 'http://localhost:3000';
+            vi.mocked(process.env).BACKEND_URL = testBackendURL;
             // Act
             await authService.sendVerificationEmail('new@example.com');
 
@@ -447,9 +448,10 @@ describe('authService', () => {
                 testJwtSecret,
                 { expiresIn: '15m' }
             );
+            
             expect(sendEmailVerification).toHaveBeenCalledWith(
                 'new@example.com',
-                `${process.env.BACKEND_URL}/api/v1/auth/create-email-verification-token?token=${testToken}`
+                `${testBackendURL}/api/v1/auth/email-confirmation-token?token=${testToken}`
             );
         });
     });
