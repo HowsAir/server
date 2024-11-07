@@ -448,7 +448,7 @@ describe('authService', () => {
                 testJwtSecret,
                 { expiresIn: '15m' }
             );
-            
+
             expect(sendEmailVerification).toHaveBeenCalledWith(
                 'new@example.com',
                 `${testBackendURL}/api/v1/auth/email-confirmation-token?token=${testToken}`

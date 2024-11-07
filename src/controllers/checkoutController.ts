@@ -33,7 +33,7 @@ const createCheckoutSession = async (
             return res.status(400).json({ message: errors.array() });
         }
         const { amount } = req.body;
-    
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'], // Specify the payment method type
             line_items: [
@@ -50,7 +50,7 @@ const createCheckoutSession = async (
             success_url: `${process.env.FRONTEND_URL}/payment-success`, // URL to redirect on successful payment
             cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`, // URL to redirect if payment is canceled
         });
-    
+
         // Return the session ID to the client
         return res.status(201).json({ id: session.id });
     } catch (error) {

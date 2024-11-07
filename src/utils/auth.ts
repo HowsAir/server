@@ -7,7 +7,11 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Response } from 'express';
 import { User } from '@prisma/client';
-import { email_verified_token, auth_token, password_reset_token } from '../middleware/auth';
+import {
+    email_verified_token,
+    auth_token,
+    password_reset_token,
+} from '../middleware/auth';
 import 'dotenv/config';
 
 export const jwtConfig = {
@@ -101,8 +105,7 @@ export const getEmailFromToken = (token: string): string => {
             process.env.JWT_SECRET_KEY as string
         ) as JwtPayload;
         return decoded.email as string;
-    }
-    catch (error) {
+    } catch (error) {
         console.error(error);
         return '';
     }

@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import { Router} from 'express';
+import { Router } from 'express';
 import { check } from 'express-validator';
 import { usersController } from '../controllers/usersController';
 import {
@@ -53,12 +53,10 @@ router.patch(
     '/profile',
     verifyToken,
     [
-        check('name', 'Name is not a valid string')
-            .optional()
-            .notEmpty(),
+        check('name', 'Name is not a valid string').optional().notEmpty(),
         check('surnames', 'Surnames is not a valid string')
             .optional()
-            .notEmpty()
+            .notEmpty(),
     ],
     usersController.updateProfile
 );
@@ -80,9 +78,7 @@ router.put(
 router.put(
     '/reset-password',
     verifyResetPasswordToken,
-    [
-        ...passwordValidationRules('newPassword'),
-    ],
+    [...passwordValidationRules('newPassword')],
     usersController.resetPassword
 );
 

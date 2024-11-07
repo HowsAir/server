@@ -19,13 +19,17 @@ import { auth_token, password_reset_token } from '../middleware/auth';
  *
  * @returns Returns a JSON object with the registered user and status 201 on success, or an error message with status 400 or 500.
  */
-const register = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+const register = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ message: errors.array() });
         }
-    
+
         const {
             email,
             password,
@@ -37,7 +41,7 @@ const register = async (req: Request, res: Response, next: NextFunction): Promis
             address,
             zipCode,
         } = req.body;
-    
+
         const userData = {
             email,
             password,
@@ -54,12 +58,12 @@ const register = async (req: Request, res: Response, next: NextFunction): Promis
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
-    
+
         const createdUser = await usersService.register(userData);
-    
+
         // Add JWT to response for later token validation
         putJwtInResponse(res, createdUser, auth_token);
-    
+
         return res.status(201).json({
             message: 'User registered successfully',
             user: createdUser,
@@ -88,19 +92,19 @@ const updateProfile = async (
         if (!errors.isEmpty()) {
             return res.status(400).json({ message: errors.array() });
         }
-    
+
         const { name, surnames } = req.body;
         const userId = req.userId;
-    
+
         const updatedUser = await usersService.updateProfile(userId, {
             name,
             surnames,
         });
-    
+
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
-    
+
         return res.status(200).json({
             message: 'Profile updated successfully',
             user: updatedUser,
@@ -127,20 +131,22 @@ const changePassword = async (
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-    
+
         const { currentPassword, newPassword } = req.body;
         const userId = req.userId;
-    
+
         const passwordChanged = await usersService.changePassword(
             userId,
             currentPassword,
             newPassword
         );
-    
+
         if (!passwordChanged) {
-            return res.status(400).json({ message: 'Incorrect current password' });
+            return res
+                .status(400)
+                .json({ message: 'Incorrect current password' });
         }
-    
+
         return res
             .cookie(auth_token, '', {
                 httpOnly: true,
@@ -170,23 +176,25 @@ const resetPassword = async (
         if (!errors.isEmpty()) {
             return res.status(400).json({ message: errors.array() });
         }
-    
+
         const { newPassword } = req.body;
         const userId = req.userId;
-    
-        const { status } = await usersService.resetPassword(userId, newPassword);
-    
+
+        const { status } = await usersService.resetPassword(
+            userId,
+            newPassword
+        );
+
         switch (status) {
             case PasswordResetStatus.FAIL:
-                return res
-                    .status(400)
-    
+                return res.status(400);
+
             case PasswordResetStatus.MATCH:
                 return res.status(400).json({
                     message:
                         'New password cannot be the same as the current password',
                 });
-    
+
             case PasswordResetStatus.SUCCESS:
                 return res
                     .cookie(password_reset_token, '', {
@@ -199,7 +207,7 @@ const resetPassword = async (
                     })
                     .status(200)
                     .json({ message: 'Password reset successfully' });
-    
+
             default:
                 return res.status(500).json({ message: 'Unknown error' });
         }
@@ -227,9 +235,12 @@ const updateProfilePhoto = async (
         }
         const userId = req.userId;
         const photo = req.file as Express.Multer.File;
-    
-        const updatedUser = await usersService.updateProfilePhoto(userId, photo);
-    
+
+        const updatedUser = await usersService.updateProfilePhoto(
+            userId,
+            photo
+        );
+
         return res.status(200).json({
             message: 'Profile photo updated successfully',
             user: updatedUser,
@@ -248,11 +259,16 @@ const updateProfilePhoto = async (
  * @returns Returns a JSON object with the total distance and status 200 on success,
  * or an error message with status 500 if there was an issue retrieving the distance.
  */
-const getTodayTotalDistance = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+const getTodayTotalDistance = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
     try {
         const userId = req.userId;
-    
-        const totalDistance = await measurementsService.getTodayTotalDistance(userId);
+
+        const totalDistance =
+            await measurementsService.getTodayTotalDistance(userId);
         return res.status(200).json({
             message: 'Total distance for today retrieved successfully',
             totalDistance,

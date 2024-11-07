@@ -1,6 +1,8 @@
 import { check, ValidationChain } from 'express-validator';
 
-export const passwordValidationRules = (fieldName = 'password'): ValidationChain[] => [
+export const passwordValidationRules = (
+    fieldName = 'password'
+): ValidationChain[] => [
     check(fieldName)
         .notEmpty()
         .withMessage('Password is required')

@@ -87,7 +87,7 @@ const getTodayMeasurements = async (userId: number): Promise<Measurement[]> => {
                 gte: today,
             },
         },
-        orderBy: { timestamp: 'asc' }
+        orderBy: { timestamp: 'asc' },
     });
 
     return measurements;
@@ -157,11 +157,8 @@ const getMeasurementsTotalDistance = (measurements: Measurement[]): number => {
  * @param userId - The ID of the user whose measurements are being retrieved.
  * @returns {Promise<Number>} - A promise that resolves with the total distance in meters.
  */
-const getTodayTotalDistance = async (
-    userId: number
-): Promise<number> => {
-    const measurements =
-        await getTodayMeasurements(userId);
+const getTodayTotalDistance = async (userId: number): Promise<number> => {
+    const measurements = await getTodayMeasurements(userId);
 
     return getMeasurementsTotalDistance(measurements);
 };

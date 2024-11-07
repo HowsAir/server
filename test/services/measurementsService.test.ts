@@ -230,108 +230,107 @@ describe('measurementsService', () => {
         });
     });
 
-describe('getCoordinatesDistance()', () => {
-    it('should calculate distance between two coordinates correctly (New York to Philadelphia)', () => {
-        const lat1 = 40.7128;
-        const lon1 = -74.006;
-        const lat2 = 39.9526;
-        const lon2 = -75.1652;
+    describe('getCoordinatesDistance()', () => {
+        it('should calculate distance between two coordinates correctly (New York to Philadelphia)', () => {
+            const lat1 = 40.7128;
+            const lon1 = -74.006;
+            const lat2 = 39.9526;
+            const lon2 = -75.1652;
 
-        const distance = measurementsService.getCoordinatesDistance(
-            lat1,
-            lon1,
-            lat2,
-            lon2
-        );
+            const distance = measurementsService.getCoordinatesDistance(
+                lat1,
+                lon1,
+                lat2,
+                lon2
+            );
 
-        expect(distance).toBeGreaterThanOrEqual(129400); // rango 129400 - 131400
-        expect(distance).toBeLessThanOrEqual(131400);
+            expect(distance).toBeGreaterThanOrEqual(129400); // rango 129400 - 131400
+            expect(distance).toBeLessThanOrEqual(131400);
+        });
+
+        it('should calculate distance between two coordinates correctly (Philadelphia to Washington D.C.)', () => {
+            const lat1 = 39.9526;
+            const lon1 = -75.1652;
+            const lat2 = 38.9072;
+            const lon2 = -77.0369;
+
+            const distance = measurementsService.getCoordinatesDistance(
+                lat1,
+                lon1,
+                lat2,
+                lon2
+            );
+
+            // Aproximadamente 198,500 metros con margen de tolerancia
+            expect(distance).toBeCloseTo(198500, -3); // Tolerancia de 1000 metros
+        });
+
+        it('should calculate the distance correctly for points on the equator', () => {
+            const lat1 = 0;
+            const lon1 = 0;
+            const lat2 = 0;
+            const lon2 = 1;
+
+            const distance = measurementsService.getCoordinatesDistance(
+                lat1,
+                lon1,
+                lat2,
+                lon2
+            );
+
+            // Aproximadamente 111,320 metros con margen de tolerancia
+            expect(distance).toBeCloseTo(111320, -3); // Tolerancia de 1000 metros
+        });
+
+        it('should return 0 distance if the coordinates are the same', () => {
+            const lat = 40.7128;
+            const lon = -74.006;
+
+            const distance = measurementsService.getCoordinatesDistance(
+                lat,
+                lon,
+                lat,
+                lon
+            );
+
+            expect(distance).toBe(0);
+        });
+
+        it('should calculate a very small distance for nearby points (close by)', () => {
+            const lat1 = 40.7128;
+            const lon1 = -74.006;
+            const lat2 = 40.7129;
+            const lon2 = -74.0061;
+
+            const distance = measurementsService.getCoordinatesDistance(
+                lat1,
+                lon1,
+                lat2,
+                lon2
+            );
+
+            // Expected small distance, less than 100 meters
+            expect(distance).toBeLessThan(14);
+            expect(distance).toBeGreaterThan(13);
+        });
+
+        it('should calculate the distance correctly for points near the poles', () => {
+            const lat1 = 89.9;
+            const lon1 = 0;
+            const lat2 = 89.9;
+            const lon2 = 90;
+
+            const distance = measurementsService.getCoordinatesDistance(
+                lat1,
+                lon1,
+                lat2,
+                lon2
+            );
+
+            // Small distance close to the poles, about 15,730 meters
+            expect(distance).toBeCloseTo(15730, -1); // Tolerancia de 10 metros
+        });
     });
-
-    it('should calculate distance between two coordinates correctly (Philadelphia to Washington D.C.)', () => {
-        const lat1 = 39.9526;
-        const lon1 = -75.1652;
-        const lat2 = 38.9072;
-        const lon2 = -77.0369;
-
-        const distance = measurementsService.getCoordinatesDistance(
-            lat1,
-            lon1,
-            lat2,
-            lon2
-        );
-
-        // Aproximadamente 198,500 metros con margen de tolerancia
-        expect(distance).toBeCloseTo(198500, -3); // Tolerancia de 1000 metros
-    });
-
-    it('should calculate the distance correctly for points on the equator', () => {
-        const lat1 = 0;
-        const lon1 = 0;
-        const lat2 = 0;
-        const lon2 = 1;
-
-        const distance = measurementsService.getCoordinatesDistance(
-            lat1,
-            lon1,
-            lat2,
-            lon2
-        );
-
-        // Aproximadamente 111,320 metros con margen de tolerancia
-        expect(distance).toBeCloseTo(111320, -3); // Tolerancia de 1000 metros
-    });
-
-    it('should return 0 distance if the coordinates are the same', () => {
-        const lat = 40.7128;
-        const lon = -74.006;
-
-        const distance = measurementsService.getCoordinatesDistance(
-            lat,
-            lon,
-            lat,
-            lon
-        );
-
-        expect(distance).toBe(0);
-    });
-
-    it('should calculate a very small distance for nearby points (close by)', () => {
-        const lat1 = 40.7128;
-        const lon1 = -74.006;
-        const lat2 = 40.7129;
-        const lon2 = -74.0061;
-
-        const distance = measurementsService.getCoordinatesDistance(
-            lat1,
-            lon1,
-            lat2,
-            lon2
-        );
-
-        // Expected small distance, less than 100 meters
-        expect(distance).toBeLessThan(14);
-        expect(distance).toBeGreaterThan(13);
-    });
-
-    it('should calculate the distance correctly for points near the poles', () => {
-        const lat1 = 89.9;
-        const lon1 = 0;
-        const lat2 = 89.9;
-        const lon2 = 90;
-
-        const distance = measurementsService.getCoordinatesDistance(
-            lat1,
-            lon1,
-            lat2,
-            lon2
-        );
-
-        // Small distance close to the poles, about 15,730 meters
-        expect(distance).toBeCloseTo(15730, -1); // Tolerancia de 10 metros
-    });
-});
-
 
     // Tests for getMeasurementsTotalDistance
     describe('getMeasurementsTotalDistance()', () => {
@@ -388,4 +387,3 @@ describe('getCoordinatesDistance()', () => {
         });
     });
 });
-

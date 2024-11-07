@@ -33,9 +33,7 @@ router.post('/logout', authController.logout);
 
 router.post(
     '/forgot-password-code',
-    [
-        check('email', 'Valid email is required').isEmail()
-    ],
+    [check('email', 'Valid email is required').isEmail()],
     authController.forgotPassword
 );
 
@@ -53,26 +51,20 @@ router.get(
 
 router.post(
     '/confirmation-email',
-    [
-        check('email', 'Valid email is required').isEmail()
-    ],
+    [check('email', 'Valid email is required').isEmail()],
     authController.sendConfirmationEmail
 );
 
 router.get(
     '/email-confirmation-token',
-    [
-        check('token', 'Valid token is required').isString()
-    ],
+    [check('token', 'Valid token is required').isString()],
     authController.createEmailVerificationToken
 );
 
 router.get(
     '/validate-email-confirmation-token',
     verifyEmailConfirmedToken,
-    [
-        check('email', 'Valid email is required').isEmail()
-    ],
+    [check('email', 'Valid email is required').isEmail()],
     authController.confirmEmail
 );
 

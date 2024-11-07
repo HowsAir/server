@@ -25,15 +25,15 @@ const createMeasurement = async (
 ): Promise<Response | void> => {
     try {
         const errors = validationResult(req);
-    
+
         if (!errors.isEmpty()) {
             return res.status(400).json({ message: errors.array() });
         }
-    
+
         const { o3Value, latitude, longitude } = req.body;
-    
+
         const userId = req.userId;
-    
+
         const createdMeasurement: Measurement =
             await measurementsService.createMeasurement(
                 o3Value,
@@ -41,7 +41,7 @@ const createMeasurement = async (
                 longitude,
                 userId
             );
-    
+
         return res.status(201).json(createdMeasurement);
     } catch (error) {
         next(error);
