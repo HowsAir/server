@@ -26,26 +26,11 @@ const upload = multer({
     },
 });
 
-//DOCUMENTAR API.YAML
 router.post(
     '/',
     [
         check('email', 'Email is required and needs to be valid').isEmail(),
-        check('password')
-            .notEmpty()
-            .withMessage('Password is required')
-            .isLength({ min: 6 })
-            .withMessage('Password needs to be 6 characters long')
-            .matches(/[A-Z]/)
-            .withMessage('Password needs to have at least one capital letter')
-            .matches(/[a-z]/)
-            .withMessage('Password needs to have at least one normal letter')
-            .matches(/\d/)
-            .withMessage('Password needs to have at least one number')
-            .matches(/[@$!%*?&]/)
-            .withMessage(
-                'Password needs to have at least one special character'
-            ),
+        ...passwordValidationRules('password'),
         check('name', 'Name is required and cannot be empty').notEmpty(),
         check(
             'surnames',
@@ -100,8 +85,8 @@ router.put(
 
 router.post(
     '/reset-password',
+    verifyResetPasswordToken,
     [
-        verifyResetPasswordToken,
         ...passwordValidationRules('newPassword'), // Reusing the same validation rules
     ],
     usersController.resetPassword

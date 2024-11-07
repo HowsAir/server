@@ -33,13 +33,15 @@ router.get('/validate', verifyToken, async (req: Request, res: Response) => {
 router.post('/logout', authController.logout);
 
 router.post(
-    '/forgot-password',
-    [check('email', 'Valid email is required').isEmail()],
+    '/forgot-password-code',
+    [
+        check('email', 'Valid email is required').isEmail()
+    ],
     authController.forgotPassword
 );
 
-router.post(
-    '/verify-reset-code',
+router.get(
+    '/forgot-password-token',
     [
         check('email', 'Valid email is required').isEmail(),
         check('code', 'Six digit reset code is required').isLength({
@@ -50,25 +52,30 @@ router.post(
     authController.verifyResetCode
 );
 
-// Sends an email to the user with its own email encrypted on a link that looks like this:
+//A LO MEJOR LIMITAR EL NUMERO DE INTENTOS DE CAMBIAR LA CONTRASEÑA
+//POR IP O POR CORREO CON CACHE EN REDIS
 router.post(
-    '/send-confirmation-email',
-    [check('email', 'Valid email is required').isEmail()],
+    '/confirmation-email',
+    [
+        check('email', 'Valid email is required').isEmail()
+    ],
     authController.sendConfirmationEmail
 );
 
-// Receives the token from the link obtained in the email of confirm-email, gets the email from the link after decrypting the token.
-// You will access this endpoint by this URL: http://localhost:3000/verify-email-token?token=encryptedEmail.
-router.post(
-    '/create-email-verification-token',
+router.get(
+    '/email-confirmation-token',
+    [
+        check('token', 'Valid token is required').isString()
+    ],
     authController.createEmailVerificationToken
 );
 
-// Receives the email from the first endpoint, to verify if it matches with the email encrypted on the cookie.
-router.post(
-    '/confirm-email',
-    [check('email', 'Valid email is required').isEmail()],
+router.get(
+    '/validate-email-confirmation-token',
     verifyEmailConfirmedToken,
+    [
+        check('email', 'Valid email is required').isEmail()
+    ],
     authController.confirmEmail
 );
 
