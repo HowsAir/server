@@ -453,28 +453,4 @@ describe('authService', () => {
             );
         });
     });
-
-    describe('confirmEmail()', () => {
-        it('should return true when emails match', async () => {
-            // Act
-            const result = await authService.confirmEmail(
-                'user@example.com',
-                'user@example.com'
-            );
-
-            // Assert
-            expect(result).toBe(true);
-        });
-
-        it('should return false when emails do not match', async () => {
-            // Act
-            const result = await authService.confirmEmail(
-                'user@example.com',
-                'another@example.com'
-            );
-
-            // Assert
-            expect(result).toBe(false);
-        });
-    });
 });

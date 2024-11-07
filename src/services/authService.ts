@@ -146,32 +146,9 @@ const sendVerificationEmail = async (email: string): Promise<User | void> => {
     await sendEmailVerification(email, verificationUrl);
 };
 
-/**
- * Confirms that the provided email matches the decoded email.
- *
- * This function is used to verify that the email provided by the user matches the email
- * extracted from the verification token. If the emails match, it returns true,
- * indicating that the email is confirmed.
- *
- * @param email - The email address provided by the user in the request.
- * @param decodedEmail - The email address decoded from the verification token.
- * @returns {Promise<boolean>} - Returns true if the emails match, false otherwise.
- */
-const confirmEmail = async (
-    email: string,
-    decodedEmail: string
-): Promise<boolean> => {
-    if (email !== decodedEmail) {
-        return false;
-    }
-
-    return true;
-};
-
 export const authService = {
     login,
     initiatePasswordReset,
     verifyResetCode,
     sendVerificationEmail,
-    confirmEmail,
 };
