@@ -170,7 +170,7 @@ describe('authService', () => {
                 code: mockResetCode,
                 timestamp: new Date(),
             });
-            generateResetCode.mockReturnValue(mockResetCode);
+            vi.mocked(generateResetCode).mockReturnValue(mockResetCode);
 
             // Act
             await authService.initiatePasswordReset(mockUser.email);
