@@ -9,7 +9,6 @@ import { validationResult } from 'express-validator';
 import { usersService, PasswordResetStatus } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { measurementsService } from '../services/measurementsService';
-import { config } from 'dotenv';
 import { auth_token, password_reset_token } from '../middleware/auth';
 
 /**

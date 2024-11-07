@@ -96,7 +96,7 @@ export const putJwtWithEmailInResponse = (
 export const getEmailFromToken = (token: string): string => {
     try {
         const decoded = jwt.verify(
-            token as string,
+            token,
             process.env.JWT_SECRET_KEY as string
         ) as JwtPayload;
         return decoded.email as string;

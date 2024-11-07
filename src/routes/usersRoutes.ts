@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import { Router, Request } from 'express';
+import { Router} from 'express';
 import { check, body } from 'express-validator';
 import { usersController } from '../controllers/usersController';
 import {
