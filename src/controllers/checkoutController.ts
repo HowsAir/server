@@ -50,7 +50,7 @@ const createCheckoutSession = async (
     });
 
     // Return the session ID to the client
-    return res.status(200).json({ id: session.id });
+    return res.status(201).json({ id: session.id });
 };
 
 export const checkoutController = {
