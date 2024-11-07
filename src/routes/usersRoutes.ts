@@ -53,18 +53,12 @@ router.patch(
     '/profile',
     verifyToken,
     [
-        check('name', 'Name is not a valid string').optional().notEmpty(),
-        check('surnames', 'Surnames is not a valid string')
+        check('name', 'Name is not a valid string')
             .optional()
             .notEmpty(),
-        body().custom((body) => {
-            if (!body.name && !body.surnames) {
-                throw new Error(
-                    'At least one of name or surnames must be provided'
-                );
-            }
-            return true;
-        }),
+        check('surnames', 'Surnames is not a valid string')
+            .optional()
+            .notEmpty()
     ],
     usersController.updateProfile
 );
