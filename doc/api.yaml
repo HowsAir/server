@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: HowsAir Server API Sprint-0
-  description: Diseño de la API para el Sprint 1 del Proyecto de Biometría.
+  title: HowsAir Server API
+  description: Diseño de la API del Proyecto de Biometría, Equipo HowsAir.
   version: 1.0.0
 servers:
   - url: http://localhost:3000/api/v1
@@ -55,6 +55,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Error en el servidor al guardar la medición
           content:
@@ -85,7 +91,7 @@ paths:
                 password:
                   type: string
                   description: Contraseña del usuario
-                  example: password123
+                  example: Password123.
       responses:
         "200":
           description: Inicio de sesión exitoso, `auth_token` guardado en la cookie
@@ -415,6 +421,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Error en el servidor al validar el token.
           content:
@@ -427,38 +439,22 @@ paths:
       tags:
         - Usuarios
       summary: Registra un nuevo usuario
-      description: Crea un nuevo usuario en el sistema y devuelve un JWT en la cookie `auth_token`.
+      description: Crea un nuevo usuario en la aplicación con la información proporcionada. Si es exitoso, devuelve un `auth_token` en una cookie de autenticación.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - email
-                - password
-                - name
-                - surnames
-              properties:
-                email:
-                  type: string
-                  description: Correo electrónico del nuevo usuario
-                  example: newuser@example.com
-                password:
-                  type: string
-                  description: Contraseña del nuevo usuario
-                  example: password123
-                name:
-                  type: string
-                  description: Nombre del nuevo usuario
-                  example: Juan
-                surnames:
-                  type: string
-                  description: Apellidos del nuevo usuario
-                  example: Perez Garcia
+              $ref: "#/components/schemas/UserInput"
       responses:
         "201":
-          description: Usuario registrado exitosamente, `auth_token` guardado en la cookie
+          description: Registro exitoso del usuario y creación del token de autenticación.
+          headers:
+            Set-Cookie:
+              description: Cookie de autenticación con el token
+              schema:
+                type: string
+                example: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Max-Age=1296000000
           content:
             application/json:
               schema:
@@ -470,13 +466,292 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         "400":
-          description: Error de validación en los datos del usuario
+          description: Error de validación en los datos de registro.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
         "500":
-          description: Error en el servidor al registrar al usuario
+          description: Error en el servidor al intentar registrar al usuario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/profile:
+    patch:
+      tags:
+        - Usuarios
+      summary: Actualiza el perfil del usuario
+      description: Permite al usuario actualizar su nombre o apellidos. Al menos uno de los dos campos (`name` o `surnames`) debe ser proporcionado.
+      security:
+        - AuthTokenCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Nuevo nombre del usuario
+                  example: "Jane"
+                surnames:
+                  type: string
+                  description: Nuevos apellidos del usuario
+                  example: "Smith"
+              anyOf:
+                - required: ["name"]
+                - required: ["surnames"]
+      responses:
+        "200":
+          description: Perfil del usuario actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile updated successfully"
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Error en la validación de los datos de entrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al actualizar el perfil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/password:
+    put:
+      tags:
+        - Usuarios
+      summary: Cambia la contraseña del usuario
+      description: Permite al usuario cambiar su contraseña actual por una nueva. Requiere que el usuario esté autenticado.
+      security:
+        - AuthTokenCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                  description: Contraseña actual del usuario
+                  minLength: 6
+                  example: "Oldpassword123."
+                newPassword:
+                  type: string
+                  description: Nueva contraseña del usuario
+                  minLength: 6
+                  example: "Newpassword123."
+      responses:
+        "200":
+          description: Contraseña cambiada exitosamente. La cookie de autenticación anterior es eliminada.
+          headers:
+            Set-Cookie:
+              description: Cookie de autenticación eliminada al cambiar la contraseña
+              schema:
+                type: string
+                example: auth_token=; HttpOnly; Path=/; Max-Age=0
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password changed successfully"
+        "400":
+          description: Error en la validación de los datos de entrada o contraseña actual incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al intentar cambiar la contraseña.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/reset-password:
+    put:
+      tags:
+        - Usuarios
+      summary: Restablece la contraseña del usuario
+      description: Permite al usuario restablecer su contraseña utilizando un token de restablecimiento de contraseña. Requiere autenticación a través de la cookie `password_reset_token`.
+      security:
+        - PasswordResetTokenCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newPassword
+              properties:
+                newPassword:
+                  type: string
+                  description: Nueva contraseña del usuario. Debe tener al menos 6 caracteres, incluyendo una mayúscula, un número y un carácter especial (como un ".").
+                  example: "Newpassword1."
+      responses:
+        "200":
+          description: Contraseña restablecida exitosamente. Las cookies de autenticación y de restablecimiento de contraseña son eliminadas.
+          headers:
+            Set-Cookie:
+              description: Cookie de autenticación eliminada al restablecer la contraseña
+              schema:
+                type: string
+                example: auth_token=; HttpOnly; Path=/; Max-Age=0
+            Set-Cookie-PasswordReset:
+              description: Cookie de restablecimiento de contraseña eliminada tras el cambio de contraseña
+              schema:
+                type: string
+                example: password_reset_token=; HttpOnly; Path=/; Max-Age=0
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successfully"
+        "400":
+          description: Error en la validación de los datos de entrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token de restablecimiento de contraseña inválido o ausente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al intentar restablecer la contraseña.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/photo:
+    put:
+      tags:
+        - Usuarios
+      summary: Actualiza la foto de perfil del usuario
+      description: Permite al usuario subir y actualizar su foto de perfil. Requiere autenticación a través de la cookie `auth_token`. Solo se permiten archivos JPEG y PNG.
+      security:
+        - AuthTokenCookie: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - photo
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: Archivo de imagen en formato JPEG o PNG.
+      responses:
+        "200":
+          description: Foto de perfil actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile photo updated successfully"
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Error de validación en el archivo de foto de perfil proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al actualizar la foto de perfil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/today-total-distance:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene la distancia total recorrida hoy por el usuario
+      description: Devuelve la distancia total recorrida por el usuario en el día actual en metros. Requiere autenticación a través de la cookie `auth_token`.
+      security:
+        - AuthTokenCookie: []
+      responses:
+        "200":
+          description: Distancia total recorrida por el usuario en el día actual.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Total distance for today retrieved successfully"
+                  totalDistance:
+                    type: number
+                    description: Distancia total recorrida hoy por el usuario en metros.
+                    example: 5670
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al obtener la distancia total.
           content:
             application/json:
               schema:
@@ -509,6 +784,12 @@ paths:
                     $ref: "#/components/schemas/Node"
         "400":
           description: Error al vincular el nodo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
           content:
             application/json:
               schema:
@@ -563,14 +844,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
 components:
   securitySchemes:
     AuthTokenCookie:
       type: apiKey
       in: cookie
       name: auth_token
-      description: El token JWT se pasa en una cookie llamada `auth_token`. Para indicar que el usuario está autenticado.
+      description: El token JWT se pasa en una cookie llamada `auth_token`. Para indicar que el usuario está autenticado. Contiene información de la sesión del usuario.
     PasswordResetTokenCookie:
       type: apiKey
       in: cookie
@@ -721,6 +1002,56 @@ components:
           description: Fecha y hora de creación del token
 
 
+    UserInput:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - surnames
+        - phone
+        - country
+        - city
+        - address
+        - zipCode
+      properties:
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario
+          example: user@example.com
+        password:
+          type: string
+          description: Contraseña del usuario
+          example: "Password123."
+        name:
+          type: string
+          description: Nombre del usuario
+          example: "John"
+        surnames:
+          type: string
+          description: Apellidos del usuario
+          example: "Doe"
+        phone:
+          type: string
+          description: Teléfono del usuario
+          example: "1234567890"
+        country:
+          type: string
+          description: País del usuario
+          example: "Spain"
+        city:
+          type: string
+          description: Ciudad del usuario
+          example: "Madrid"
+        address:
+          type: string
+          description: Dirección del usuario
+          example: "123 Main St"
+        zipCode:
+          type: string
+          description: Código postal del usuario
+          example: "28001"
 
     MeasurementInput:
       type: object
