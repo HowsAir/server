@@ -6,7 +6,7 @@
 
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import {} from 'dotenv';
+import 'dotenv/config';
 
 export const auth_token = 'auth_token';
 export const password_reset_token = 'password_reset_token';
@@ -119,7 +119,7 @@ export const verifyEmailConfirmedToken = (
     const emailToken = req.cookies[email_verified_token];
 
     if (!emailToken) {
-        return res.status(401).json({ message: 'Email verification required' });
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 
     try {
@@ -132,9 +132,7 @@ export const verifyEmailConfirmedToken = (
         next();
     } catch (error) {
         console.error('Email verification error:', error);
-        return res
-            .status(401)
-            .json({ message: 'Invalid or expired verification' });
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 };
 

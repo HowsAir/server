@@ -14,7 +14,7 @@ import {
 import jwt from 'jsonwebtoken';
 import { generateResetCode, jwtConfig } from '../utils/auth';
 import { findUserByEmail } from './usersService';
-import {} from 'dotenv';
+import 'dotenv/config';
 
 /**
  * Validates the login credentials and returns the user if successful.

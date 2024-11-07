@@ -8,6 +8,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Response } from 'express';
 import { User } from '@prisma/client';
 import { email_verified_token, auth_token, password_reset_token } from '../middleware/auth';
+import 'dotenv/config';
 
 export const jwtConfig = {
     auth_token: {

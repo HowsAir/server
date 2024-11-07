@@ -5,9 +5,7 @@
  */
 
 import nodemailer from 'nodemailer';
-import { config } from 'dotenv';
-
-config();
+import 'dotenv/config';
 
 // Initialize NodeMailer transporter with the environment variables
 const transporter = nodemailer.createTransport({
