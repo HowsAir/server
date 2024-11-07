@@ -34,6 +34,8 @@ paths:
         - Mediciones
       summary: Crea una nueva medición
       description: Recibe los datos de una medición y la guarda en la base de datos.
+      security:
+        - AuthTokenCookie: []      
       requestBody:
         required: true
         content:
@@ -87,6 +89,12 @@ paths:
       responses:
         "200":
           description: Inicio de sesión exitoso, `auth_token` guardado en la cookie
+          headers:
+            Set-Cookie:
+              description: Cookie de autenticación con el token
+              schema:
+                type: string
+                example: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Max-Age=1296000000       
           content:
             application/json:
               schema:
@@ -126,6 +134,8 @@ paths:
         - Autenticación
       summary: Valida el token JWT
       description: Verifica si el token JWT proporcionado es válido.
+      security:
+        - AuthTokenCookie: []
       responses:
         "200":
           description: Token es válido
@@ -163,6 +173,12 @@ paths:
       responses:
         "200":
           description: Cierre de sesión exitoso, `auth_token` eliminado
+          headers:
+            Set-Cookie:
+              description: Cookie de autenticación con el token
+              schema:
+                type: string
+                example: auth_token=; HttpOnly; Path=/; Max-Age=0 
           content:
             application/json:
               schema:
@@ -173,6 +189,234 @@ paths:
                     example: "Logout successful"
         "500":
           description: Error en el servidor al cerrar la sesión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /auth/forgot-password-code:
+    post:
+      tags:
+        - Autenticación
+      summary: Solicita el restablecimiento de contraseña
+      description: Recibe un correo electrónico y genera un código de restablecimiento de contraseña, que se envía al usuario para poder restablecer la contraseña.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario para el restablecimiento de contraseña
+                  example: user@example.com
+      responses:
+        "200":
+          description: Solicitud de restablecimiento de contraseña procesada con éxito, código enviado al correo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset code sent to your email"
+        "400":
+          description: Error de validación en el correo electrónico proporcionado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al procesar la solicitud
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/forgot-password-token:
+    get:
+      tags:
+        - Autenticación
+      summary: Verifica el código de restablecimiento de contraseña
+      description: Verifica que el código de restablecimiento de contraseña proporcionado sea válido. Si es válido, devuelve un `password_reset_token` en una cookie con una expiración de 15 minutos para que el usuario pueda restablecer la contraseña posteriormente.
+      parameters:
+        - name: email
+          in: query
+          required: true
+          description: Correo electrónico del usuario que solicitó el restablecimiento de contraseña.
+          schema:
+            type: string
+            example: user@example.com
+        - name: code
+          in: query
+          required: true
+          description: Código de 6 dígitos para el restablecimiento de contraseña.
+          schema:
+            type: string
+            example: "123456"
+      responses:
+        "200":
+          description: Código de restablecimiento de contraseña válido. El `password_reset_token` es guardado en la cookie.
+          headers:
+            Set-Cookie:
+              description: Cookie con el token de restablecimiento de contraseña.
+              schema:
+                type: string
+                example: password_reset_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Max-Age=900
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset code is valid"
+        "400":
+          description: El código de restablecimiento de contraseña es inválido, no pertenece al usuario o ha expirado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al verificar el código.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/confirmation-email:
+    post:
+      tags:
+        - Autenticación
+      summary: Envía un correo de verificación al usuario
+      description: Recibe el correo electrónico del usuario, envía un correo al usuario con un enlace de confirmación. El enlace le hara recibir un token para completar el registro/compra.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario para el cual se enviará el correo de verificación
+                  example: user@example.com
+      responses:
+        "200":
+          description: Correo de verificación enviado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Confirmation email sent successfully"
+        "400":
+          description: Error de validación en el correo electrónico proporcionado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al enviar el correo de verificación
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/email-confirmation-token:
+    get:
+      tags:
+        - Autenticación
+      summary: Recibe un token de verificación de correo electrónico 
+      description: Recibe el token de verificación de correo electrónico en la URL, verifica su validez y, si es válido, devuelve un `email_verified_token` en una cookie para que el usuario pueda completar el proceso de compra.
+      parameters:
+        - name: token
+          in: query
+          required: true
+          description: Token de verificación de correo electrónico que el usuario recibe en el enlace de confirmación.
+          schema:
+            type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        "200":
+          description: Token de verificación de correo electrónico válido. El `email_verified_token` es guardado en la cookie.
+          headers:
+            Set-Cookie:
+              description: Cookie con el token de verificación de correo electrónico.
+              schema:
+                type: string
+                example: email_verified_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Max-Age=900
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email verification token created successfully"
+        "400":
+          description: El token de verificación de correo electrónico es inválido o ha expirado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al procesar el token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/validate-email-confirmation-token:
+    get:
+      tags:
+        - Autenticación
+      summary: Valida el token de confirmación de email
+      description: Verifica el token de confirmación de correo electrónico para permitir al usuario registrarse o completar su compra.
+      security:
+        - EmailVerifiedTokenCookie: []
+      parameters:
+        - name: email
+          in: query
+          required: true
+          description: Correo electrónico del usuario que solicita la validación del token de confirmación.
+          schema:
+            type: string
+            format: email
+            example: user@example.com
+      responses:
+        "200":
+          description: Token de confirmación de email válido.
+          headers:
+            Set-Cookie:
+              description: Vaciar token de confirmacion de email de la cookie.
+              schema:
+                type: string
+                example: email_verified_token=; HttpOnly; Path=/; Max-Age=0 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email confirmation token is valid"
+        "400":
+          description: El token de confirmación de email es inválido o el email no es válido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al validar el token.
           content:
             application/json:
               schema:
@@ -278,6 +522,22 @@ paths:
                 $ref: "#/components/schemas/Error"
 
 components:
+  securitySchemes:
+    AuthTokenCookie:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: El token JWT se pasa en una cookie llamada `auth_token`. Para indicar que el usuario está autenticado.
+    PasswordResetTokenCookie:
+      type: apiKey
+      in: cookie
+      name: password_reset_token
+      description: El token JWT se pasa en una cookie llamada `password_reset_token`. Para indicar que el usuario puede restablecer su contraseña.
+    EmailVerifiedTokenCookie:
+      type: apiKey
+      in: cookie
+      name: email_verified_token
+      description: El token JWT se pasa en una cookie llamada `email_verified_token`. Para indicar que el email ha sido verificado.
   schemas:
     Measurement:
       type: object
@@ -308,31 +568,6 @@ components:
           type: integer
           description: ID del nodo asociado a la medición
 
-    MeasurementInput:
-      type: object
-      required:
-        - o3Value
-        - no2Value
-        - coValue
-        - latitude
-        - longitude
-      properties:
-        o3Value:
-          type: number
-          description: Nivel de ozono (O3) en ppm
-        no2Value:
-          type: number
-          description: Nivel de dióxido de nitrógeno (NO2) en ppm
-        coValue:
-          type: number
-          description: Nivel de monóxido de carbono (CO) en ppm
-        latitude:
-          type: number
-          description: Latitud en la que se registró la medición
-        longitude:
-          type: number
-          description: Longitud en la que se registró la medición
-
     User:
       type: object
       properties:
@@ -341,13 +576,43 @@ components:
           description: ID único del usuario
         email:
           type: string
-          description: Correo electrónico del usuario
+          description: Correo electrónico del usuario (único)
         name:
           type: string
           description: Nombre del usuario
         surnames:
           type: string
           description: Apellidos del usuario
+        password:
+          type: string
+          description: Contraseña del usuario (almacenada en formato seguro)
+        photoUrl:
+          type: string
+          nullable: true
+          description: URL de la foto de perfil del usuario
+        phone:
+          type: string
+          nullable: true
+          description: Número de teléfono del usuario
+        country:
+          type: string
+          nullable: true
+          description: País de residencia del usuario
+        city:
+          type: string
+          nullable: true
+          description: Ciudad de residencia del usuario
+        zipCode:
+          type: string
+          nullable: true
+          description: Código postal del usuario
+        address:
+          type: string
+          nullable: true
+          description: Dirección del usuario
+        roleId:
+          type: integer
+          description: ID del rol del usuario (por defecto 1)
 
     Node:
       type: object
@@ -355,18 +620,81 @@ components:
         id:
           type: integer
           description: ID único del nodo
-        name:
-          type: string
-          description: Nombre del nodo
-          example: Node A
-        location:
-          type: string
-          description: Ubicación del nodo
-          example: "50.1234, -0.1234"
+        userId:
+          type: integer
+          nullable: true
+          description: ID del usuario asociado al nodo (único si está presente)
         status:
           type: string
-          description: Estado del nodo
-          example: "active"
+          description: Estado actual del nodo
+          example: "ACTIVE"
+          enum: [ACTIVE, INACTIVE, UNLINKED]
+        lastStatusUpdate:
+          type: string
+          format: date-time
+          description: Fecha y hora de la última actualización de estado
+
+    DailyStat:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único de la estadística diaria
+        userId:
+          type: integer
+          description: ID del usuario asociado a esta estadística diaria
+        date:
+          type: string
+          format: date
+          description: Fecha de la estadística, almacenada en formato de fecha
+          example: "2023-11-07"
+        activeHours:
+          type: number
+          format: float
+          description: Horas activas registradas en este día para el usuario
+          example: 5.5
+        distance:
+          type: number
+          format: float
+          description: Distancia recorrida en kilómetros durante el día
+          example: 10.2
+
+    PasswordResetToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único del token de restablecimiento de contraseña
+        userId:
+          type: integer
+          description: ID del usuario asociado a este token
+        code:
+          type: string
+          description: Código de 6 dígitos enviado al usuario para restablecer la contraseña
+          example: "123456"
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación del token
+
+
+
+    MeasurementInput:
+      type: object
+      required:
+        - o3Value
+        - latitude
+        - longitude
+      properties:
+        o3Value:
+          type: number
+          description: Nivel de ozono (O3) en ppm
+        latitude:
+          type: number
+          description: Latitud en la que se registró la medición
+        longitude:
+          type: number
+          description: Longitud en la que se registró la medición
 
     Error:
       type: object
