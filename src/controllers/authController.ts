@@ -4,7 +4,7 @@
  * @author Manuel Borregales & Juan Diaz
  */
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import {
     putJwtInResponse,
@@ -25,27 +25,31 @@ import {
  *
  * @param req - The HTTP request containing email and password in the body.
  * @param res - The HTTP response object to send the JWT token in a cookie if successful.
- * @returns {Promise<Response>} - Returns a JSON response with the user details and token if successful, or an error message if not.
+ * @returns {Promise<Response|void>} - Returns a JSON response with the user details and token if successful, or an error message if not.
  */
-const login = async (req: Request, res: Response): Promise<Response> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
+const login = async (req: Request, res: Response, next: NextFunction): Promise<Response|void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
+    
+        const { email, password } = req.body;
+    
+        // Authenticate user using authService
+        const user = await authService.login(email, password);
+    
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+    
+        // Add JWT to response for authentication cookie for 15 days
+        putJwtInResponse(res, user, auth_token);
+    
+        return res.status(200).json({ message: 'Login successful', user });
+    } catch (error) {
+        next(error);
     }
-
-    const { email, password } = req.body;
-
-    // Authenticate user using authService
-    const user = await authService.login(email, password);
-
-    if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Add JWT to response for authentication cookie for 15 days
-    putJwtInResponse(res, user, auth_token);
-
-    return res.status(200).json({ message: 'Login successful', user });
 };
 
 /**
@@ -79,22 +83,28 @@ const logout = async (req: Request, res: Response): Promise<Response> => {
  */
 const forgotPassword = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
+    
+        const { email } = req.body;
+    
+        await authService.initiatePasswordReset(email);
+    
+        // Sends a generic response to prevent information disclosure about user existence
+        return res.status(200).json({
+            message:
+                'If your email is registered, you will receive password reset instructions.',
+        });
     }
-
-    const { email } = req.body;
-
-    await authService.initiatePasswordReset(email);
-
-    // Sends a generic response to prevent information disclosure about user existence
-    return res.status(200).json({
-        message:
-            'If your email is registered, you will receive password reset instructions.',
-    });
+    catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -109,28 +119,33 @@ const forgotPassword = async (
  */
 const verifyResetCode = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
-    }
-
-    const { email, code } = req.query;
-
-    const user = await authService.verifyResetCode(email as string, code as string);
-
-    if (!user) {
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
+    
+        const { email, code } = req.query;
+    
+        const user = await authService.verifyResetCode(email as string, code as string);
+    
+        if (!user) {
+            return res
+                .status(400)
+                .json({ message: 'Invalid or expired reset code' });
+        }
+    
+        putJwtInResponse(res, user, password_reset_token);
+    
         return res
-            .status(400)
-            .json({ message: 'Invalid or expired reset code' });
+            .status(200)
+            .json({ message: 'Reset code verified successfully' });
+    } catch (error) {
+        next(error);
     }
-
-    putJwtInResponse(res, user, password_reset_token);
-
-    return res
-        .status(200)
-        .json({ message: 'Reset code verified successfully' });
 };
 
 /**
@@ -145,26 +160,31 @@ const verifyResetCode = async (
  */
 const sendConfirmationEmail = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
+    
+        const { email } = req.body;
+    
+        const existingUser = await authService.sendVerificationEmail(email);
+    
+        if (existingUser != null) {
+            return res
+                .status(400)
+                .json({ message: 'Email is not valid' });
+        }
+    
+        return res.status(200).json({
+            message: 'Verification email sent successfully',
+        });
+    } catch (error) {
+        next(error);
     }
-
-    const { email } = req.body;
-
-    const existingUser = await authService.sendVerificationEmail(email);
-
-    if (existingUser != null) {
-        return res
-            .status(400)
-            .json({ message: 'Email already attached to an account' });
-    }
-
-    return res.status(200).json({
-        message: 'Verification email sent successfully',
-    });
 };
 
 /**
@@ -180,24 +200,29 @@ const sendConfirmationEmail = async (
  */
 const createEmailVerificationToken = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
+    
+        const { token } = req.query;
+    
+        const decodedEmail = getEmailFromToken(token as string);
+    
+        if (!decodedEmail) {
+            return res.status(400).json({ message: 'Invalid token' });
+        }
+    
+        putJwtWithEmailInResponse(res, decodedEmail);
+    
+        return res.status(200).json({ message: 'Email verified successfully' });
+    } catch (error) {
+        next(error);
     }
-
-    const { token } = req.query;
-
-    const decodedEmail = getEmailFromToken(token as string);
-
-    if (!decodedEmail) {
-        return res.status(400).json({ message: 'Invalid token' });
-    }
-
-    putJwtWithEmailInResponse(res, decodedEmail);
-
-    return res.status(200).json({ message: 'Email verified successfully' });
 };
 
 /**
@@ -210,27 +235,31 @@ const createEmailVerificationToken = async (
  * @param res - The HTTP response to clear the email verification cookie and confirm the email.
  * @returns {Promise<Response>} - Returns a JSON response indicating the email was confirmed or not.
  */
-const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
-    }
-
-    const { email, decodedEmail } = req.query;
+const confirmEmail = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
     
-    const emailConfirmed = email as string === decodedEmail as string;
+        const { email, decodedEmail } = req.query;
+        
+        const emailConfirmed = email as string === decodedEmail as string;
+        
+        if (!emailConfirmed) {
+            return res.status(400).json({ message: 'Emails do not match' });
+        }
     
-    if (!emailConfirmed) {
-        return res.status(400).json({ message: 'Emails do not match' });
+        return res
+            .cookie(email_verified_token, '', {
+                httpOnly: true,
+                expires: new Date(0), // Set the cookie expiration to the past to remove it
+            })
+            .status(200)
+            .json({ message: 'Email confirmed successfully' });
+    } catch (error) {
+        next(error);
     }
-
-    return res
-        .cookie(email_verified_token, '', {
-            httpOnly: true,
-            expires: new Date(0), // Set the cookie expiration to the past to remove it
-        })
-        .status(200)
-        .json({ message: 'Email confirmed successfully' });
 };
 
 export const authController = {
