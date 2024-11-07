@@ -25,7 +25,6 @@ router.post(
     authController.login
 );
 
-// Route for validating JWT, passing through verifyToken middleware
 router.get('/validate', verifyToken, async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Token is valid' });
 });
@@ -52,8 +51,6 @@ router.get(
     authController.verifyResetCode
 );
 
-//A LO MEJOR LIMITAR EL NUMERO DE INTENTOS DE CAMBIAR LA CONTRASEÑA
-//POR IP O POR CORREO CON CACHE EN REDIS
 router.post(
     '/confirmation-email',
     [
