@@ -128,7 +128,7 @@ export const verifyEmailConfirmedToken = (
             process.env.JWT_SECRET_KEY as string
         ) as JwtPayload;
 
-        req.body.decodedEmail = decoded.email;
+        req.query.decodedEmail = decoded.email;
         next();
     } catch (error) {
         console.error('Email verification error:', error);

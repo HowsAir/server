@@ -116,9 +116,9 @@ const verifyResetCode = async (
         return res.status(400).json({ message: errors.array() });
     }
 
-    const { email, code } = req.body;
+    const { email, code } = req.query;
 
-    const user = await authService.verifyResetCode(email, code);
+    const user = await authService.verifyResetCode(email as string, code as string);
 
     if (!user) {
         return res
@@ -182,9 +182,18 @@ const createEmailVerificationToken = async (
     req: Request,
     res: Response
 ): Promise<Response> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
     const { token } = req.query;
 
     const decodedEmail = getEmailFromToken(token as string);
+
+    if (!decodedEmail) {
+        return res.status(400).json({ message: 'Invalid token' });
+    }
 
     putJwtWithEmailInResponse(res, decodedEmail);
 
@@ -202,13 +211,26 @@ const createEmailVerificationToken = async (
  * @returns {Promise<Response>} - Returns a JSON response indicating the email was confirmed or not.
  */
 const confirmEmail = async (req: Request, res: Response): Promise<Response> => {
-    if (
-        !(await authService.confirmEmail(req.body.email, req.body.decodedEmail))
-    ) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
+    const { email, decodedEmail } = req.query;
+    
+    const emailConfirmed = email as string === decodedEmail as string;
+    
+    if (!emailConfirmed) {
         return res.status(400).json({ message: 'Emails do not match' });
     }
-    res.clearCookie(email_verified_token);
-    return res.status(200).json({ message: 'Email confirmed successfully' });
+
+    return res
+        .cookie(email_verified_token, '', {
+            httpOnly: true,
+            expires: new Date(0), // Set the cookie expiration to the past to remove it
+        })
+        .status(200)
+        .json({ message: 'Email confirmed successfully' });
 };
 
 export const authController = {
