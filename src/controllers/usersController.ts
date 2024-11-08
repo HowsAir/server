@@ -6,10 +6,13 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
-import { usersService, PasswordResetStatus } from '../services/usersService';
+import { usersService} from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { measurementsService } from '../services/measurementsService';
 import { auth_token, password_reset_token } from '../middleware/auth';
+import { PasswordResetStatus } from '../types/PasswordResetStatus';
+
+const RegisterAdminAuthorizationCode = 1234;
 
 /**
  * Controller method for user registration.
@@ -67,6 +70,62 @@ const register = async (
         return res.status(201).json({
             message: 'User registered successfully',
             user: createdUser,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Controller method for admin registration.
+ *
+ * @param req - The HTTP Request object containing admin details in the body.
+ * @param res - The HTTP Response object used to return the result to the client.
+ *
+ * @returns Returns a JSON object with the registered admin and status 201 on success, or an error message with status 400 or 500.
+ */
+const registerAdmin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() });
+        }
+
+        const {
+            email,
+            password,
+            name,
+            surnames,
+            authorizationCode,
+        } = req.body;
+
+        if (parseInt(authorizationCode,10) !== RegisterAdminAuthorizationCode) {
+            return res.status(403).json({ message: 'Invalid authorization code' });
+        }
+
+        const userData = {
+            email,
+            password,
+            name,
+            surnames,
+        };
+
+        const existingUser = await usersService.findUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const createdAdmin = await usersService.registerAdmin(userData);
+
+        putJwtInResponse(res, createdAdmin, auth_token);
+
+        return res.status(201).json({
+            message: 'Admin registered successfully',
+            user: createdAdmin,
         });
     } catch (error) {
         next(error);
@@ -303,6 +362,7 @@ const getStatistics = async (
 
 export const usersController = {
     register,
+    registerAdmin,
     updateProfile,
     changePassword,
     resetPassword,

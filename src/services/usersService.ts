@@ -8,20 +8,18 @@ import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
 import { UserStatistics } from '../types/UserStatistics';
-import cloudinaryService, { CloudinaryFolders } from './cloudinaryService';
+import cloudinaryService from './cloudinaryService';
 import { UserRoleId } from '../types/UserRoleId';
+import { PasswordResetStatus } from '../types/PasswordResetStatus';
+import { CloudinaryFolders } from '../types/CloudinaryFolders';
 
 const saltQuantity = 10;
-
-export enum PasswordResetStatus {
-    FAIL = 'fail',
-    MATCH = 'match',
-    SUCCESS = 'success',
-}
 
 /**
  * Registers a new user in the database
  *
+ * Text: email, password, name, surnames, phone, country, city, zipCode, address -> register() -> Promise<User>
+ * 
  * @param userData - An object containing user details.
  * @returns {Promise<User>} - A promise that resolves with the newly created user.
  * @throws {Error} - Throws an error if the user cannot be created.
@@ -44,13 +42,43 @@ const register = async (userData: {
     const newUserData: Omit<User, 'id'> = {
         ...userData,
         password: hashedPassword,
-        roleId: 1, // Assuming roleId 1 is for basic users
+        roleId: UserRoleId.User,
         photoUrl: null,
     };
 
     // Create the user entry in the database
     return await prisma.user.create({
         data: newUserData,
+    });
+};
+
+/**
+ * Registers a new admin in the database
+ *
+ * Text: email, password, name, surnames -> registerAdmin() -> Promise<User>
+ * 
+ * @param userData - An object containing admin details.
+ * @returns {Promise<User>} - A promise that resolves with the newly created admin user.
+ * @throws {Error} - Throws an error if the user cannot be created.
+ */
+const registerAdmin = async (userData: {
+    email: string;
+    password: string;
+    name: string;
+    surnames: string;
+}): Promise<User> => {
+    const hashedPassword = await bcrypt.hash(userData.password, saltQuantity);
+
+    const newAdminData = {
+        ...userData,
+        password: hashedPassword,
+        roleId: UserRoleId.Admin,
+        photoUrl: null,
+    };
+
+    // Guarda el usuario en la base de datos
+    return await prisma.user.create({
+        data: newAdminData,
     });
 };
 
@@ -254,8 +282,8 @@ export async function getStatistics(): Promise<UserStatistics[]> {
         surnames: user.surnames,
         phone: user.phone as string,
         nodeId: user.node?.id || null,
-        averageActiveHours: totalStats > 0 ? Number((totalActiveHours / totalStats).toFixed(2)) : 0,
-        averageDistance: totalStats > 0 ? Number((totalDistance / totalStats).toFixed(2)) : 0,
+        averageDailyActiveHours: totalStats > 0 ? Number((totalActiveHours / totalStats).toFixed(2)) : 0,
+        averageDailyDistance: totalStats > 0 ? Number((totalDistance / totalStats).toFixed(2)) : 0,
         };
     });
 
@@ -264,6 +292,7 @@ export async function getStatistics(): Promise<UserStatistics[]> {
 
 export const usersService = {
     register,
+    registerAdmin,
     findUserByEmail,
     updateProfile,
     changePassword,

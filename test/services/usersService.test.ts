@@ -9,10 +9,10 @@ import { usersService } from '../../src/services/usersService'; // Import the us
 import prisma from '../../src/libs/prisma'; // Import the Prisma mock
 import bcrypt from 'bcryptjs'; // Import bcrypt for password hashing
 import { User } from '@prisma/client'; // Import User type
-import cloudinaryService, {
-    CloudinaryFolders,
-} from '../../src/services/cloudinaryService'; // Import the Cloudinary service mock
+import cloudinaryService from '../../src/services/cloudinaryService'; // Import the Cloudinary service mock
 import { UserRoleId } from '../../src/types/UserRoleId';
+import { CloudinaryFolders } from '../../src/types/CloudinaryFolders';
+import { PasswordResetStatus } from '../../src/types/PasswordResetStatus';
 
 // Mock the prisma and bcrypt libraries using Vitest's mock functions
 vi.mock('../../src/libs/prisma'); // Mock Prisma to avoid database calls
@@ -372,7 +372,7 @@ describe('usersService', () => {
 
             const result = await usersService.resetPassword(1, 'new_password');
 
-            expect(result).toEqual({ status: 'success' });
+            expect(result).toEqual({ status: PasswordResetStatus.SUCCESS });
             expect(bcrypt.compare).toHaveBeenCalledWith(
                 'new_password',
                 user.password
@@ -405,7 +405,7 @@ describe('usersService', () => {
 
             const result = await usersService.resetPassword(1, 'same_password');
 
-            expect(result).toEqual({ status: 'match' });
+            expect(result).toEqual({ status: PasswordResetStatus.MATCH });
             expect(bcrypt.compare).toHaveBeenCalledWith(
                 'same_password',
                 user.password
@@ -421,7 +421,7 @@ describe('usersService', () => {
                 'new_password'
             );
 
-            expect(result).toEqual({ status: 'fail' });
+            expect(result).toEqual({ status: PasswordResetStatus.FAIL });
             expect(prisma.user.update).not.toHaveBeenCalled();
         });
 
@@ -668,8 +668,8 @@ describe('usersService', () => {
                     surnames: 'Doe',
                     phone: '+1234567890',
                     nodeId: 100,
-                    averageActiveHours: 3.0, // (2.5 + 3.5) / 2
-                    averageDistance: 6.0, // (5.0 + 7.0) / 2
+                    averageDailyActiveHours: 3.0, // (2.5 + 3.5) / 2
+                    averageDailyDistance: 6.0, // (5.0 + 7.0) / 2
                 },
                 {
                     id: 2,
@@ -677,8 +677,8 @@ describe('usersService', () => {
                     surnames: 'Smith',
                     phone: '+0987654321',
                     nodeId: null,
-                    averageActiveHours: 4.0, // 4.0 / 1
-                    averageDistance: 8.0, // 8.0 / 1
+                    averageDailyActiveHours: 4.0, // 4.0 / 1
+                    averageDailyDistance: 8.0, // 8.0 / 1
                 },
             ]);
 
@@ -727,8 +727,8 @@ describe('usersService', () => {
                     surnames: 'Doe',
                     phone: '+1234567890',
                     nodeId: 100,
-                    averageActiveHours: 0,
-                    averageDistance: 0,
+                    averageDailyActiveHours: 0,
+                    averageDailyDistance: 0,
                 },
             ]);
         });

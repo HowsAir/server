@@ -50,6 +50,18 @@ router.post(
     usersController.register
 );
 
+router.post(
+    '/admin',
+    [
+        check('email', 'Email is required and needs to be valid').isEmail(),
+        ...passwordValidationRules('password'),
+        check('name', 'Name is required and cannot be empty').notEmpty(),
+        check('surnames', 'Surnames are required and cannot be empty').notEmpty(),
+        check('authorizationCode', 'Authorization code is required').notEmpty(),
+    ],
+    usersController.registerAdmin
+);
+
 router.patch(
     '/profile',
     verifyToken,

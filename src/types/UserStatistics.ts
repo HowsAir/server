@@ -4,6 +4,6 @@ export interface UserStatistics {
     surnames: string;
     phone: string;
     nodeId: number | null;
-    averageActiveHours: number;
-    averageDistance: number;
+    averageDailyActiveHours: number;
+    averageDailyDistance: number;
 }

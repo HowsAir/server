@@ -45,7 +45,7 @@ describe('auth utility functions', () => {
 
             // Assert: Check if jwt.sign was called with the correct payload
             expect(jwt.sign).toHaveBeenCalledWith(
-                { userId: user.id, role: user.roleId },
+                { userId: user.id, roleId: user.roleId },
                 process.env.JWT_SECRET_KEY as string,
                 { expiresIn: '21600m' }
             );

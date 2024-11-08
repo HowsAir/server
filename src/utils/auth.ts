@@ -48,7 +48,7 @@ export const putJwtInResponse = (
     const { name, expirationMinutes } = jwtConfig[configKey];
 
     const token = jwt.sign(
-        { userId: user.id, role: user.roleId },
+        { userId: user.id, roleId: user.roleId },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: `${expirationMinutes}m` }
     );
