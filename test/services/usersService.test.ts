@@ -101,6 +101,71 @@ describe('usersService', () => {
         });
     });
 
+    describe('registerAdmin()', () => {
+        it('should create a new admin and return it', async () => {
+            const adminData = {
+                email: 'admin@prisma.io',
+                name: 'Admin User',
+                surnames: 'Admin',
+                password: 'plaintext_password',
+            };
+
+            const hashedPassword = 'hashed_password';
+            const createdAdmin: User = {
+                id: 1,
+                email: adminData.email,
+                name: adminData.name,
+                surnames: adminData.surnames,
+                password: hashedPassword,
+                roleId: UserRoleId.Admin,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            bcrypt.hash = vi.fn().mockResolvedValue(hashedPassword);
+
+            prisma.user.create = vi.fn().mockResolvedValue(createdAdmin);
+
+            const result = await usersService.registerAdmin(adminData);
+
+            expect(result).toStrictEqual(createdAdmin);
+            expect(bcrypt.hash).toHaveBeenCalledWith(adminData.password, 10);
+            expect(prisma.user.create).toHaveBeenCalledWith({
+                data: {
+                    ...adminData,
+                    password: hashedPassword,
+                    roleId: UserRoleId.Admin,
+                    photoUrl: null,
+                },
+            });
+        });
+
+        it('should throw an error when admin creation fails', async () => {
+            const adminData = {
+                email: 'admin@prisma.io',
+                name: 'Admin User',
+                surnames: 'Admin',
+                password: 'plaintext_password',
+            };
+
+            const hashedPassword = 'hashed_password';
+            bcrypt.hash = vi.fn().mockResolvedValue(hashedPassword);
+
+            prisma.user.create = vi.fn().mockRejectedValue(new Error());
+
+            await expect(
+                usersService.registerAdmin(adminData)
+            ).rejects.toThrow();
+
+            expect(bcrypt.hash).toHaveBeenCalled();
+            expect(prisma.user.create).toHaveBeenCalled();
+        });
+    });
+
     describe('findUserByEmail()', () => {
         it('should return the user when found', async () => {
             const foundUser: User = {
