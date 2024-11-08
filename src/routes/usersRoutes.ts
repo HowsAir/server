@@ -69,8 +69,8 @@ router.put(
         check('currentPassword')
             .notEmpty()
             .withMessage('Current password is required')
-            .isLength({ min: 6 })
-            .withMessage('Current password needs to be 6 characters long'),
+            .isLength({ min: 8 })
+            .withMessage('Current password needs to be 8 characters long'),
         ...passwordValidationRules('newPassword'),
     ],
     usersController.changePassword
