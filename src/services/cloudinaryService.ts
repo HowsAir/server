@@ -5,13 +5,8 @@
  */
 
 import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryFolders } from '../types/CloudinaryFolders';
 
-/**
- * Enum for Cloudinary folder types.
- */
-export enum CloudinaryFolders {
-    PROFILE_PHOTOS = 'profile_photos',
-}
 
 /**
  * Uploads an image file to Cloudinary and stores it in the specified folder. Returns the URL of the uploaded image.

@@ -144,7 +144,7 @@ export const verifyEmailConfirmedToken = (
  * If the user's role is not in the list of allowed roles, the request will be denied with a 403 (Forbidden) status.
  * Otherwise, it will pass control to the next middleware or route handler.
  *
- * @param {string[]} allowedRoles - An array of roles that are permitted to access the route.
+ * @param {UserRoleId[]} allowedRoles - An array of roles that are permitted to access the route.
  *
  * @returns {Function} Returns an Express middleware function that checks the user's role against the allowed roles.
  */

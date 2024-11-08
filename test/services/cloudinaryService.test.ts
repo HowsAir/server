@@ -8,9 +8,9 @@ import { expect, describe, it, vi, beforeEach } from 'vitest'; // Import Vitest 
 import {
     uploadImageToCloudinary,
     deleteImageFromCloudinary,
-    CloudinaryFolders,
 } from '../../src/services/cloudinaryService'; // Import the cloudinaryService methods to be tested
 import { v2 as cloudinary } from 'cloudinary'; // Import Cloudinary SDK to mock
+import { CloudinaryFolders } from '../../src/types/CloudinaryFolders';
 
 // Mock Cloudinary SDK to avoid real uploads and deletions
 vi.mock('cloudinary');

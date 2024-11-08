@@ -17,9 +17,9 @@ router.post(
         check('email', 'Email is required').isEmail(),
         check(
             'password',
-            'Password with 6 or more characters is required'
+            'Password with 8 or more characters is required'
         ).isLength({
-            min: 6,
+            min: 8,
         }),
     ],
     authController.login
