@@ -12,6 +12,7 @@ import { User } from '@prisma/client'; // Import User type
 import cloudinaryService, {
     CloudinaryFolders,
 } from '../../src/services/cloudinaryService'; // Import the Cloudinary service mock
+import { UserRoleId } from '../../src/types/UserRoleId';
 
 // Mock the prisma and bcrypt libraries using Vitest's mock functions
 vi.mock('../../src/libs/prisma'); // Mock Prisma to avoid database calls
@@ -629,6 +630,125 @@ describe('usersService', () => {
             });
 
             consoleErrorSpy.mockRestore();
+        });
+    });
+
+    describe('getStatistics()', () => {
+        it('should return users statistics with calculated averages', async () => {
+            const mockUsers = [
+                {
+                    id: 1,
+                    name: 'John',
+                    surnames: 'Doe',
+                    phone: '+1234567890',
+                    node: { id: 100 },
+                    stats: [
+                        { activeHours: 2.5, distance: 5.0 },
+                        { activeHours: 3.5, distance: 7.0 },
+                    ],
+                },
+                {
+                    id: 2,
+                    name: 'Jane',
+                    surnames: 'Smith',
+                    phone: '+0987654321',
+                    node: null,
+                    stats: [{ activeHours: 4.0, distance: 8.0 }],
+                },
+            ];
+
+            prisma.user.findMany = vi.fn().mockResolvedValue(mockUsers);
+
+            const result = await usersService.getStatistics();
+
+            expect(result).toStrictEqual([
+                {
+                    id: 1,
+                    name: 'John',
+                    surnames: 'Doe',
+                    phone: '+1234567890',
+                    nodeId: 100,
+                    averageActiveHours: 3.0, // (2.5 + 3.5) / 2
+                    averageDistance: 6.0, // (5.0 + 7.0) / 2
+                },
+                {
+                    id: 2,
+                    name: 'Jane',
+                    surnames: 'Smith',
+                    phone: '+0987654321',
+                    nodeId: null,
+                    averageActiveHours: 4.0, // 4.0 / 1
+                    averageDistance: 8.0, // 8.0 / 1
+                },
+            ]);
+
+            expect(prisma.user.findMany).toHaveBeenCalledWith({
+                where: { roleId: UserRoleId.User },
+                select: {
+                    id: true,
+                    name: true,
+                    surnames: true,
+                    phone: true,
+                    node: {
+                        select: {
+                            id: true,
+                        },
+                    },
+                    stats: {
+                        select: {
+                            activeHours: true,
+                            distance: true,
+                        },
+                    },
+                },
+            });
+        });
+
+        it('should return users with zero averages when they have no stats', async () => {
+            const mockUsers = [
+                {
+                    id: 1,
+                    name: 'John',
+                    surnames: 'Doe',
+                    phone: '+1234567890',
+                    node: { id: 100 },
+                    stats: [],
+                },
+            ];
+
+            prisma.user.findMany = vi.fn().mockResolvedValue(mockUsers);
+
+            const result = await usersService.getStatistics();
+
+            expect(result).toStrictEqual([
+                {
+                    id: 1,
+                    name: 'John',
+                    surnames: 'Doe',
+                    phone: '+1234567890',
+                    nodeId: 100,
+                    averageActiveHours: 0,
+                    averageDistance: 0,
+                },
+            ]);
+        });
+
+        it('should return empty array when no users are found', async () => {
+            prisma.user.findMany = vi.fn().mockResolvedValue([]);
+
+            const result = await usersService.getStatistics();
+
+            expect(result).toEqual([]);
+            expect(prisma.user.findMany).toHaveBeenCalled();
+        });
+
+        it('should throw an error if database query fails', async () => {
+            prisma.user.findMany = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(usersService.getStatistics()).rejects.toThrow();
+            expect(prisma.user.findMany).toHaveBeenCalled();
         });
     });
 });

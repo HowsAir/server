@@ -7,7 +7,9 @@
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
+import { UserStatistics } from '../types/UserStatistics';
 import cloudinaryService, { CloudinaryFolders } from './cloudinaryService';
+import { UserRoleId } from '../types/UserRoleId';
 
 const saltQuantity = 10;
 
@@ -202,6 +204,64 @@ const updateProfilePhoto = async (
     return updatedUser;
 };
 
+/**
+ * Retrieves a list of all users with their associated statistics information
+ * 
+ * getStatistics() -> Promise<UserStatistics[]>
+ * 
+ * @returns {Promise<UserStatistics[]>} A promise that resolves to an array of user statistics objects.
+ * @throws {Error} Throws an error if there is an issue retrieving user statistics from the database
+ */
+export async function getStatistics(): Promise<UserStatistics[]> {
+    const users = await prisma.user.findMany({
+        where: {
+            roleId: UserRoleId.User,
+        },
+        select: {
+            id: true,
+            name: true,
+            surnames: true,
+            phone: true,
+            node: {
+                select: {
+                    id: true,
+                },
+            },
+            stats: {
+                select: {
+                    activeHours: true,
+                    distance: true,
+                },
+            },
+        },
+    });
+
+    // Map data and calculate averages in a single reduce
+    const usersStats: UserStatistics[] = users.map(user => {
+        const totalStats = user.stats.length;
+        const { totalActiveHours, totalDistance } = user.stats.reduce(
+        (totals, stat) => {
+            totals.totalActiveHours += stat.activeHours;
+            totals.totalDistance += stat.distance;
+            return totals;
+        },
+        { totalActiveHours: 0, totalDistance: 0 }
+        );
+
+        return {
+        id: user.id,
+        name: user.name,
+        surnames: user.surnames,
+        phone: user.phone as string,
+        nodeId: user.node?.id || null,
+        averageActiveHours: totalStats > 0 ? Number((totalActiveHours / totalStats).toFixed(2)) : 0,
+        averageDistance: totalStats > 0 ? Number((totalDistance / totalStats).toFixed(2)) : 0,
+        };
+    });
+
+    return usersStats;
+}
+
 export const usersService = {
     register,
     findUserByEmail,
@@ -209,4 +269,5 @@ export const usersService = {
     changePassword,
     resetPassword,
     updateProfilePhoto,
+    getStatistics,
 };

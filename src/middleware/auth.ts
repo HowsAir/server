@@ -7,6 +7,7 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import 'dotenv/config';
+import { UserRoleId } from '../types/UserRoleId';
 
 export const auth_token = 'auth_token';
 export const password_reset_token = 'password_reset_token';
@@ -147,7 +148,7 @@ export const verifyEmailConfirmedToken = (
  *
  * @returns {Function} Returns an Express middleware function that checks the user's role against the allowed roles.
  */
-export const authorizeRoles = (...allowedRoles: number[]) => {
+export const authorizeRoles = (...allowedRoles: UserRoleId[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
         if (!allowedRoles.includes(req.roleId)) {
             return res.status(403).json({ message: 'Forbidden' });

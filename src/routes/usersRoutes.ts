@@ -14,6 +14,7 @@ import {
 } from '../middleware/auth';
 import { passwordValidationRules } from '../utils/validators';
 import multer from 'multer';
+import { UserRoleId } from '../types/UserRoleId';
 
 const router = Router();
 
@@ -112,12 +113,13 @@ router.get(
     usersController.getTodayTotalDistance
 );
 
-/*
-const authorizeAdminRole = authorizeRoles(2)
+
+// This route is protected and only accessible by Admin users
+const authorizeAdminRole = authorizeRoles(UserRoleId.Admin);
 router.get(
-    '/',
+    '/statistics',
     verifyToken,
     authorizeAdminRole,
-    usersController.getUsersRegistry
-);*/
+    usersController.getStatistics
+);
 export default router;

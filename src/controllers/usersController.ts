@@ -256,8 +256,7 @@ const updateProfilePhoto = async (
  * @param req - The HTTP Request object containing user information, with userId extracted from the token.
  * @param res - The HTTP Response object used to return the total distance to the client.
  *
- * @returns Returns a JSON object with the total distance and status 200 on success,
- * or an error message with status 500 if there was an issue retrieving the distance.
+ * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
  */
 const getTodayTotalDistance = async (
     req: Request,
@@ -278,6 +277,30 @@ const getTodayTotalDistance = async (
     }
 };
 
+/**
+ * Controller method for getting the users statistics information (name, phone, nodeId, activeHours, distance)
+ *
+ * @param req - The HTTP Request object containing the userId and the roleId
+ * @param res - The HTTP Response object used to return the usersStatistics to the client.
+ *
+ * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
+ */
+const getStatistics = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const usersStatistics = await usersService.getStatistics();
+        return res.status(200).json({
+            message: 'Users statistics retrieved successfully',
+            usersStatistics,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const usersController = {
     register,
     updateProfile,
@@ -285,4 +308,5 @@ export const usersController = {
     resetPassword,
     updateProfilePhoto,
     getTodayTotalDistance,
+    getStatistics,
 };
