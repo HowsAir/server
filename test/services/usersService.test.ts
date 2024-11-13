@@ -706,7 +706,12 @@ describe('usersService', () => {
                     name: 'John',
                     surnames: 'Doe',
                     phone: '+1234567890',
-                    node: { id: 100 },
+                    node: {
+                        id: 100,
+                        measurements: [
+                            { timestamp: new Date('2023-10-01T08:30:00Z') },
+                        ],
+                    },
                     stats: [
                         { activeHours: 2.5, distance: 5.0 },
                         { activeHours: 3.5, distance: 7.0 },
@@ -735,6 +740,7 @@ describe('usersService', () => {
                     nodeId: 100,
                     averageDailyActiveHours: 3.0, // (2.5 + 3.5) / 2
                     averageDailyDistance: 6.0, // (5.0 + 7.0) / 2
+                    nodeLastConnection: new Date('2023-10-01T08:30:00Z'),
                 },
                 {
                     id: 2,
@@ -744,6 +750,7 @@ describe('usersService', () => {
                     nodeId: null,
                     averageDailyActiveHours: 4.0, // 4.0 / 1
                     averageDailyDistance: 8.0, // 8.0 / 1
+                    nodeLastConnection: null,
                 },
             ]);
 
@@ -757,6 +764,15 @@ describe('usersService', () => {
                     node: {
                         select: {
                             id: true,
+                            measurements: {
+                                select: {
+                                    timestamp: true,
+                                },
+                                orderBy: {
+                                    timestamp: 'desc',
+                                },
+                                take: 1,
+                            },
                         },
                     },
                     stats: {
@@ -776,7 +792,10 @@ describe('usersService', () => {
                     name: 'John',
                     surnames: 'Doe',
                     phone: '+1234567890',
-                    node: { id: 100 },
+                    node: {
+                        id: 100,
+                        measurements: [],
+                    },
                     stats: [],
                 },
             ];
@@ -794,6 +813,7 @@ describe('usersService', () => {
                     nodeId: 100,
                     averageDailyActiveHours: 0,
                     averageDailyDistance: 0,
+                    nodeLastConnection: null,
                 },
             ]);
         });

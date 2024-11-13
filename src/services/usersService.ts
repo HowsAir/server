@@ -253,6 +253,15 @@ export async function getStatistics(): Promise<UserStatistics[]> {
             node: {
                 select: {
                     id: true,
+                    measurements: {
+                        select: {
+                            timestamp: true,
+                        },
+                        orderBy: {
+                            timestamp: 'desc',
+                        },
+                        take: 1,
+                    },
                 },
             },
             stats: {
@@ -277,13 +286,14 @@ export async function getStatistics(): Promise<UserStatistics[]> {
         );
 
         return {
-        id: user.id,
-        name: user.name,
-        surnames: user.surnames,
-        phone: user.phone as string,
-        nodeId: user.node?.id || null,
-        averageDailyActiveHours: totalStats > 0 ? Number((totalActiveHours / totalStats).toFixed(2)) : 0,
-        averageDailyDistance: totalStats > 0 ? Number((totalDistance / totalStats).toFixed(2)) : 0,
+            id: user.id,
+            name: user.name,
+            surnames: user.surnames,
+            phone: user.phone as string,
+            nodeId: user.node?.id || null,
+            averageDailyActiveHours: totalStats > 0 ? Number((totalActiveHours / totalStats).toFixed(2)) : 0,
+            averageDailyDistance: totalStats > 0 ? Number((totalDistance / totalStats).toFixed(2)) : 0,
+            nodeLastConnection: user.node?.measurements[0]?.timestamp || null,
         };
     });
 

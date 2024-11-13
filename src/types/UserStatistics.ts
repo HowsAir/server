@@ -6,4 +6,5 @@ export interface UserStatistics {
     nodeId: number | null;
     averageDailyActiveHours: number;
     averageDailyDistance: number;
+    nodeLastConnection?: Date | null;
 }
