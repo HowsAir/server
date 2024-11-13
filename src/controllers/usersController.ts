@@ -360,6 +360,38 @@ const getStatistics = async (
     }
 };
 
+/**
+ * Controller method to get the node information for an authenticated user.
+ *
+ * @param req - The HTTP Request object containing the authenticated userId.
+ * @param res - The HTTP Response object used to return the node information to the client.
+ * @param next - The next middleware function in the Express chain.
+ *
+ * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
+ */
+const getNode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const userId = req.userId;
+
+        const node = await usersService.getNode(userId);
+
+        if (!node) {
+            return res.status(404).json({ message: 'Node not found' });
+        }
+
+        return res.status(200).json({
+            message: 'Node retrieved successfully',
+            node,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const usersController = {
     register,
     registerAdmin,
@@ -369,4 +401,5 @@ export const usersController = {
     updateProfilePhoto,
     getTodayTotalDistance,
     getStatistics,
+    getNode,
 };

@@ -771,6 +771,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /users/node:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene el nodo de un usuario
+      description: Devuelve el nodo asociado al usuario autenticado.
+      security:
+        - AuthTokenCookie: []
+      responses:
+        "200":
+          description: Solicitud exitosa. Devuelve el nodo del usuario autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Node retrieved successfully"
+                  node:
+                    $ref: "#/components/schemas/Node"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Nodo no encontrado para el usuario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al obtener el nodo del usuario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
   /users/today-total-distance:
     get:
       tags:

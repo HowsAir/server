@@ -120,6 +120,12 @@ router.put(
 );
 
 router.get(
+    '/node',
+    verifyToken,
+    usersController.getNode
+);
+
+router.get(
     '/today-total-distance',
     verifyToken,
     usersController.getTodayTotalDistance
@@ -134,4 +140,5 @@ router.get(
     authorizeAdminRole,
     usersController.getStatistics
 );
+
 export default router;

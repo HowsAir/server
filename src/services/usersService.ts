@@ -4,7 +4,7 @@
  * @author Juan Diaz & Manuel Borregales
  */
 
-import { User } from '@prisma/client';
+import { User, Node } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
 import { UserStatistics } from '../types/UserStatistics';
@@ -240,7 +240,7 @@ const updateProfilePhoto = async (
  * @returns {Promise<UserStatistics[]>} A promise that resolves to an array of user statistics objects.
  * @throws {Error} Throws an error if there is an issue retrieving user statistics from the database
  */
-export async function getStatistics(): Promise<UserStatistics[]> {
+const getStatistics = async(): Promise<UserStatistics[]> => {
     const users = await prisma.user.findMany({
         where: {
             roleId: UserRoleId.User,
@@ -300,6 +300,24 @@ export async function getStatistics(): Promise<UserStatistics[]> {
     return usersStats;
 }
 
+/**
+ * Retrieves the node information for a specific user.
+ * 
+ * Number: userId -> getNode() -> Promise<Node | null>
+ * @param userId - The ID of the user requesting the node information.
+ * @returns {Promise<Node | null>} - A promise that resolves to the node object if found, or null if not found.
+ * @throws {Error} - Throws an error if there is an issue retrieving the node from the database.
+ */
+const getNode = async(userId: number): Promise<Node | null> => {
+    const node = await prisma.node.findUnique({
+        where: {
+            userId: userId,
+        },
+    });
+
+    return node || null;
+}
+
 export const usersService = {
     register,
     registerAdmin,
@@ -309,4 +327,5 @@ export const usersService = {
     resetPassword,
     updateProfilePhoto,
     getStatistics,
+    getNode,
 };
