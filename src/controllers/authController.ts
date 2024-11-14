@@ -292,33 +292,25 @@ const sendApplicationEmail = async (
     res: Response,
     next: NextFunction
 ): Promise<Response | void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array() });
-    }
-
-    const formData: ApplicationForm = req.body;
-
     try {
+        // Validate the request body using express-validator
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const formData: ApplicationForm = req.body;
+
+        // Call the service to send the application email
         await authService.sendApplicationEmail(formData);
 
+        // Return success response
         return res.status(200).json({
             message:
                 'Application received successfully. You will be contacted soon.',
         });
-    } catch (error: any) {
-        console.error('Error sending application email:', error.message);
-
-        if (error.message === 'Only available for Spain and Valencia') {
-            return res.status(400).json({
-                message:
-                    'The application is only available for users in Spain and Valencia.',
-            });
-        }
-
-        return res.status(500).json({
-            message: 'An error occurred while processing your application.',
-        });
+    } catch (error) {
+        next(error);
     }
 };
 

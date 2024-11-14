@@ -78,7 +78,9 @@ router.post(
         ).notEmpty(),
         check('email', 'Email is required and needs to be valid').isEmail(),
         check('country', 'Country is required and cannot be empty').notEmpty(),
+        check('country', 'Country must be España').equals('España'),
         check('city', 'City is required and cannot be empty').notEmpty(),
+        check('city', 'City must be Valencia').equals('Valencia'),
         check('address', 'Address is required and cannot be empty').notEmpty(),
         check('zipCode', 'Zip code is required and cannot be empty')
             .notEmpty()
