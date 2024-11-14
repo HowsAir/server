@@ -68,4 +68,27 @@ router.get(
     authController.confirmEmail
 );
 
+router.post(
+    '/free-breeze-application',
+    [
+        check('name', 'Name is required and cannot be empty').notEmpty(),
+        check(
+            'surnames',
+            'Surnames are required and cannot be empty'
+        ).notEmpty(),
+        check('email', 'Email is required and needs to be valid').isEmail(),
+        check('country', 'Country is required and cannot be empty').notEmpty(),
+        check('city', 'City is required and cannot be empty').notEmpty(),
+        check('address', 'Address is required and cannot be empty').notEmpty(),
+        check('zipCode', 'Zip code is required and cannot be empty')
+            .notEmpty()
+            .isNumeric(),
+        check(
+            'comments',
+            'Comments are required and cannot be empty'
+        ).notEmpty(),
+    ],
+    authController.sendApplicationEmail
+);
+
 export default router;
