@@ -10,11 +10,13 @@ import prisma from '../libs/prisma';
 import {
     sendPasswordResetEmail,
     sendEmailVerification,
+    sendEmailApplication,
 } from '../utils/emailSender';
 import jwt from 'jsonwebtoken';
 import { generateResetCode, jwtConfig } from '../utils/auth';
 import { findUserByEmail } from './usersService';
 import 'dotenv/config';
+import { ApplicationForm } from '../types/ApplicationForm';
 
 /**
  * Validates the login credentials and returns the user if successful.
@@ -146,9 +148,45 @@ const sendVerificationEmail = async (email: string): Promise<User | void> => {
     await sendEmailVerification(email, verificationUrl);
 };
 
+/**
+ * Processes an application form submission and sends an email if eligible.
+ *
+ * @async
+ * @function sendApplicationEmail
+ * @param {ApplicationForm} formData - The form data submitted by the user, including details like name, email, and address.
+ * @returns {Promise<User | void>} - Returns an existing user if found; otherwise, sends an application email and returns void.
+ *
+ * @description
+ * This function handles the process of checking whether an application can proceed based on user data.
+ * It performs the following steps:
+ * 1. Check for Existing User.
+ * 2. Geographic Validation.
+ * 3. Send Application Email.
+ *
+ * @throws Will throw an error if the applicant is not located in Spain and Valencia.
+ *
+ * @note This function does not save the form data to the database; it only checks for existing users and sends an email.
+ */
+const sendApplicationEmail = async (
+    formData: ApplicationForm
+): Promise<User | void> => {
+    const existingUser = await findUserByEmail(formData.email);
+
+    if (existingUser !== null) {
+        return existingUser;
+    }
+
+    if (formData.country !== 'España' || formData.city !== 'Valencia') {
+        throw new Error('Only available for Spain and Valencia');
+    }
+
+    await sendEmailApplication(formData);
+};
+
 export const authService = {
     login,
     initiatePasswordReset,
     verifyResetCode,
     sendVerificationEmail,
+    sendApplicationEmail,
 };

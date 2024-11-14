@@ -17,6 +17,7 @@ import {
     password_reset_token,
     email_verified_token,
 } from '../middleware/auth';
+import { ApplicationForm } from '../types/ApplicationForm';
 
 /**
  * Login controller method.
@@ -270,6 +271,57 @@ const confirmEmail = async (
     }
 };
 
+/**
+ * Controller that handles the process of receiving an application form,
+ * validating the input, and sending a confirmation email.
+ * If validation fails or an error occurs during the email sending process,
+ * an appropriate response is returned to the client.
+ *
+ * @param req - The request object
+ * @param res - The response object used to send a response back to the client.
+ * @param next - The next middleware function in the Express chain
+ *
+ * @returns A response with status code 200 if the application is successfully received
+ *          and the email is sent, or an error response with a corresponding status code
+ *          if there is a failure during validation or email sending.
+ *
+ * @throws {Error} If an error occurs while sending the application email or processing the request.
+ */
+const sendApplicationEmail = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+
+    const formData: ApplicationForm = req.body;
+
+    try {
+        await authService.sendApplicationEmail(formData);
+
+        return res.status(200).json({
+            message:
+                'Application received successfully. You will be contacted soon.',
+        });
+    } catch (error: any) {
+        console.error('Error sending application email:', error.message);
+
+        if (error.message === 'Only available for Spain and Valencia') {
+            return res.status(400).json({
+                message:
+                    'The application is only available for users in Spain and Valencia.',
+            });
+        }
+
+        return res.status(500).json({
+            message: 'An error occurred while processing your application.',
+        });
+    }
+};
+
 export const authController = {
     login,
     logout,
@@ -278,4 +330,5 @@ export const authController = {
     sendConfirmationEmail,
     createEmailVerificationToken,
     confirmEmail,
+    sendApplicationEmail,
 };
