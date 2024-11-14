@@ -434,6 +434,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /auth/free-breeze-application:
+    post:
+      tags:
+        - Autenticación
+      summary: Envía una solicitud rellenada por una persona interesada al correo de HowsAir
+      description: Recibe los datos del usuario, verifica que su direccion sea de valencia y envía un correo a howsair@gmail.com con estos datos dentro para su posterior manejo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FreeBreezeApplicationInput"
+      responses:
+        "200":
+          description: Correo de solicitud enviado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Application received successfully. You will be contacted soon."
+        "400":
+          description: Error de validación en los datos proporcionados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al enviar el correo de solicitud
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /users:
     post:
       tags:
@@ -1131,7 +1167,6 @@ components:
           format: date-time
           description: Fecha y hora de creación del token
 
-
     RegisterUserInput:
       type: object
       required:
@@ -1214,6 +1249,52 @@ components:
           description: Código de autorización para registrar un usuario administrador
           example: "1234"
 
+    FreeBreezeApplicationInput:
+      type: object
+      required:
+        - name
+        - surnames
+        - email
+        - country
+        - city
+        - address
+        - zipCode
+        - comments
+      properties:
+        name:
+          type: string
+          description: Nombre del usuario
+          example: "John"
+        surnames:
+          type: string
+          description: Apellidos del usuario
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario
+          example: user@example.com
+        country:
+          type: string
+          description: País del usuario
+          example: "Spain"
+        city:
+          type: string
+          description: Ciudad del usuario
+          example: "Madrid"
+        address:
+          type: string
+          description: Dirección del usuario
+          example: "123 Main St"
+        zipCode:
+          type: string
+          description: Código postal del usuario
+          example: "28001"
+        comments:
+          type: string
+          description: Razón de su interés por un nodo.
+          example: Hola! Estoy interesado en un breeze debido a que me interesa saber el aire que respiro y vivo en Picassent.
+          
     MeasurementInput:
       type: object
       required:
