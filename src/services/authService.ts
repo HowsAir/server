@@ -14,7 +14,7 @@ import {
 } from '../utils/emailSender';
 import jwt from 'jsonwebtoken';
 import { generateResetCode, jwtConfig } from '../utils/auth';
-import { findUserByEmail } from './usersService';
+import { getUserByEmail } from './usersService';
 import 'dotenv/config';
 import { ApplicationForm } from '../types/ApplicationForm';
 
@@ -131,7 +131,7 @@ const verifyResetCode = async (
  * The user can click the link to verify their email address.
  */
 const sendVerificationEmail = async (email: string): Promise<User | void> => {
-    const existingUser = await findUserByEmail(email);
+    const existingUser = await getUserByEmail(email);
 
     if (existingUser !== null) {
         return existingUser;
@@ -170,7 +170,7 @@ const sendVerificationEmail = async (email: string): Promise<User | void> => {
 const sendApplicationEmail = async (
     formData: ApplicationForm
 ): Promise<User | void> => {
-    const existingUser = await findUserByEmail(formData.email);
+    const existingUser = await getUserByEmail(formData.email);
 
     if (existingUser !== null) {
         return existingUser;

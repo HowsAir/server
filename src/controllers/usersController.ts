@@ -57,7 +57,7 @@ const register = async (
             address,
         };
         // Use service to handle registration logic
-        const existingUser = await usersService.findUserByEmail(email);
+        const existingUser = await usersService.getUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -114,7 +114,7 @@ const registerAdmin = async (
             surnames,
         };
 
-        const existingUser = await usersService.findUserByEmail(email);
+        const existingUser = await usersService.getUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -131,6 +131,40 @@ const registerAdmin = async (
         next(error);
     }
 };
+
+/**
+ * Controller method for retrieving user profile information.
+ *
+ * @param req - The HTTP Request object, which should contain the user's ID in `req.userId`.
+ * @param res - The HTTP Response object used to send the user data back to the client.
+ * @param next - The NextFunction to handle errors and pass them to the error handler middleware.
+ *
+ * @returns Returns a JSON object with the user's profile information and status 200 on success,
+ * or an error message with status 404 if the user is not found, or status 500 if there is a server error.
+ */
+const getProfile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const userId = req.userId;
+
+        const user = await usersService.getUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json({
+            message: 'Profile retrieved successfully',
+            user: user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 /**
  * Controller method for updating user profile information.
@@ -363,6 +397,7 @@ const getNode = async (
 export const usersController = {
     register,
     registerAdmin,
+    getProfile,
     updateProfile,
     changePassword,
     resetPassword,

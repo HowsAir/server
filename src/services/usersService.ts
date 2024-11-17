@@ -19,7 +19,7 @@ const saltQuantity = 10;
  * Registers a new user in the database
  *
  * Text: email, password, name, surnames, phone, country, city, zipCode, address -> register() -> Promise<User>
- * 
+ *
  * @param userData - An object containing user details.
  * @returns {Promise<User>} - A promise that resolves with the newly created user.
  * @throws {Error} - Throws an error if the user cannot be created.
@@ -56,7 +56,7 @@ const register = async (userData: {
  * Registers a new admin in the database
  *
  * Text: email, password, name, surnames -> registerAdmin() -> Promise<User>
- * 
+ *
  * @param userData - An object containing admin details.
  * @returns {Promise<User>} - A promise that resolves with the newly created admin user.
  * @throws {Error} - Throws an error if the user cannot be created.
@@ -83,19 +83,32 @@ const registerAdmin = async (userData: {
 };
 
 /**
+ * Retrieves a user by their unique identifier (ID) from the database.
+ *
+ * Number: userId -> getUserById() -> Promise<User | null>
+ *
+ * @param userId - The unique identifier of the user to retrieve.
+ * @returns {Promise<User | null>} - A promise that resolves with the found user object or null if no user is found.
+ */
+export const getUserById = async (userId: number): Promise<User | null> => {
+    return await prisma.user.findUnique({
+        where: { id: userId },
+    });
+};
+
+/**
  * Finds a user by email in the database
  *
- * Text: email -> findUserByEmail() -> Promise<User | null>
+ * Text: email -> getUserByEmail() -> Promise<User | null>
  *
  * @param email - The email of the user to search for.
  * @returns {Promise<User | null>} - A promise that resolves with the found user or null if not found.
  */
-export const findUserByEmail = async (email: string): Promise<User | null> => {
+export const getUserByEmail = async (email: string): Promise<User | null> => {
     return await prisma.user.findUnique({
         where: { email },
     });
 };
-
 
 /**
  * Updates the user's profile with optional name and surnames
@@ -111,21 +124,21 @@ const updateProfile = async (
     userId: number,
     data: {
         name?: string;
-        surnames?: string,
-        photo?: Express.Multer.File
+        surnames?: string;
+        photo?: Express.Multer.File;
     }
 ): Promise<User | null> => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return null;
-    
+
     let newPhotoUrl: string | undefined = undefined;
-    if (data.photo != undefined)  {
+    if (data.photo != undefined) {
         newPhotoUrl = await cloudinaryService.uploadImageToCloudinary(
             data.photo,
             CloudinaryFolders.PROFILE_PHOTOS
         );
     }
-    
+
     const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
@@ -222,13 +235,13 @@ const resetPassword = async (
 
 /**
  * Retrieves a list of all users with their associated statistics information
- * 
+ *
  * getStatistics() -> Promise<UserStatistics[]>
- * 
+ *
  * @returns {Promise<UserStatistics[]>} A promise that resolves to an array of user statistics objects.
  * @throws {Error} Throws an error if there is an issue retrieving user statistics from the database
  */
-const getStatistics = async(): Promise<UserStatistics[]> => {
+const getStatistics = async (): Promise<UserStatistics[]> => {
     const users = await prisma.user.findMany({
         where: {
             roleId: UserRoleId.User,
@@ -262,15 +275,15 @@ const getStatistics = async(): Promise<UserStatistics[]> => {
     });
 
     // Map data and calculate averages in a single reduce
-    const usersStats: UserStatistics[] = users.map(user => {
+    const usersStats: UserStatistics[] = users.map((user) => {
         const totalStats = user.stats.length;
         const { totalActiveHours, totalDistance } = user.stats.reduce(
-        (totals, stat) => {
-            totals.totalActiveHours += stat.activeHours;
-            totals.totalDistance += stat.distance;
-            return totals;
-        },
-        { totalActiveHours: 0, totalDistance: 0 }
+            (totals, stat) => {
+                totals.totalActiveHours += stat.activeHours;
+                totals.totalDistance += stat.distance;
+                return totals;
+            },
+            { totalActiveHours: 0, totalDistance: 0 }
         );
 
         return {
@@ -279,24 +292,30 @@ const getStatistics = async(): Promise<UserStatistics[]> => {
             surnames: user.surnames,
             phone: user.phone as string,
             nodeId: user.node?.id || null,
-            averageDailyActiveHours: totalStats > 0 ? Number((totalActiveHours / totalStats).toFixed(2)) : 0,
-            averageDailyDistance: totalStats > 0 ? Number((totalDistance / totalStats).toFixed(2)) : 0,
+            averageDailyActiveHours:
+                totalStats > 0
+                    ? Number((totalActiveHours / totalStats).toFixed(2))
+                    : 0,
+            averageDailyDistance:
+                totalStats > 0
+                    ? Number((totalDistance / totalStats).toFixed(2))
+                    : 0,
             nodeLastConnection: user.node?.measurements[0]?.timestamp || null,
         };
     });
 
     return usersStats;
-}
+};
 
 /**
  * Retrieves the node information for a specific user.
- * 
+ *
  * Number: userId -> getNode() -> Promise<Node | null>
  * @param userId - The ID of the user requesting the node information.
  * @returns {Promise<Node | null>} - A promise that resolves to the node object if found, or null if not found.
  * @throws {Error} - Throws an error if there is an issue retrieving the node from the database.
  */
-const getNode = async(userId: number): Promise<Node | null> => {
+const getNode = async (userId: number): Promise<Node | null> => {
     const node = await prisma.node.findUnique({
         where: {
             userId: userId,
@@ -304,12 +323,13 @@ const getNode = async(userId: number): Promise<Node | null> => {
     });
 
     return node || null;
-}
+};
 
 export const usersService = {
     register,
     registerAdmin,
-    findUserByEmail,
+    getUserById,
+    getUserByEmail,
     updateProfile,
     changePassword,
     resetPassword,

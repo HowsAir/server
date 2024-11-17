@@ -62,6 +62,12 @@ router.post(
     usersController.registerAdmin
 );
 
+router.get(
+    '/profile',
+    verifyToken,
+    usersController.getProfile
+);
+
 router.patch(
     '/profile',
     verifyToken,
@@ -118,7 +124,6 @@ router.get(
     verifyToken,
     usersController.getTodayTotalDistance
 );
-
 
 // This route is protected and only accessible by Admin users
 const authorizeAdminRole = authorizeRoles(UserRoleId.Admin);

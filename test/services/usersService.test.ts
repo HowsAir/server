@@ -166,7 +166,59 @@ describe('usersService', () => {
         });
     });
 
-    describe('findUserByEmail()', () => {
+    describe('getUserById()', () => {
+        it('should return the user when found', async () => {
+            const foundUser: User = {
+                id: 123,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'hashed_password',
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(foundUser);
+
+            const userId = 123;
+
+            const result = await usersService.getUserById(userId);
+
+            expect(result).toStrictEqual(foundUser);
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { id: userId },
+            });
+        });
+
+        it('should return null when user is not found', async () => {
+            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
+
+            const userId = 999;
+
+            const result = await usersService.getUserById(userId);
+
+            expect(result).toBeNull();
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { id: userId },
+            });
+        });
+
+        it('should throw an error when database call fails', async () => {
+            prisma.user.findUnique = vi.fn().mockRejectedValue(new Error());
+
+            const userId = 123;
+
+            await expect(usersService.getUserById(userId)).rejects.toThrow();
+            expect(prisma.user.findUnique).toHaveBeenCalled();
+        });
+    });
+
+    describe('getUserByEmail()', () => {
         it('should return the user when found', async () => {
             const foundUser: User = {
                 id: 123,
@@ -187,7 +239,7 @@ describe('usersService', () => {
 
             const email = 'user@prisma.io';
 
-            const result = await usersService.findUserByEmail(email);
+            const result = await usersService.getUserByEmail(email);
 
             expect(result).toStrictEqual(foundUser);
             expect(prisma.user.findUnique).toHaveBeenCalledWith({
@@ -200,7 +252,7 @@ describe('usersService', () => {
 
             const email = 'nonexistent@example.com';
 
-            const result = await usersService.findUserByEmail(email);
+            const result = await usersService.getUserByEmail(email);
 
             expect(result).toBeNull();
             expect(prisma.user.findUnique).toHaveBeenCalledWith({
@@ -213,7 +265,7 @@ describe('usersService', () => {
 
             const email = 'error@example.com';
 
-            await expect(usersService.findUserByEmail(email)).rejects.toThrow();
+            await expect(usersService.getUserByEmail(email)).rejects.toThrow();
             expect(prisma.user.findUnique).toHaveBeenCalled();
         });
     });
