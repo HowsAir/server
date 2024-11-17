@@ -569,13 +569,13 @@ paths:
       tags:
         - Usuarios
       summary: Actualiza el perfil del usuario
-      description: Permite al usuario actualizar su nombre o apellidos. Al menos uno de los dos campos (`name` o `surnames`) debe ser proporcionado.
+      description: Permite al usuario actualizar su nombre, apellidos o foto. Al menos uno de los tres campos (`name`, `surnames` `photo`) debe ser proporcionado.
       security:
         - AuthTokenCookie: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -587,9 +587,14 @@ paths:
                   type: string
                   description: Nuevos apellidos del usuario
                   example: "Smith"
+                photo:
+                  type: string
+                  format: binary
+                  description: Nueva foto de perfil del usuario en formato JPEG o PNG
               anyOf:
                 - required: ["name"]
                 - required: ["surnames"]
+                - required: ["photo"]
       responses:
         "200":
           description: Perfil del usuario actualizado exitosamente.
@@ -754,58 +759,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /users/photo:
-    put:
-      tags:
-        - Usuarios
-      summary: Actualiza la foto de perfil del usuario
-      description: Permite al usuario subir y actualizar su foto de perfil. Requiere autenticación a través de la cookie `auth_token`. Solo se permiten archivos JPEG y PNG.
-      security:
-        - AuthTokenCookie: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - photo
-              properties:
-                photo:
-                  type: string
-                  format: binary
-                  description: Archivo de imagen en formato JPEG o PNG.
-      responses:
-        "200":
-          description: Foto de perfil actualizada exitosamente.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Profile photo updated successfully"
-                  user:
-                    $ref: "#/components/schemas/User"
-        "400":
-          description: Error de validación en el archivo de foto de perfil proporcionado.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: Token inválido o no proporcionado.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "500":
-          description: Error en el servidor al actualizar la foto de perfil.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+
 
   /users/node:
     get:

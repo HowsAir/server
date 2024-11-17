@@ -65,11 +65,23 @@ router.post(
 router.patch(
     '/profile',
     verifyToken,
+    upload.single('photo'),
     [
         check('name', 'Name is not a valid string').optional().notEmpty(),
         check('surnames', 'Surnames is not a valid string')
             .optional()
             .notEmpty(),
+        check('photo').custom((_, { req }) => {
+            const file = req.file;
+            if (!file) return true;
+            if (
+                file.mimetype !== 'image/jpeg' &&
+                file.mimetype !== 'image/png'
+            ) {
+                throw new Error('Only JPEG and PNG files are allowed');
+            }
+            return true;
+        }),
     ],
     usersController.updateProfile
 );
@@ -93,30 +105,6 @@ router.put(
     verifyResetPasswordToken,
     [...passwordValidationRules('newPassword')],
     usersController.resetPassword
-);
-
-router.put(
-    '/photo',
-    verifyToken,
-    upload.single('photo'),
-    [
-        check('photo').custom((_, { req }) => {
-            const file = req.file;
-
-            if (!file) {
-                throw new Error('Photo is required and needs to be valid');
-            }
-
-            if (
-                file.mimetype !== 'image/jpeg' &&
-                file.mimetype !== 'image/png'
-            ) {
-                throw new Error('Only JPEG and PNG files are allowed');
-            }
-            return true;
-        }),
-    ],
-    usersController.updateProfilePhoto
 );
 
 router.get(

@@ -135,7 +135,7 @@ const registerAdmin = async (
 /**
  * Controller method for updating user profile information.
  *
- * @param req - The HTTP Request object containing the fields to update in the body (e.g., name, surnames).
+ * @param req - The HTTP Request object containing the fields to update in the body (e.g., name, surnames, photo).
  * @param res - The HTTP Response object used to send the updated user data back to the client.
  *
  * @returns Returns a JSON object with the updated user information and status 200 on success,
@@ -154,10 +154,12 @@ const updateProfile = async (
 
         const { name, surnames } = req.body;
         const userId = req.userId;
+        const photo = req.file as Express.Multer.File;
 
         const updatedUser = await usersService.updateProfile(userId, {
             name,
             surnames,
+            photo,
         });
 
         if (!updatedUser) {
@@ -276,40 +278,6 @@ const resetPassword = async (
 };
 
 /**
- * Controller method for updating an user's profile photo.
- *
- * @param req - Express request object containing photo in the body.
- * @param res - Express response object.
- * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
- */
-const updateProfilePhoto = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<Response | void> => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        const userId = req.userId;
-        const photo = req.file as Express.Multer.File;
-
-        const updatedUser = await usersService.updateProfilePhoto(
-            userId,
-            photo
-        );
-
-        return res.status(200).json({
-            message: 'Profile photo updated successfully',
-            user: updatedUser,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-/**
  * Controller method for getting the total distance covered by the user today.
  *
  * @param req - The HTTP Request object containing user information, with userId extracted from the token.
@@ -398,7 +366,6 @@ export const usersController = {
     updateProfile,
     changePassword,
     resetPassword,
-    updateProfilePhoto,
     getTodayTotalDistance,
     getStatistics,
     getNode,
