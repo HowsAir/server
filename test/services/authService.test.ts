@@ -12,9 +12,11 @@ import { User } from '@prisma/client';
 import {
     sendPasswordResetEmail,
     sendEmailVerification,
+    sendEmailApplication,
 } from '../../src/utils/emailSender';
 import { generateResetCode } from '../../src/utils/auth';
 import jwt from 'jsonwebtoken';
+import { ApplicationForm } from '../../src/types/ApplicationForm';
 
 // Mock dependencies
 vi.mock('../../src/libs/prisma');
@@ -23,6 +25,7 @@ vi.mock('../../src/utils/auth');
 vi.mock('../../src/utils/emailSender', () => ({
     sendPasswordResetEmail: vi.fn(),
     sendEmailVerification: vi.fn(),
+    sendEmailApplication: vi.fn(),
 }));
 vi.mock('jsonwebtoken');
 
@@ -453,6 +456,79 @@ describe('authService', () => {
                 'new@example.com',
                 `${testBackendURL}/api/v1/auth/email-confirmation-token?token=${testToken}`
             );
+        });
+    });
+
+    describe('sendApplicationEmail()', () => {
+        const mockApplication: ApplicationForm = {
+            name: 'Prisma Fan',
+            surnames: 'Prisma',
+            email: 'user@prisma.io',
+            country: 'España',
+            city: 'Valencia',
+            address: 'Calle Falsa 123',
+            zipCode: '46000',
+            comments: 'I love Prisma',
+        };
+
+        it('should return existing user if email already exists', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'hashed_password',
+                roleId: 1,
+                photoUrl: null,
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
+
+            // Act
+            const result =
+                await authService.sendApplicationEmail(mockApplication);
+
+            // Assert
+            expect(result).toEqual(mockUser);
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { email: 'user@prisma.io' },
+            });
+            expect(sendEmailApplication).not.toHaveBeenCalled();
+        });
+
+        it('should send Application email for new user', async () => {
+            // Arrange
+            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
+            const testJwtSecret = 'test_secret';
+
+            await authService.sendApplicationEmail(mockApplication);
+
+            // Assert
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { email: 'user@prisma.io' },
+            });
+
+            expect(sendEmailApplication).toHaveBeenCalledWith(mockApplication);
+        });
+
+        it('should send Application email for new user', async () => {
+            // Arrange
+            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
+            const testJwtSecret = 'test_secret';
+
+            await authService.sendApplicationEmail(mockApplication);
+
+            // Assert
+            expect(prisma.user.findUnique).toHaveBeenCalledWith({
+                where: { email: 'user@prisma.io' },
+            });
+
+            expect(sendEmailApplication).toHaveBeenCalledWith(mockApplication);
         });
     });
 });
