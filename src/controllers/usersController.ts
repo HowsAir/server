@@ -12,7 +12,8 @@ import { measurementsService } from '../services/measurementsService';
 import { auth_token, password_reset_token } from '../middleware/auth';
 import { PasswordResetStatus } from '../types/PasswordResetStatus';
 
-const RegisterAdminAuthorizationCode = 1234;
+import { nodesService } from '../services/nodesService';
+import { RegisterAdminAuthorizationCode } from '../types/RegisterAdminAuthorizationCode';
 
 /**
  * Controller method for user registration.
@@ -379,7 +380,7 @@ const getNode = async (
     try {
         const userId = req.userId;
 
-        const node = await usersService.getNode(userId);
+        const node = await nodesService.getNodeByUserId(userId);
 
         if (!node) {
             return res.status(404).json({ message: 'Node not found' });

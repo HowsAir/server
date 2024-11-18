@@ -307,24 +307,6 @@ const getStatistics = async (): Promise<UserStatistics[]> => {
     return usersStats;
 };
 
-/**
- * Retrieves the node information for a specific user.
- *
- * Number: userId -> getNode() -> Promise<Node | null>
- * @param userId - The ID of the user requesting the node information.
- * @returns {Promise<Node | null>} - A promise that resolves to the node object if found, or null if not found.
- * @throws {Error} - Throws an error if there is an issue retrieving the node from the database.
- */
-const getNode = async (userId: number): Promise<Node | null> => {
-    const node = await prisma.node.findUnique({
-        where: {
-            userId: userId,
-        },
-    });
-
-    return node || null;
-};
-
 export const usersService = {
     register,
     registerAdmin,
@@ -334,5 +316,4 @@ export const usersService = {
     changePassword,
     resetPassword,
     getStatistics,
-    getNode,
 };

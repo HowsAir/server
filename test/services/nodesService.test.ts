@@ -142,4 +142,53 @@ describe('nodesService', () => {
             expect(prisma.node.findFirst).toHaveBeenCalled();
         });
     });
+
+    describe('getNodeByUserId()', () => {
+        it('should return the node for a given userId', async () => {
+            const userId = 1;
+            const mockNode = {
+                id: 100,
+                userId: userId,
+                status: 'ACTIVE',
+                lastStatusUpdate: new Date('2023-10-01T08:30:00Z'),
+            };
+
+            prisma.node.findUnique = vi.fn().mockResolvedValue(mockNode);
+
+            const result = await nodesService.getNodeByUserId(userId);
+
+            expect(result).toStrictEqual(mockNode);
+            expect(prisma.node.findUnique).toHaveBeenCalledWith({
+                where: { userId },
+            });
+        });
+
+        it('should return null when no node is found for the given userId', async () => {
+            const userId = 1;
+
+            prisma.node.findUnique = vi.fn().mockResolvedValue(null);
+
+            const result = await nodesService.getNodeByUserId(userId);
+
+            expect(result).toBeNull();
+            expect(prisma.node.findUnique).toHaveBeenCalledWith({
+                where: { userId },
+            });
+        });
+
+        it('should throw an error if the database query fails', async () => {
+            const userId = 1;
+
+            prisma.node.findUnique = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(nodesService.getNodeByUserId(userId)).rejects.toThrow(
+                'Database error'
+            );
+            expect(prisma.node.findUnique).toHaveBeenCalledWith({
+                where: { userId },
+            });
+        });
+    });
 });
