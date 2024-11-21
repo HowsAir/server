@@ -6,20 +6,7 @@
 
 ## Environment Variable Configuration
 
-Set up the `.env` file in the root of the backend directory with the following environment variables, adjusting values according to your environment:
-
-### Backend (`backend/.env`)
-
-```plaintext
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
-DATABASE_URL="postgresql://user:1234@localhost:5432/howsair_db?schema=main_schema"
-POSTGRES_USER=user
-POSTGRES_PASSWORD=1234
-POSTGRES_DB=howsair_db
-JWT_SECRET_KEY=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxNDc1MDE1MCwiaWF0IjoxNzE0NzUwMTUwfQ.pbXFiJ4n-3wP5o4HtFwgLaL_Twsbxb9Iz0hb2Y2ECeM
-STRIPE_SECRET_KEY=sk_test_51QDRm2CT2jgWOtj9vw2stcD7Dj2K3KVgqdtRldnifAdVmyINteKqHmsOX74HFdiSXPlPqgRu0c66fDU6yXn3cEz700BxB15ypY
-```
+Set up the `.env` file in the root of the backend directory with the same environment variables as `.env.example`, adjusting values according to your environment:
 
 - For **development** environments, ensure `NODE_ENV` is set to `development`.
 - For **production** environments, update `NODE_ENV` to `production`.
