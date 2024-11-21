@@ -153,6 +153,10 @@ paths:
                   message:
                     type: string
                     example: "Token is valid"
+                  roleId:
+                    type: integer
+                    description: ID del rol del usuario
+                    example: 1
         "401":
           description: Token inválido o no proporcionado
           content:

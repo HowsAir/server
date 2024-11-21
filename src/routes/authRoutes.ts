@@ -26,7 +26,7 @@ router.post(
 );
 
 router.get('/validate', verifyToken, async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'Token is valid' });
+    return res.status(200).json({ message: 'Token is valid', roleId: req.roleId });
 });
 
 router.post('/logout', authController.logout);
