@@ -4,7 +4,7 @@
  * @author Juan Diaz & Manuel Borregales
  */
 
-import { User, Node } from '@prisma/client';
+import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
 import { UserStatistics } from '../types/UserStatistics';
