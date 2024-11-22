@@ -13,28 +13,15 @@ Set up the `.env` file in the root of the backend directory with the same enviro
 
 ## Part 1: Development
 
-### Local Database with Docker
+### Local Ready Environment
 
-1. **Start the Local Database in Docker**:
-
-   Run the following commands to start a local instance of PostgreSQL using Docker:
+   Run the following command to start everything you will need:
 
    ```bash
-   docker-compose build
-   docker-compose --profile default up
+   npm run setup
    ```
 
-   This will create a Docker container with PostgreSQL configured according to your `.env` settings.
-
-2. **Install Dependencies and Run the Backend**:
-
-   Navigate to the backend folder and execute:
-
-   ```bash
-   cd backend
-   npm install
-   npm run dev
-   ```
+   This will install dependencies, create your .env file for you, create a Docker container with PostgreSQL configured according to the `.env` settings. Finally, it will also seed your database and run Prisma Studio so that you can interact visually with the Database.
 
    The backend server will start in development mode at `http://localhost:3000`.
 
@@ -222,8 +209,6 @@ This project is part of a larger ecosystem that includes:
 
 - **HowsAir for Android**: The mobile client for managing and visualizing environmental measurements, developed for Android. You can find the repository [here](https://github.com/HowsAir/android).
 
-- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements
-
-. You can find the repository [here](https://github.com/HowsAir/arduino).
+- **HowsAir for Arduino**: The firmware for the Arduino devices that capture environmental measurements. You can find the repository [here](https://github.com/HowsAir/arduino).
 
 - **HowsAir's Frontend**: The frontend client for this backend that shows you intuitively the measures taken. You can find the repository [here](https://github.com/HowsAir/frontend).
