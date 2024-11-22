@@ -6,7 +6,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
-import { usersService} from '../services/usersService';
+import { usersService } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { measurementsService } from '../services/measurementsService';
 import { auth_token, password_reset_token } from '../middleware/auth';
@@ -96,16 +96,14 @@ const registerAdmin = async (
             return res.status(400).json({ message: errors.array() });
         }
 
-        const {
-            email,
-            password,
-            name,
-            surnames,
-            authorizationCode,
-        } = req.body;
+        const { email, password, name, surnames, authorizationCode } = req.body;
 
-        if (parseInt(authorizationCode,10) !== RegisterAdminAuthorizationCode) {
-            return res.status(403).json({ message: 'Invalid authorization code' });
+        if (
+            parseInt(authorizationCode, 10) !== RegisterAdminAuthorizationCode
+        ) {
+            return res
+                .status(403)
+                .json({ message: 'Invalid authorization code' });
         }
 
         const userData = {
@@ -165,7 +163,6 @@ const getProfile = async (
         next(error);
     }
 };
-
 
 /**
  * Controller method for updating user profile information.

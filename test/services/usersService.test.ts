@@ -270,231 +270,229 @@ describe('usersService', () => {
         });
     });
 
-describe('updateProfile()', () => {
-    it('should update user name, surnames, and upload a new profile photo', async () => {
-        const mockUser: User = {
-            id: 1,
-            email: 'user@prisma.io',
-            name: 'Prisma Fan',
-            surnames: 'Prisma',
-            password: 'hashed_password',
-            roleId: 1,
-            photoUrl: 'https://cloudinary.com/old_photo_url',
-            phone: null,
-            country: null,
-            city: null,
-            zipCode: null,
-            address: null,
-        };
+    describe('updateProfile()', () => {
+        it('should update user name, surnames, and upload a new profile photo', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'hashed_password',
+                roleId: 1,
+                photoUrl: 'https://cloudinary.com/old_photo_url',
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
 
-        const newPhotoUrl = 'https://cloudinary.com/new_photo_url';
-        const mockPhoto = {
-            buffer: Buffer.from('fake image data'),
-            mimetype: 'image/png',
-        } as Express.Multer.File;
+            const newPhotoUrl = 'https://cloudinary.com/new_photo_url';
+            const mockPhoto = {
+                buffer: Buffer.from('fake image data'),
+                mimetype: 'image/png',
+            } as Express.Multer.File;
 
-        prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-        cloudinaryService.uploadImageToCloudinary = vi
-            .fn()
-            .mockResolvedValue(newPhotoUrl);
-        prisma.user.update = vi.fn().mockResolvedValue({
-            ...mockUser,
-            name: 'New Name',
-            surnames: 'New Surnames',
-            photoUrl: newPhotoUrl,
-        });
-        cloudinaryService.deleteImageFromCloudinary = vi
-            .fn()
-            .mockResolvedValue(undefined);
-
-        const result = await usersService.updateProfile(mockUser.id, {
-            name: 'New Name',
-            surnames: 'New Surnames',
-            photo: mockPhoto,
-        });
-
-        expect(result).toStrictEqual({
-            ...mockUser,
-            name: 'New Name',
-            surnames: 'New Surnames',
-            photoUrl: newPhotoUrl,
-        });
-        expect(cloudinaryService.uploadImageToCloudinary).toHaveBeenCalledWith(
-            mockPhoto,
-            CloudinaryFolders.PROFILE_PHOTOS
-        );
-        expect(prisma.user.update).toHaveBeenCalledWith({
-            where: { id: mockUser.id },
-            data: {
+            prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
+            cloudinaryService.uploadImageToCloudinary = vi
+                .fn()
+                .mockResolvedValue(newPhotoUrl);
+            prisma.user.update = vi.fn().mockResolvedValue({
+                ...mockUser,
                 name: 'New Name',
                 surnames: 'New Surnames',
                 photoUrl: newPhotoUrl,
-            },
+            });
+            cloudinaryService.deleteImageFromCloudinary = vi
+                .fn()
+                .mockResolvedValue(undefined);
+
+            const result = await usersService.updateProfile(mockUser.id, {
+                name: 'New Name',
+                surnames: 'New Surnames',
+                photo: mockPhoto,
+            });
+
+            expect(result).toStrictEqual({
+                ...mockUser,
+                name: 'New Name',
+                surnames: 'New Surnames',
+                photoUrl: newPhotoUrl,
+            });
+            expect(
+                cloudinaryService.uploadImageToCloudinary
+            ).toHaveBeenCalledWith(mockPhoto, CloudinaryFolders.PROFILE_PHOTOS);
+            expect(prisma.user.update).toHaveBeenCalledWith({
+                where: { id: mockUser.id },
+                data: {
+                    name: 'New Name',
+                    surnames: 'New Surnames',
+                    photoUrl: newPhotoUrl,
+                },
+            });
+            expect(
+                cloudinaryService.deleteImageFromCloudinary
+            ).toHaveBeenCalledWith(
+                mockUser.photoUrl,
+                CloudinaryFolders.PROFILE_PHOTOS
+            );
         });
-        expect(
-            cloudinaryService.deleteImageFromCloudinary
-        ).toHaveBeenCalledWith(
-            mockUser.photoUrl,
-            CloudinaryFolders.PROFILE_PHOTOS
-        );
+
+        it('should update only the user name and surnames without updating the photo if photo is not provided', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Original Name',
+                surnames: 'Original Surnames',
+                password: 'hashed_password',
+                roleId: 1,
+                photoUrl: 'https://cloudinary.com/photo_url',
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
+            prisma.user.update = vi.fn().mockResolvedValue({
+                ...mockUser,
+                name: 'Updated Name',
+                surnames: 'Updated Surnames',
+            });
+
+            const result = await usersService.updateProfile(mockUser.id, {
+                name: 'Updated Name',
+                surnames: 'Updated Surnames',
+            });
+
+            expect(result).toStrictEqual({
+                ...mockUser,
+                name: 'Updated Name',
+                surnames: 'Updated Surnames',
+            });
+            expect(prisma.user.update).toHaveBeenCalledWith({
+                where: { id: mockUser.id },
+                data: { name: 'Updated Name', surnames: 'Updated Surnames' },
+            });
+            expect(
+                cloudinaryService.uploadImageToCloudinary
+            ).not.toHaveBeenCalled();
+            expect(
+                cloudinaryService.deleteImageFromCloudinary
+            ).not.toHaveBeenCalled();
+        });
+
+        it('should return null if the user is not found', async () => {
+            prisma.user.findUnique = vi.fn().mockResolvedValue(null);
+
+            const result = await usersService.updateProfile(999, {
+                name: 'New Name',
+            });
+
+            expect(result).toBeNull();
+            expect(prisma.user.update).not.toHaveBeenCalled();
+            expect(
+                cloudinaryService.uploadImageToCloudinary
+            ).not.toHaveBeenCalled();
+            expect(
+                cloudinaryService.deleteImageFromCloudinary
+            ).not.toHaveBeenCalled();
+        });
+
+        it('should throw an error if photo upload fails', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'User Name',
+                surnames: 'User Surname',
+                password: 'hashed_password',
+                roleId: 1,
+                photoUrl: 'https://cloudinary.com/photo_url',
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            const mockPhoto = {
+                buffer: Buffer.from('fake image data'),
+                mimetype: 'image/png',
+            } as Express.Multer.File;
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
+            cloudinaryService.uploadImageToCloudinary = vi
+                .fn()
+                .mockRejectedValue(new Error('Upload failed'));
+
+            await expect(
+                usersService.updateProfile(mockUser.id, { photo: mockPhoto })
+            ).rejects.toThrow('Upload failed');
+            expect(prisma.user.update).not.toHaveBeenCalled();
+            expect(
+                cloudinaryService.deleteImageFromCloudinary
+            ).not.toHaveBeenCalled();
+        });
+
+        it('should log an error if deleting the old photo fails, but still update the user', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'user@prisma.io',
+                name: 'Prisma Fan',
+                surnames: 'Prisma',
+                password: 'hashed_password',
+                roleId: 1,
+                photoUrl: 'https://cloudinary.com/old_photo_url',
+                phone: null,
+                country: null,
+                city: null,
+                zipCode: null,
+                address: null,
+            };
+
+            const newPhotoUrl = 'https://cloudinary.com/new_photo_url';
+            const mockPhoto = {
+                buffer: Buffer.from('fake image data'),
+                mimetype: 'image/png',
+            } as Express.Multer.File;
+
+            prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
+            cloudinaryService.uploadImageToCloudinary = vi
+                .fn()
+                .mockResolvedValue(newPhotoUrl);
+            prisma.user.update = vi.fn().mockResolvedValue({
+                ...mockUser,
+                photoUrl: newPhotoUrl,
+            });
+            cloudinaryService.deleteImageFromCloudinary = vi
+                .fn()
+                .mockRejectedValue(new Error('Deletion failed'));
+
+            const consoleErrorSpy = vi
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+
+            const result = await usersService.updateProfile(mockUser.id, {
+                photo: mockPhoto,
+            });
+
+            expect(result).toStrictEqual({
+                ...mockUser,
+                photoUrl: newPhotoUrl,
+            });
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                'Failed to delete previous user profile photo from Cloudinary: ',
+                expect.any(Error)
+            );
+            expect(prisma.user.update).toHaveBeenCalledWith({
+                where: { id: mockUser.id },
+                data: { photoUrl: newPhotoUrl },
+            });
+
+            consoleErrorSpy.mockRestore();
+        });
     });
-
-    it('should update only the user name and surnames without updating the photo if photo is not provided', async () => {
-        const mockUser: User = {
-            id: 1,
-            email: 'user@prisma.io',
-            name: 'Original Name',
-            surnames: 'Original Surnames',
-            password: 'hashed_password',
-            roleId: 1,
-            photoUrl: 'https://cloudinary.com/photo_url',
-            phone: null,
-            country: null,
-            city: null,
-            zipCode: null,
-            address: null,
-        };
-
-        prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-        prisma.user.update = vi.fn().mockResolvedValue({
-            ...mockUser,
-            name: 'Updated Name',
-            surnames: 'Updated Surnames',
-        });
-
-        const result = await usersService.updateProfile(mockUser.id, {
-            name: 'Updated Name',
-            surnames: 'Updated Surnames',
-        });
-
-        expect(result).toStrictEqual({
-            ...mockUser,
-            name: 'Updated Name',
-            surnames: 'Updated Surnames',
-        });
-        expect(prisma.user.update).toHaveBeenCalledWith({
-            where: { id: mockUser.id },
-            data: { name: 'Updated Name', surnames: 'Updated Surnames' },
-        });
-        expect(
-            cloudinaryService.uploadImageToCloudinary
-        ).not.toHaveBeenCalled();
-        expect(
-            cloudinaryService.deleteImageFromCloudinary
-        ).not.toHaveBeenCalled();
-    });
-
-    it('should return null if the user is not found', async () => {
-        prisma.user.findUnique = vi.fn().mockResolvedValue(null);
-
-        const result = await usersService.updateProfile(999, {
-            name: 'New Name',
-        });
-
-        expect(result).toBeNull();
-        expect(prisma.user.update).not.toHaveBeenCalled();
-        expect(
-            cloudinaryService.uploadImageToCloudinary
-        ).not.toHaveBeenCalled();
-        expect(
-            cloudinaryService.deleteImageFromCloudinary
-        ).not.toHaveBeenCalled();
-    });
-
-    it('should throw an error if photo upload fails', async () => {
-        const mockUser: User = {
-            id: 1,
-            email: 'user@prisma.io',
-            name: 'User Name',
-            surnames: 'User Surname',
-            password: 'hashed_password',
-            roleId: 1,
-            photoUrl: 'https://cloudinary.com/photo_url',
-            phone: null,
-            country: null,
-            city: null,
-            zipCode: null,
-            address: null,
-        };
-
-        const mockPhoto = {
-            buffer: Buffer.from('fake image data'),
-            mimetype: 'image/png',
-        } as Express.Multer.File;
-
-        prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-        cloudinaryService.uploadImageToCloudinary = vi
-            .fn()
-            .mockRejectedValue(new Error('Upload failed'));
-
-        await expect(
-            usersService.updateProfile(mockUser.id, { photo: mockPhoto })
-        ).rejects.toThrow('Upload failed');
-        expect(prisma.user.update).not.toHaveBeenCalled();
-        expect(
-            cloudinaryService.deleteImageFromCloudinary
-        ).not.toHaveBeenCalled();
-    });
-
-    it('should log an error if deleting the old photo fails, but still update the user', async () => {
-        const mockUser: User = {
-            id: 1,
-            email: 'user@prisma.io',
-            name: 'Prisma Fan',
-            surnames: 'Prisma',
-            password: 'hashed_password',
-            roleId: 1,
-            photoUrl: 'https://cloudinary.com/old_photo_url',
-            phone: null,
-            country: null,
-            city: null,
-            zipCode: null,
-            address: null,
-        };
-
-        const newPhotoUrl = 'https://cloudinary.com/new_photo_url';
-        const mockPhoto = {
-            buffer: Buffer.from('fake image data'),
-            mimetype: 'image/png',
-        } as Express.Multer.File;
-
-        prisma.user.findUnique = vi.fn().mockResolvedValue(mockUser);
-        cloudinaryService.uploadImageToCloudinary = vi
-            .fn()
-            .mockResolvedValue(newPhotoUrl);
-        prisma.user.update = vi.fn().mockResolvedValue({
-            ...mockUser,
-            photoUrl: newPhotoUrl,
-        });
-        cloudinaryService.deleteImageFromCloudinary = vi
-            .fn()
-            .mockRejectedValue(new Error('Deletion failed'));
-
-        const consoleErrorSpy = vi
-            .spyOn(console, 'error')
-            .mockImplementation(() => {});
-
-        const result = await usersService.updateProfile(mockUser.id, {
-            photo: mockPhoto,
-        });
-
-        expect(result).toStrictEqual({
-            ...mockUser,
-            photoUrl: newPhotoUrl,
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-            'Failed to delete previous user profile photo from Cloudinary: ',
-            expect.any(Error)
-        );
-        expect(prisma.user.update).toHaveBeenCalledWith({
-            where: { id: mockUser.id },
-            data: { photoUrl: newPhotoUrl },
-        });
-
-        consoleErrorSpy.mockRestore();
-    });
-});
-
 
     describe('changePassword()', () => {
         it('should change the password if current password is correct', async () => {

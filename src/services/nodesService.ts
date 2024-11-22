@@ -78,5 +78,5 @@ export const nodesService = {
     linkNodeToUser,
     findNodeById,
     checkIfNodeIsActive,
-    getNodeByUserId
+    getNodeByUserId,
 };

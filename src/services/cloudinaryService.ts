@@ -7,7 +7,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryFolders } from '../types/CloudinaryFolders';
 
-
 /**
  * Uploads an image file to Cloudinary and stores it in the specified folder. Returns the URL of the uploaded image.
  *

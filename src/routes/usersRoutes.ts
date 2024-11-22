@@ -56,17 +56,16 @@ router.post(
         check('email', 'Email is required and needs to be valid').isEmail(),
         ...passwordValidationRules('password'),
         check('name', 'Name is required and cannot be empty').notEmpty(),
-        check('surnames', 'Surnames are required and cannot be empty').notEmpty(),
+        check(
+            'surnames',
+            'Surnames are required and cannot be empty'
+        ).notEmpty(),
         check('authorizationCode', 'Authorization code is required').notEmpty(),
     ],
     usersController.registerAdmin
 );
 
-router.get(
-    '/profile',
-    verifyToken,
-    usersController.getProfile
-);
+router.get('/profile', verifyToken, usersController.getProfile);
 
 router.patch(
     '/profile',
@@ -113,11 +112,7 @@ router.put(
     usersController.resetPassword
 );
 
-router.get(
-    '/node',
-    verifyToken,
-    usersController.getNode
-);
+router.get('/node', verifyToken, usersController.getNode);
 
 router.get(
     '/today-total-distance',
