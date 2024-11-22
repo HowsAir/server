@@ -1,7 +1,7 @@
 /**
  * @file nodesService.ts
  * @brief Service to manage operations related to nodes.
- * @autor
+ * @author Juan Diaz
  */
 
 import { Node, NodeStatus } from '@prisma/client';
@@ -30,23 +30,6 @@ const linkNodeToUser = async (
 };
 
 /**
- * Creates a new node in the database in an "unlinked" state.
- *
- * @param status - Status of the node, typically set to "INACTIVE" until linked to a user.
- * @param lastStatusUpdate - Timestamp of the last status update.
- * @returns {Promise<Node>} A promise that resolves to the newly created node object.
- * @throws {Error} If there is an issue while saving the node.
- */
-const createNode = async (): Promise<Node> => {
-    return await prisma.node.create({
-        data: {
-            status: NodeStatus.UNLINKED,
-            lastStatusUpdate: new Date(),
-        },
-    });
-};
-
-/**
  * Retrieves a node by its ID.
  *
  * @param nodeId - The ID of the node to be retrieved.
@@ -65,7 +48,7 @@ const findNodeById = async (nodeId: number): Promise<Node | null> => {
  * @returns {Promise<Boolean>} A promise that resolves to true if the node is active, or false otherwise.
  * @throws {Error} If there is an issue while checking the node's linked status.
  */
-const checkIfNodeIsActive = async (nodeId: number): Promise<Boolean> => {
+const checkIfNodeIsActive = async (nodeId: number): Promise<boolean> => {
     const activeNode = await prisma.node.findFirst({
         where: { id: nodeId, NOT: { status: NodeStatus.UNLINKED } },
     });
@@ -73,9 +56,27 @@ const checkIfNodeIsActive = async (nodeId: number): Promise<Boolean> => {
     return activeNode ? true : false;
 };
 
+/**
+ * Retrieves the node information for a specific user.
+ *
+ * Number: userId -> getNodeByUserId() -> Promise<Node | null>
+ * @param userId - The ID of the user requesting the node information.
+ * @returns {Promise<Node | null>} - A promise that resolves to the node object if found, or null if not found.
+ * @throws {Error} - Throws an error if there is an issue retrieving the node from the database.
+ */
+const getNodeByUserId = async (userId: number): Promise<Node | null> => {
+    const node = await prisma.node.findUnique({
+        where: {
+            userId: userId,
+        },
+    });
+
+    return node || null;
+};
+
 export const nodesService = {
     linkNodeToUser,
-    createNode,
     findNodeById,
     checkIfNodeIsActive,
+    getNodeByUserId,
 };

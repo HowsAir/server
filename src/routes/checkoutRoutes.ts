@@ -1,6 +1,6 @@
 /**
- * @file paymentRoutes.ts
- * @brief Definition of the routes for payment processing in the API.
+ * @file checkoutRoutes.ts
+ * @brief Definition of the routes for checkout operations in the API.
  * @author Juan Diaz
  */
 
@@ -11,11 +11,15 @@ import { check } from 'express-validator';
 const router = Router();
 
 /**
- * Route to create a checkout session for Stripe payments.
+ * Route to create a checkout session for Stripe payment checkouts.
  */
 router.post(
     '/',
-    [check('amount', 'Amount is required').isNumeric().notEmpty()],
+    [
+        check('amount', 'Amount is required and should be numeric')
+            .isNumeric()
+            .notEmpty(),
+    ],
     checkoutController.createCheckoutSession
 );
 

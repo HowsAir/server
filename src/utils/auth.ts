@@ -1,17 +1,35 @@
 /**
  * @file auth.ts
  * @brief Utility functions for Authentication in the API
- *
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Response } from 'express';
-import { auth_token } from '../middleware/auth';
 import { User } from '@prisma/client';
+import {
+    email_verified_token,
+    auth_token,
+    password_reset_token,
+} from '../middleware/auth';
+import 'dotenv/config';
 
-// Number of days the JWT token will be valid
-const daysExpiration = 15;
+export const jwtConfig = {
+    auth_token: {
+        name: auth_token,
+        expirationMinutes: 21600,
+    },
+    password_reset_token: {
+        name: password_reset_token,
+        expirationMinutes: 15,
+    },
+    email_verified_token: {
+        name: email_verified_token,
+        expirationMinutes: 15,
+    },
+} as const;
+
+type JwtConfigKey = keyof typeof jwtConfig;
 
 /**
  * Function to generate a JWT token and attach it to the response as a cookie.
@@ -22,24 +40,87 @@ const daysExpiration = 15;
  * The token is signed with the user's ID for security reasons and set to expire in a configurable number of days.
  * It is stored in the cookies with the 'httpOnly' and 'secure' flags for security, ensuring it's only accessible via HTTP requests.
  */
-export const putJwtInResponse = (res: Response, user: User): void => {
-    // Hide the userId inside the token for security and future use
+export const putJwtInResponse = (
+    res: Response,
+    user: User,
+    configKey: JwtConfigKey
+): void => {
+    const { name, expirationMinutes } = jwtConfig[configKey];
+
     const token = jwt.sign(
-        {
-            userId: user.id,
-            role: user.roleId,
-        },
+        { userId: user.id, roleId: user.roleId },
         process.env.JWT_SECRET_KEY as string,
-        { expiresIn: `${daysExpiration}d` } // Token valid for 2 days
+        { expiresIn: `${expirationMinutes}m` }
     );
 
-    // Convert 2 days to milliseconds for maxAge
-    const maxAge = daysExpiration * 24 * 60 * 60 * 1000; // 2 days in milliseconds
-
-    // Add the token as a cookie in the response, with security configurations
-    res.cookie(auth_token, token, {
-        httpOnly: true, // Cookie is only accessible via HTTP
-        secure: process.env.NODE_ENV === 'production', // Secure flag only in production
-        maxAge: maxAge, // Cookie expires in 2 days
+    res.cookie(name, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: expirationMinutes * 60 * 1000, // Convert minutes to ms
     });
+};
+
+/**
+ * Function to generate a JWT token with the user's email and attach it to the response as a cookie.
+ *
+ * @param res - The HTTP response object where the JWT token will be stored as a cookie.
+ * @param email - The email to be embedded inside the JWT token.
+ *
+ * This function creates a JWT token containing the user's email, signed with a secret key,
+ * and sets it to expire based on configuration. The token is stored in a cookie with
+ * 'httpOnly' and 'secure' flags for security, ensuring access only via HTTP requests.
+ */
+export const putJwtWithEmailInResponse = (
+    res: Response,
+    email: string
+): void => {
+    const { name, expirationMinutes } = jwtConfig.email_verified_token;
+
+    const token = jwt.sign(
+        { email: email },
+        process.env.JWT_SECRET_KEY as string,
+        { expiresIn: `${expirationMinutes}m` }
+    );
+
+    res.cookie(name, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: expirationMinutes * 60 * 1000, // Convert minutes to ms
+    });
+};
+
+/**
+ * Function to retrieve the email embedded within a JWT token.
+ *
+ * @param token - The JWT token containing the encoded email.
+ * @returns {string} - Returns the email address decoded from the JWT token payload or empty string if invalid.
+ *
+ * This function verifies the JWT token using a secret key and extracts the email field
+ * from the payload. The returned email can then be used for further validation or processing.
+ */
+export const getEmailFromToken = (token: string): string => {
+    try {
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET_KEY as string
+        ) as JwtPayload;
+        return decoded.email as string;
+    } catch (error) {
+        console.error(error);
+        return '';
+    }
+};
+
+/**
+ * Generates a 6-digit numeric reset code.
+ *
+ * This code is used for password reset purposes. It generates a random number
+ * between 100000 and 999999, ensuring it is always a 6-digit code.
+ *
+ * @returns {string} - A string representation of a 6-digit code.
+ */
+export const generateResetCode = (): string => {
+    return Math.floor(100000 + Math.random() * 900000)
+        .toString()
+        .padStart(6, '0');
 };

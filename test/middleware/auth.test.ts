@@ -4,7 +4,11 @@
  * @author Juan Diaz
  */
 import { expect, describe, it, vi } from 'vitest'; // Import Vitest functions for testing and mocking
-import { verifyToken, authorizeRoles } from '../../src/middleware/auth'; // Import the middleware to be tested
+import {
+    verifyToken,
+    verifyResetPasswordToken,
+    authorizeRoles,
+} from '../../src/middleware/auth'; // Import the middleware to be tested
 import jwt from 'jsonwebtoken'; // Import jsonwebtoken for token verification
 import { Request, Response, NextFunction } from 'express'; // Import types from Express
 
@@ -44,11 +48,17 @@ describe('authMiddleware', () => {
                 throw new Error('Invalid token');
             });
 
+            // Silence console.error during this test to avoid noisy output
+            const originalConsoleError = console.error;
+            console.error = vi.fn();
+
             verifyToken(req, res, next);
 
-            // Verify that 401 Unauthorized is returned when the token is invalid
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+
+            // Restore console.error after the test
+            console.error = originalConsoleError;
         });
 
         it('should extract userId and role from a valid token', () => {
@@ -99,6 +109,74 @@ describe('authMiddleware', () => {
             // Verify that 403 Forbidden is returned when role is not allowed
             expect(res.status).toHaveBeenCalledWith(403);
             expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+        });
+    });
+
+    describe('verifyResetPasswordToken', () => {
+        // Tests for the verifyResetPasswordToken function
+        it('should return 401 if no reset password token is present', () => {
+            const req = { cookies: {} } as Request;
+            const res = {
+                status: vi.fn().mockReturnThis(),
+                json: vi.fn(),
+            } as unknown as Response;
+            const next = vi.fn();
+
+            verifyResetPasswordToken(req, res, next);
+
+            // Verify that 401 Unauthorized is returned when no token is present
+            expect(res.status).toHaveBeenCalledWith(401);
+            expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+        });
+
+        it('should return 401 if the reset password token is invalid', () => {
+            const req = {
+                cookies: {
+                    password_reset_token: 'invalid_token',
+                },
+            } as unknown as Request;
+            const res = {
+                status: vi.fn().mockReturnThis(),
+                json: vi.fn(),
+            } as unknown as Response;
+            const next = vi.fn();
+
+            // Mock jwt.verify to throw an error, simulating an invalid token
+            jwt.verify = vi.fn().mockImplementation(() => {
+                throw new Error('Invalid token');
+            });
+
+            // Silence console.error during this test to avoid noisy output
+            const originalConsoleError = console.error;
+            console.error = vi.fn();
+
+            verifyResetPasswordToken(req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(401);
+            expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+
+            // Restore console.error after the test
+            console.error = originalConsoleError;
+        });
+
+        it('should extract userId from a valid reset password token', () => {
+            const req = {
+                cookies: {
+                    password_reset_token: 'valid_token',
+                },
+            } as unknown as Request;
+            const res = {} as Response;
+            const next = vi.fn();
+
+            // Mock jwt.verify to return a valid decoded token
+            const decodedToken = { userId: 123 };
+            jwt.verify = vi.fn().mockReturnValue(decodedToken);
+
+            verifyResetPasswordToken(req, res, next);
+
+            // Verify that userId is correctly extracted from the token
+            expect(req.userId).toBe(123);
+            expect(next).toHaveBeenCalled(); // Verify that next is called to continue
         });
     });
 });

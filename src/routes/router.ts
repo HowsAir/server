@@ -5,7 +5,7 @@
  */
 
 import { Router } from 'express';
-import measurementsRoutes from "./measurementsRoutes"
+import measurementsRoutes from './measurementsRoutes';
 import usersRoutes from './usersRoutes';
 import authRoutes from './authRoutes';
 import checkoutRoutes from './checkoutRoutes';
@@ -13,7 +13,7 @@ import nodesRoutes from './nodesRoutes';
 
 const router = Router();
 
-router.use("/measurements", measurementsRoutes);
+router.use('/measurements', measurementsRoutes);
 router.use('/users', usersRoutes);
 router.use('/auth', authRoutes);
 router.use('/checkout', checkoutRoutes);

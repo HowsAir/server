@@ -10,6 +10,8 @@ import path from 'path';
 import cors from 'cors';
 import router from './routes/router';
 import cookieParser from 'cookie-parser';
+import { v2 as cloudinary } from 'cloudinary';
+import errorHandler from './middleware/errorHandler';
 
 const app = express();
 
@@ -26,11 +28,21 @@ if (process.env.NODE_ENV === 'development') {
     app.use(express.static(path.join(__dirname, '../dist/frontend'))); // Serve frontend
 }
 
+//Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1', router);
+
+//Middleware for error handling, log error and 500 http internal server error
+app.use(errorHandler);
 
 //Response for non-existent endpoints
 app.use('/api/*', (req, res) => {

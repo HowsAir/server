@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { nodesService } from '../services/nodesService';
 
@@ -19,8 +19,9 @@ import { nodesService } from '../services/nodesService';
 
 const linkNodeToUser = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
     try {
         const errors = validationResult(req);
 
@@ -31,8 +32,6 @@ const linkNodeToUser = async (
         const { nodeId: nodeIdString } = req.params;
         const nodeId = parseInt(nodeIdString, 10);
 
-        const userId = req.userId;
-
         const existingNode = await nodesService.findNodeById(nodeId);
 
         if (!existingNode) {
@@ -41,22 +40,18 @@ const linkNodeToUser = async (
 
         const nodeIsActive = await nodesService.checkIfNodeIsActive(nodeId);
         if (nodeIsActive) {
-            return res
-                .status(400)
-                .json({
-                    message: 'Node is already linked to an active user',
-                });
+            return res.status(400).json({
+                message: 'Node is already linked to an active user',
+            });
         }
 
-        const linkedNode = await nodesService.linkNodeToUser(
-            nodeId,
-            userId
-        );
+        const userId = req.userId;
+
+        const linkedNode = await nodesService.linkNodeToUser(nodeId, userId);
 
         return res.status(200).json(linkedNode);
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        next(error);
     }
 };
 

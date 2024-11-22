@@ -31,6 +31,7 @@ Table users {
   role roles [not null]
   node nodes
   stats daily_stats [not null]
+  passwordResetTokens password_reset_tokens [not null]
 }
 
 Table roles {
@@ -60,6 +61,14 @@ Table measurements {
   node nodes [not null]
 }
 
+Table password_reset_tokens {
+  id Int [pk, increment]
+  userId Int [not null]
+  code String [unique, not null]
+  timestamp DateTime [default: `now()`, not null]
+  user users [not null]
+}
+
 Enum NodeStatus {
   ACTIVE
   INACTIVE
@@ -73,3 +82,5 @@ Ref: users.roleId > roles.id
 Ref: nodes.userId - users.id
 
 Ref: measurements.nodeId > nodes.id
+
+Ref: password_reset_tokens.userId > users.id [delete: Cascade]

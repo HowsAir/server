@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { measurementsService } from '../services/measurementsService';
 import { Measurement } from '@prisma/client';
@@ -20,8 +20,9 @@ import { Measurement } from '@prisma/client';
 
 const createMeasurement = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
     try {
         const errors = validationResult(req);
 
@@ -29,25 +30,21 @@ const createMeasurement = async (
             return res.status(400).json({ message: errors.array() });
         }
 
-        const {
-            o3Value,
-            latitude,
-            longitude,
-        } = req.body;
+        const { o3Value, latitude, longitude } = req.body;
 
         const userId = req.userId;
 
-        const createdMeasurement: Measurement = await measurementsService.createMeasurement(
-            o3Value,
-            latitude,
-            longitude,
-            userId
-        );
+        const createdMeasurement: Measurement =
+            await measurementsService.createMeasurement(
+                o3Value,
+                latitude,
+                longitude,
+                userId
+            );
 
         return res.status(201).json(createdMeasurement);
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        next(error);
     }
 };
 
@@ -62,14 +59,15 @@ const createMeasurement = async (
 
 const getMeasurements = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
     try {
         const measurements: Measurement[] =
             await measurementsService.getMeasurements();
         return res.status(200).json(measurements);
     } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' });
+        next(error);
     }
 };
 

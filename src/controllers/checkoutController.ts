@@ -4,7 +4,7 @@
  * @author Juan Diaz
  */
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Stripe from 'stripe';
 import 'dotenv/config';
 import { validationResult } from 'express-validator';
@@ -20,12 +20,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
  *
  * @param req - The HTTP request containing the amount in the body.
  * @param res - The HTTP response object to send the session ID.
- * @returns {Promise<Response>} - Returns the session ID or an error message.
+ * @returns {Promise<Response>} - Returns the session ID
  */
 const createCheckoutSession = async (
     req: Request,
-    res: Response
-): Promise<Response> => {
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -51,12 +52,9 @@ const createCheckoutSession = async (
         });
 
         // Return the session ID to the client
-        return res.status(200).json({ id: session.id });
+        return res.status(201).json({ id: session.id });
     } catch (error) {
-        console.error(error);
-        return res
-            .status(500)
-            .json({ message: 'Error creating payment session' });
+        next(error);
     }
 };
 
