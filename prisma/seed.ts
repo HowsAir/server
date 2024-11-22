@@ -10,9 +10,9 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 const saltQuantity = 10;
 const password = 'Hola1234.';
-const hashedPassword = await bcrypt.hash(password, saltQuantity);
 
 async function main() {
+    const hashedPassword = await bcrypt.hash(password, saltQuantity);
     const userRole = await prisma.role.upsert({
         where: { name: 'User' },
         update: {},
