@@ -1,6 +1,6 @@
 /**
  * @file seed.ts
- * @brief Seed file to populate the database with initial data
+ * @brief Seed file to populate the database with initial data for users, nodes, measurements, and daily stats
  * @author Juan Diaz
  */
 
@@ -13,116 +13,140 @@ const password = 'Hola1234.';
 
 async function main() {
     const hashedPassword = await bcrypt.hash(password, saltQuantity);
+
+    // Upsert roles with predefined IDs
     const userRole = await prisma.role.upsert({
-        where: { name: 'User' },
-        update: {},
-        create: { name: 'User' },
+        where: { id: 1 },
+        update: { name: 'User' },
+        create: {
+            id: 1,
+            name: 'User',
+        },
     });
 
     const adminRole = await prisma.role.upsert({
-        where: { name: 'Admin' },
-        update: {},
-        create: { name: 'Admin' },
-    });
-
-    const user1 = await prisma.user.upsert({
-        where: { email: 'user1@gmail.com' },
-        update: {},
+        where: { id: 2 },
+        update: { name: 'Admin' },
         create: {
-            name: 'User',
-            surnames: 'One',
-            email: 'user1@gmail.com',
-            password: hashedPassword,
-            roleId: userRole.id,
+            id: 2,
+            name: 'Admin',
         },
     });
 
-    const user2 = await prisma.user.upsert({
-        where: { email: 'user2@gmail.com' },
-        update: {},
-        create: {
-            name: 'User',
-            surnames: 'Two',
-            email: 'user2@gmail.com',
-            password: hashedPassword,
-            roleId: adminRole.id,
-        },
-    });
+    // Create 12 users
+    let users: any = [];
+    for (let i = 1; i <= 12; i++) {
+        const user = await prisma.user.upsert({
+            where: { email: `user${i}@gmail.com` },
+            update: {},
+            create: {
+                name: `User`,
+                surnames: `Number${i}`,
+                email: `user${i}@gmail.com`,
+                phone: `+1234567890${i}`, // Assign unique phone number
+                password: hashedPassword,
+                roleId: i === 1 ? adminRole.id : userRole.id, // First user as admin, others as users
+            },
+        });
+        users.push(user);
+    }
 
-    const node1 = await prisma.node.upsert({
-        where: { id: 1 },
-        update: {},
-        create: {
-            userId: user1.id,
-            status: NodeStatus.ACTIVE,
-            lastStatusUpdate: new Date(),
-        },
-    });
+    // Create nodes for users except the admin (users[0]) and one random user
+    const nodes: any = [];
+    for (let i = 1; i < users.length - 1; i++) {
+        const node = await prisma.node.upsert({
+            where: { id: i },
+            update: {},
+            create: {
+                userId: users[i].id,
+                status: NodeStatus.ACTIVE,
+                lastStatusUpdate: new Date(),
+            },
+        });
+        nodes.push(node);
+    }
 
-    const measurements = [
-        {
-            o3Value: 0.4,
-            coValue: 1.0,
-            no2Value: 0.6,
-            latitude: 40.7128,
-            longitude: -74.006,
-            nodeId: node1.id,
-        },
-        {
-            o3Value: 0.5,
-            coValue: 1.2,
-            no2Value: 0.7,
-            latitude: 40.7138,
-            longitude: -74.005,
-            nodeId: node1.id,
-        },
-        {
-            o3Value: 0.3,
-            coValue: 1.1,
-            no2Value: 0.5,
-            latitude: 40.7118,
-            longitude: -74.007,
-            nodeId: node1.id,
-        },
-        {
-            o3Value: 0.6,
-            coValue: 1.4,
-            no2Value: 0.8,
-            latitude: 40.712,
-            longitude: -74.008,
-            nodeId: node1.id,
-        },
-        {
-            o3Value: 0.2,
-            coValue: 0.9,
-            no2Value: 0.4,
-            latitude: 40.7135,
-            longitude: -74.009,
-            nodeId: node1.id,
-        },
-    ];
+    // Generate measurements for each node from 8am to 8pm, 3 per hour
+    for (const node of nodes) {
+        const measurements: any = [];
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
 
-    await Promise.all(
-        measurements.map((measurement) =>
-            prisma.measurement.create({
-                data: {
-                    ...measurement,
-                    timestamp: new Date(),
-                },
-            })
-        )
+        const dates = [yesterday, today];
+        dates.forEach((date) => {
+            for (let hour = 8; hour <= 20; hour++) {
+                // From 8 AM to 8 PM
+                for (let count = 0; count < 3; count++) {
+                    // 3 measurements per hour
+                    const timestamp = new Date(date);
+                    timestamp.setHours(hour, Math.floor(Math.random() * 60)); // Random minutes
+
+                    // Generate values with required precision
+                    const coValue = parseFloat(
+                        (7 + Math.random() * 6).toFixed(3)
+                    ); // Mostly < 9 but some up to 13, rounded to 3 decimals
+                    const no2Value = parseFloat(
+                        (0.04 + Math.random() * 0.06).toFixed(3)
+                    ); // Mostly < 0.053 but some up to 0.1, rounded to 3 decimals
+                    const o3Value = parseFloat(
+                        (0.03 + Math.random() * 0.08).toFixed(3)
+                    ); // Mostly < 0.05 but some up to 0.1, rounded to 3 decimals
+
+                    const latitude = parseFloat(
+                        (40.7128 + Math.random() * 0.01).toFixed(6)
+                    );
+                    const longitude = parseFloat(
+                        (-74.006 + Math.random() * 0.01).toFixed(6)
+                    );
+
+                    measurements.push({
+                        o3Value,
+                        coValue,
+                        no2Value,
+                        latitude,
+                        longitude,
+                        nodeId: node.id,
+                        timestamp,
+                    });
+                }
+            }
+        });
+
+        await prisma.measurement.createMany({
+            data: measurements,
+        });
+    }
+
+    // Create 2 daily stats for each user for the last two days
+    for (const user of users) {
+        const dailyStats: any = [];
+        for (let k = 1; k <= 2; k++) {
+            // Last two days
+            const date = new Date();
+            date.setDate(date.getDate() - k);
+
+            const activeHours = parseFloat(
+                (0.5 + Math.random() * 5.5).toFixed(1)
+            ); // Between 0.5 and 6 hours, 1 decimal place
+            const distance = Math.floor(100 + Math.random() * 3900); // Between 100 and 4000 meters, no decimals
+
+            dailyStats.push({
+                userId: user.id,
+                date: date,
+                activeHours,
+                distance,
+            });
+        }
+
+        await prisma.dailyStat.createMany({
+            data: dailyStats,
+        });
+    }
+
+    console.log(
+        'Seed data created successfully with users, nodes, measurements, and daily stats.'
     );
-
-    await prisma.dailyStat.create({
-        data: {
-            userId: user1.id,
-            date: new Date(),
-            activeHours: 2.5,
-            distance: 5.1,
-        },
-    });
-
-    console.log('Seed data created successfully.');
 }
 
 main()
