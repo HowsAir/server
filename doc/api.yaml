@@ -821,18 +821,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
-  /users/today-total-distance:
+
+  /users/dashboard:
     get:
       tags:
         - Usuarios
-      summary: Obtiene la distancia total recorrida hoy por el usuario
-      description: Devuelve la distancia total recorrida por el usuario en el día actual en metros. Requiere autenticación a través de la cookie `auth_token`.
+      summary: Obtiene datos del dashboard del usuario autenticado
+      description: Proporciona los datos del dashboard para un usuario propietario de un nodo, incluyendo lecturas de calidad del aire y distancia recorrida en la jornada.
       security:
         - AuthTokenCookie: []
       responses:
         "200":
-          description: Distancia total recorrida por el usuario en el día actual.
+          description: Datos del dashboard obtenidos exitosamente.
           content:
             application/json:
               schema:
@@ -840,19 +840,23 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Total distance for today retrieved successfully"
-                  totalDistance:
-                    type: number
-                    description: Distancia total recorrida hoy por el usuario en metros.
-                    example: 5670
+                    example: "Dashboard data retrieved successfully"
+                  dashboardData:
+                    $ref: "#/components/schemas/DashboardDataOutput"
         "401":
           description: Token inválido o no proporcionado.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "404":
+          description: Datos del dashboard no encontrados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
-          description: Error en el servidor al obtener la distancia total.
+          description: Error en el servidor al obtener los datos del dashboard.
           content:
             application/json:
               schema:
@@ -1332,6 +1336,48 @@ components:
                 description: Fecha y hora de la última conexión del nodo asociado al usuario
                 example: "2023-11-07T12:30:45Z"
 
+    DashboardDataOutput:
+      type: object
+      properties:
+        lastAirQualityReading:
+          $ref: "#/components/schemas/AirQualityReading"
+        todayDistance:
+          type: number
+          description: Distancia recorrida en la jornada en metros.
+          example: 1500
+        airQualityReadings:
+          type: array
+          description: Lecturas históricas de calidad del aire.
+          items:
+            $ref: "#/components/schemas/AirQualityReading"
+    AirQualityReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Marca de tiempo de la lectura de calidad del aire.
+          example: "2024-11-08T14:32:00Z"
+        airQuality:
+          type: string
+          enum:
+            - Good
+            - Regular
+            - Bad
+          description: Calidad del aire según la lectura.
+          example: "Good"
+        proportionalValue:
+          type: number
+          description: Valor proporcional calculado para la calidad del aire.
+          example: 30
+        worstGas:
+          type: string
+          enum:
+            - CO
+            - NO2
+            - O3
+          description: Gas más perjudicial en la lectura.
+          example: "O3"
 
     Error:
       type: object

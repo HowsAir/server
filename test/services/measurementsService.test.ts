@@ -6,10 +6,15 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { measurementsService } from '../../src/services/measurementsService';
+import {
+    airQualityUtils,
+} from '../../src/utils/airQualityUtils';
 import prisma from '../../src/libs/prisma';
 import { Measurement, Node } from '@prisma/client';
+import { AirGases, AirQuality } from '../../src/types/AirQuality';
 
 vi.mock('../../src/libs/prisma');
+vi.mock('../../src/utils/airQualityUtils');
 
 describe('measurementsService', () => {
     beforeEach(() => {
@@ -93,140 +98,6 @@ describe('measurementsService', () => {
                 where: { userId, status: 'ACTIVE' },
                 select: { id: true },
             });
-        });
-    });
-
-    describe('getMeasurements()', () => {
-        it('should retrieve all measurements successfully', async () => {
-            const mockMeasurements: Measurement[] = [
-                {
-                    id: 1,
-                    nodeId: 1,
-                    timestamp: new Date(),
-                    o3Value: 0.5,
-                    coValue: 1.0,
-                    no2Value: 0.7,
-                    latitude: 40.7128,
-                    longitude: -74.006,
-                },
-                {
-                    id: 2,
-                    nodeId: 1,
-                    timestamp: new Date(),
-                    o3Value: 0.6,
-                    coValue: 1.2,
-                    no2Value: 0.8,
-                    latitude: 41.2033,
-                    longitude: -77.1945,
-                },
-            ];
-
-            prisma.measurement.findMany = vi
-                .fn()
-                .mockResolvedValue(mockMeasurements);
-
-            const result = await measurementsService.getMeasurements();
-
-            expect(prisma.measurement.findMany).toHaveBeenCalled();
-            expect(result).toEqual(mockMeasurements);
-        });
-
-        it('should throw an error if there is an issue retrieving measurements', async () => {
-            prisma.measurement.findMany = vi
-                .fn()
-                .mockRejectedValue(
-                    new Error('Failed to retrieve measurements')
-                );
-
-            await expect(
-                measurementsService.getMeasurements()
-            ).rejects.toThrow();
-
-            expect(prisma.measurement.findMany).toHaveBeenCalled();
-        });
-
-        it('should return an empty list if there are no measurements', async () => {
-            prisma.measurement.findMany = vi.fn().mockResolvedValue([]);
-
-            const result = await measurementsService.getMeasurements();
-
-            expect(prisma.measurement.findMany).toHaveBeenCalled();
-            expect(result).toEqual([]);
-        });
-    });
-
-    describe('getTodayMeasurements()', () => {
-        it('should retrieve measurements for today successfully', async () => {
-            const userId = 1;
-            const mockMeasurements: Measurement[] = [
-                {
-                    id: 1,
-                    nodeId: 1,
-                    timestamp: new Date(),
-                    o3Value: 0.5,
-                    coValue: 1.0,
-                    no2Value: 0.7,
-                    latitude: 40.7128,
-                    longitude: -74.006,
-                },
-                {
-                    id: 2,
-                    nodeId: 1,
-                    timestamp: new Date(),
-                    o3Value: 0.6,
-                    coValue: 1.2,
-                    no2Value: 0.8,
-                    latitude: 41.2033,
-                    longitude: -77.1945,
-                },
-            ];
-
-            prisma.measurement.findMany = vi
-                .fn()
-                .mockResolvedValue(mockMeasurements);
-
-            const result =
-                await measurementsService.getTodayMeasurements(userId);
-
-            expect(prisma.measurement.findMany).toHaveBeenCalledWith({
-                where: {
-                    node: {
-                        userId: userId,
-                    },
-                    timestamp: {
-                        gte: expect.any(Date), // Check for start of the day
-                    },
-                },
-                orderBy: { timestamp: 'asc' },
-            });
-            expect(result).toEqual(mockMeasurements);
-        });
-
-        it('should return an empty array if there are no measurements for today', async () => {
-            const userId = 1;
-
-            prisma.measurement.findMany = vi.fn().mockResolvedValue([]);
-
-            const result =
-                await measurementsService.getTodayMeasurements(userId);
-
-            expect(prisma.measurement.findMany).toHaveBeenCalled();
-            expect(result).toEqual([]);
-        });
-
-        it('should throw an error if there is an issue retrieving measurements', async () => {
-            const userId = 1;
-            prisma.measurement.findMany = vi
-                .fn()
-                .mockRejectedValue(
-                    new Error('Failed to retrieve measurements')
-                );
-
-            await expect(
-                measurementsService.getTodayMeasurements(userId)
-            ).rejects.toThrow();
-
-            expect(prisma.measurement.findMany).toHaveBeenCalled();
         });
     });
 
@@ -384,6 +255,386 @@ describe('measurementsService', () => {
                     mockMeasurements
                 );
             expect(totalDistance).toBe(0);
+        });
+    });
+
+    describe('getLastMeasurement()', () => {
+        it('should return the last measurement for a user', async () => {
+            const userId = 1;
+            const mockMeasurement: Measurement = {
+                id: 1,
+                nodeId: 1,
+                timestamp: new Date(),
+                o3Value: 0.5,
+                coValue: 1.0,
+                no2Value: 0.7,
+                latitude: 40.7128,
+                longitude: -74.006,
+            };
+
+            prisma.measurement.findFirst = vi
+                .fn()
+                .mockResolvedValue(mockMeasurement);
+
+            const result = await measurementsService.getLastMeasurement(userId);
+
+            // Assert only the behavior we care about
+            expect(result).toEqual(mockMeasurement); // The function produces the expected output
+        });
+
+        it('should return null if no measurement exists for the user', async () => {
+            const userId = 1;
+
+            prisma.measurement.findFirst = vi.fn().mockResolvedValue(null);
+
+            const result = await measurementsService.getLastMeasurement(userId);
+
+            // Assert behavior: Function handles "no data" case
+            expect(result).toBeNull();
+        });
+
+        it('should propagate errors from the database query', async () => {
+            const userId = 1;
+
+            prisma.measurement.findFirst = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                measurementsService.getLastMeasurement(userId)
+            ).rejects.toThrow('Database error');
+        });
+    });
+
+    describe('getMeasurementsInRange()', () => {
+        it('should return all measurements within a given time range', async () => {
+            const userId = 1;
+            const timeRange = {
+                start: new Date('2023-11-01T00:00:00Z'),
+                end: new Date('2023-11-02T00:00:00Z'),
+            };
+            const mockMeasurements: Measurement[] = [
+                {
+                    id: 1,
+                    nodeId: 1,
+                    timestamp: new Date('2023-11-01T12:00:00Z'),
+                    o3Value: 0.5,
+                    coValue: 1.0,
+                    no2Value: 0.7,
+                    latitude: 40.7128,
+                    longitude: -74.006,
+                },
+            ];
+
+            prisma.measurement.findMany = vi
+                .fn()
+                .mockResolvedValue(mockMeasurements);
+
+            const result = await measurementsService.getMeasurementsInRange(
+                userId,
+                timeRange
+            );
+
+            expect(result).toEqual(mockMeasurements); // Assert the behavior: correct results returned
+        });
+
+        it('should return an empty array if no measurements are in the range', async () => {
+            const userId = 1;
+            const timeRange = { start: new Date(), end: new Date() };
+
+            prisma.measurement.findMany = vi.fn().mockResolvedValue([]);
+
+            const result = await measurementsService.getMeasurementsInRange(
+                userId,
+                timeRange
+            );
+
+            expect(result).toEqual([]); // Assert behavior: empty array for no data
+        });
+
+        it('should propagate errors from the database query', async () => {
+            const userId = 1;
+            const timeRange = { start: new Date(), end: new Date() };
+
+            prisma.measurement.findMany = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                measurementsService.getMeasurementsInRange(userId, timeRange)
+            ).rejects.toThrow('Database error');
+        });
+    });
+
+    describe('getAirQualityReadingsInRange()', () => {
+        it('should return air quality readings for valid time intervals', async () => {
+            const userId = 1;
+            const start = new Date('2023-11-01T00:00:00Z');
+            const end = new Date('2023-11-01T08:00:00Z');
+            const intervalInHours = 2;
+
+            // Mock dependencies
+            const mockTimeRanges = [
+                {
+                    start: new Date('2023-11-01T00:00:00Z'),
+                    end: new Date('2023-11-01T02:00:00Z'),
+                },
+                {
+                    start: new Date('2023-11-01T02:00:00Z'),
+                    end: new Date('2023-11-01T04:00:00Z'),
+                },
+            ];
+            vi.mocked(airQualityUtils.splitTimeRange).mockReturnValue(mockTimeRanges);
+
+            const mockMeasurements = [
+                {
+                    id: 1,
+                    o3Value: 0.5,
+                    coValue: 1.0,
+                    no2Value: 0.7,
+                    latitude: 40.7128,
+                    longitude: -74.006,
+                    timestamp: new Date('2023-11-01T00:00:00Z'),
+                    nodeId: 1,
+                },
+            ];
+
+            const mockGetMeasurementsInRange = vi
+                .spyOn(measurementsService, 'getMeasurementsInRange')
+                .mockResolvedValueOnce(mockMeasurements) // First interval
+                .mockResolvedValueOnce([]); // Second interval with no measurements
+
+            vi.mocked(airQualityUtils.calculateGasAverages).mockReturnValue({
+                o3: 0.5,
+                co: 1.0,
+                no2: 0.7,
+            });
+
+            vi.mocked(
+                airQualityUtils.getAirQualityReadingFromGasesValues
+            ).mockReturnValueOnce({
+                timestamp: mockTimeRanges[0].start,
+                airQuality: AirQuality.Good,
+                proportionalValue: 0.7,
+                worstGas: AirGases.O3,
+            });
+
+            const result =
+                await measurementsService.getAirQualityReadingsInRange(
+                    userId,
+                    start,
+                    end,
+                    intervalInHours
+                );
+
+            expect(result).toEqual([
+                {
+                    timestamp: mockTimeRanges[0].start,
+                    airQuality: AirQuality.Good,
+                    proportionalValue: 0.7,
+                    worstGas: AirGases.O3,
+                },
+                {
+                    timestamp: mockTimeRanges[1].start,
+                    airQuality: null,
+                    proportionalValue: null,
+                    worstGas: null,
+                },
+            ]);
+
+            mockGetMeasurementsInRange.mockRestore();
+        });
+
+        it('should return empty intervals when no measurements exist', async () => {
+            const userId = 1;
+            const start = new Date('2023-11-01T00:00:00Z');
+            const end = new Date('2023-11-01T04:00:00Z');
+            const intervalInHours = 2;
+
+            const mockTimeRanges = [
+                {
+                    start: new Date('2023-11-01T00:00:00Z'),
+                    end: new Date('2023-11-01T02:00:00Z'),
+                },
+                {
+                    start: new Date('2023-11-01T02:00:00Z'),
+                    end: new Date('2023-11-01T04:00:00Z'),
+                },
+            ];
+
+            vi.mocked(airQualityUtils.splitTimeRange).mockReturnValue(
+                mockTimeRanges
+            );
+
+            const mockGetMeasurementsInRange = vi
+                .spyOn(measurementsService, 'getMeasurementsInRange')
+                .mockResolvedValue([]); // Always empty for this test case
+
+            const result =
+                await measurementsService.getAirQualityReadingsInRange(
+                    userId,
+                    start,
+                    end,
+                    intervalInHours
+                );
+
+            expect(result).toEqual([
+                {
+                    timestamp: mockTimeRanges[0].start,
+                    airQuality: null,
+                    proportionalValue: null,
+                    worstGas: null,
+                },
+                {
+                    timestamp: mockTimeRanges[1].start,
+                    airQuality: null,
+                    proportionalValue: null,
+                    worstGas: null,
+                },
+            ]);
+
+            mockGetMeasurementsInRange.mockRestore();
+        });
+
+        it('should propagate errors from getMeasurementsInRange', async () => {
+            const userId = 1;
+            const start = new Date();
+            const end = new Date();
+            const intervalInHours = 2;
+
+            const mockTimeRanges = [
+                {
+                    start: new Date('2023-11-01T00:00:00Z'),
+                    end: new Date('2023-11-01T02:00:00Z'),
+                },
+            ];
+
+            vi.mocked(airQualityUtils.splitTimeRange).mockReturnValue(
+                mockTimeRanges
+            );
+
+            const mockGetMeasurementsInRange = vi
+                .spyOn(measurementsService, 'getMeasurementsInRange')
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                measurementsService.getAirQualityReadingsInRange(
+                    userId,
+                    start,
+                    end,
+                    intervalInHours
+                )
+            ).rejects.toThrow('Database error');
+
+            mockGetMeasurementsInRange.mockRestore();
+        });
+    });
+
+    describe('getDashboardData()', () => {
+        it('should return dashboard data when valid data is available', async () => {
+            const userId = 1;
+
+            // Mocking the service methods
+            const mockLastMeasurement = {
+                id: 1,
+                latitude: 40.7128,
+                longitude: -74.006,
+                nodeId: 1,
+                o3Value: 0.5,
+                coValue: 1.0,
+                no2Value: 0.7,
+                timestamp: new Date('2023-11-01T00:00:00Z'),
+            };
+
+            const mockTodayTotalDistance = 120; // in kilometers
+
+            const mockAirQualityReadings = [
+                {
+                    timestamp: new Date('2023-11-01T00:00:00Z'),
+                    airQuality: AirQuality.Good,
+                    proportionalValue: 0.7,
+                    worstGas: AirGases.O3,
+                },
+                {
+                    timestamp: new Date('2023-11-01T02:00:00Z'),
+                    airQuality: AirQuality.Regular,
+                    proportionalValue: 0.6,
+                    worstGas: AirGases.CO,
+                },
+            ];
+
+            // Spy on service methods
+            const getLastMeasurementSpy = vi
+                .spyOn(measurementsService, 'getLastMeasurement')
+                .mockResolvedValue(mockLastMeasurement);
+
+            const getTodayTotalDistanceSpy = vi
+                .spyOn(measurementsService, 'getTodayTotalDistance')
+                .mockResolvedValue(mockTodayTotalDistance);
+
+            const getAirQualityReadingsInRangeSpy = vi
+                .spyOn(measurementsService, 'getAirQualityReadingsInRange')
+                .mockResolvedValue(mockAirQualityReadings);
+
+            // Mocking the air quality reading calculation
+            const mockAirQualityReadingFromGasesValues = vi
+                .mocked(airQualityUtils.getAirQualityReadingFromGasesValues)
+                .mockReturnValue({
+                    timestamp: mockLastMeasurement.timestamp,
+                    airQuality: AirQuality.Good,
+                    proportionalValue: 0.7,
+                    worstGas: AirGases.O3,
+                });
+
+            // Call the function under test
+            const result = await measurementsService.getDashboardData(userId);
+
+            // Assertions
+            expect(result).toEqual({
+                lastAirQualityReading: {
+                    timestamp: mockLastMeasurement.timestamp,
+                    airQuality: AirQuality.Good,
+                    proportionalValue: 0.7,
+                    worstGas: AirGases.O3,
+                },
+                todayDistance: mockTodayTotalDistance,
+                airQualityReadings: mockAirQualityReadings,
+            });
+
+            // Ensure the mock functions were called correctly
+            expect(getLastMeasurementSpy).toHaveBeenCalledWith(userId);
+            expect(getTodayTotalDistanceSpy).toHaveBeenCalledWith(userId);
+            expect(getAirQualityReadingsInRangeSpy).toHaveBeenCalledWith(
+                userId,
+                expect.any(Date), // start date
+                expect.any(Date), // end date
+                2 // interval
+            );
+
+            // Clean up
+            getLastMeasurementSpy.mockRestore();
+            getTodayTotalDistanceSpy.mockRestore();
+            getAirQualityReadingsInRangeSpy.mockRestore();
+            mockAirQualityReadingFromGasesValues.mockRestore();
+        });
+
+        it('should return null when no last measurement exists', async () => {
+            const userId = 1;
+
+            // Spy on getLastMeasurement to return null
+            const getLastMeasurementSpy = vi
+                .spyOn(measurementsService, 'getLastMeasurement')
+                .mockResolvedValue(null);
+
+            const result = await measurementsService.getDashboardData(userId);
+
+            expect(result).toBeNull();
+
+            // Ensure the spy was called correctly
+            expect(getLastMeasurementSpy).toHaveBeenCalledWith(userId);
+
+            // Clean up
+            getLastMeasurementSpy.mockRestore();
         });
     });
 });

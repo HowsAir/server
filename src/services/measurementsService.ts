@@ -6,6 +6,13 @@
 
 import { Measurement, NodeStatus } from '@prisma/client';
 import prisma from '../libs/prisma';
+import { DashboardData } from '../types/DashboardData';
+import { AirQualityReading, GasesValues } from '../types/AirQuality';
+import { AirQuality, GasesPPMThresholds } from '../types/AirQuality';
+import {
+    airQualityUtils,
+} from '../utils/airQualityUtils';
+import { get } from 'http';
 
 /**
  * Saves a new measurement in the database
@@ -52,44 +59,6 @@ const createMeasurement = async (
     return await prisma.measurement.create({
         data: measurementData,
     });
-};
-
-/**
- * Retrieves all measurements stored in the database
- *
- * @returns {Promise<Measurement[]>} A promise that resolves with an array of Measurement objects containing all stored measurements.
- * @throws {Error} If there is an issue while retrieving measurements.
- */
-
-const getMeasurements = async (): Promise<Measurement[]> => {
-    return await prisma.measurement.findMany();
-};
-
-/**
- * Retrieves all measurements for today for a specific user.
- *
- * Number: userId -> getTodayMeasurements() -> Promise<Array<Measurement>>
- *
- * @param userId - The ID of the user whose measurements are being retrieved.
- * @returns {Promise<Array<Measurement>>} - A promise that resolves with an array of measurements.
- */
-const getTodayMeasurements = async (userId: number): Promise<Measurement[]> => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of the day
-
-    const measurements = await prisma.measurement.findMany({
-        where: {
-            node: {
-                userId: userId,
-            },
-            timestamp: {
-                gte: today,
-            },
-        },
-        orderBy: { timestamp: 'asc' },
-    });
-
-    return measurements;
 };
 
 /**
@@ -157,16 +126,189 @@ const getMeasurementsTotalDistance = (measurements: Measurement[]): number => {
  * @returns {Promise<Number>} - A promise that resolves with the total distance in meters.
  */
 const getTodayTotalDistance = async (userId: number): Promise<number> => {
-    const measurements = await getTodayMeasurements(userId);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of the day
+
+    const measurements = await getMeasurementsInRange(userId, {
+        start: today,
+        end: new Date(),
+    });
 
     return getMeasurementsTotalDistance(measurements);
 };
 
+//PULIR GETPROPORTIONALVALUE
+
+//Checkear lo de getDistance que funcione caminando realmente
+//Hacer el endpoint de objetivo mensual, testear y documentar
+//
+
+/**
+ * Retrieves the last measurement a user's node has got.
+ *
+ * Number: userId -> getLastMeasurement() -> Promise<Measurement | null>
+ *
+ * @param userId - The ID of the user whose last measurement is to be retrieved.
+ * @returns {Promise<Measurement | null>} - A promise that resolves to the last measurement or `null` if no measurements are found.
+ */
+const getLastMeasurement = async (
+    userId: number
+): Promise<Measurement | null> => {
+    return await prisma.measurement.findFirst({
+        where: {
+            node: {
+                userId: userId,
+            },
+        },
+        orderBy: { timestamp: 'desc' },
+    });
+};
+
+/**
+ * Retrieves all measurements for a user within a specified time range.
+ *
+ * { Number: userId, { Date: start, Date: end }: timeRange } -> getMeasurementsInRange() -> Promise<Array<Measurement>>
+ *
+ * @param userId - The ID of the user whose measurements are to be retrieved.
+ * @param timeRange - An object containing the start and end timestamps defining the time range.
+ * @returns {Promise<Measurement[]>} - A promise that resolves to an array of measurements within the specified time range.
+ */
+const getMeasurementsInRange = async (
+    userId: number,
+    timeRange: { start: Date; end: Date }
+): Promise<Measurement[]> => {
+    return await prisma.measurement.findMany({
+        where: {
+            node: {
+                userId: userId,
+            },
+            timestamp: {
+                gte: timeRange.start,
+                lte: timeRange.end,
+            },
+        },
+        orderBy: { timestamp: 'asc' },
+    });
+};
+
+/**
+ * Retrieves air quality readings for a given time range and interval size.
+ *
+ * Number:userId, Date: start, Date: end, Number: intervalInHours  -> getAirQualityReadingInRange() -> Promise<Array<AirQualityReading>>
+ *
+ * @param userId - The ID of the user to retrieve measurements for.
+ * @param start - The start timestamp of the range.
+ * @param end - The end timestamp of the range.
+ * @param intervalInHours - The interval size in hours (e.g., 4 for 4-hour intervals).
+ * @returns {Promise<AirQualityReading[]>} - An array of air quality readings for each interval.
+ */
+export const getAirQualityReadingsInRange = async (
+    userId: number,
+    start: Date,
+    end: Date,
+    intervalInHours: number
+): Promise<AirQualityReading[]> => {
+    const timeRanges = airQualityUtils.splitTimeRange(start, end, intervalInHours);
+    const results: AirQualityReading[] = [];
+
+    for (const range of timeRanges) {
+        const measurements = await measurementsService.getMeasurementsInRange(
+            userId,
+            range
+        );
+
+        if (measurements.length === 0) {
+            results.push({
+                timestamp: range.start,
+                worstGas: null,
+                airQuality: null,
+                proportionalValue: null,
+            });
+            continue;
+        }
+
+        //In case we need to get other measurements, like in a square or circle
+        //we just just need to get the points of the user for the time range
+        //define the rectangle corners, and get the measurements inside the
+        //rectangle in the time range
+
+        const gasesAverageValues =
+            airQualityUtils.calculateGasAverages(measurements);
+
+        const airQualityReading =
+            airQualityUtils.getAirQualityReadingFromGasesValues(
+                gasesAverageValues,
+                range.start
+            );
+
+        results.push(airQualityReading);
+    }
+
+    return results;
+};
+
+/**
+ * Retrieves the dashboard data for a given user, including air quality information and traveled distance.
+ *
+ * { userId } -> getDashboardData() -> Promise<DashboardData | null>
+ *
+ * @param userId - The ID of the user whose dashboard data is to be retrieved.
+ * @returns {Promise<DashboardData | null>} - A promise that resolves to the dashboard data object or `null` if no data is available for the user.
+ */
+const getDashboardData = async (
+    userId: number
+): Promise<DashboardData | null> => {
+    const lastMeasurement =
+        await measurementsService.getLastMeasurement(userId);
+
+    if (!lastMeasurement) {
+        return null;
+    }
+
+    const gasesValues: GasesValues = {
+        o3: lastMeasurement.o3Value,
+        co: lastMeasurement.coValue,
+        no2: lastMeasurement.no2Value,
+    };
+
+    const lastAirQualityReading =
+        airQualityUtils.getAirQualityReadingFromGasesValues(
+            gasesValues,
+            lastMeasurement.timestamp
+        );
+
+    const todayTotalDistance =
+        await measurementsService.getTodayTotalDistance(userId);
+
+    const hoursAgo = 24;
+    const hoursInInterval = 2;
+    const now = new Date();
+    const start = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
+
+    const airQualityReadings =
+        await measurementsService.getAirQualityReadingsInRange(
+            userId,
+            start,
+            now,
+            hoursInInterval
+        );
+
+    const dashboardData: DashboardData = {
+        lastAirQualityReading: lastAirQualityReading,
+        todayDistance: todayTotalDistance,
+        airQualityReadings: airQualityReadings,
+    };
+
+    return dashboardData;
+};
+
 export const measurementsService = {
     createMeasurement,
-    getMeasurements,
-    getTodayMeasurements,
     getCoordinatesDistance,
     getMeasurementsTotalDistance,
     getTodayTotalDistance,
+    getLastMeasurement,
+    getMeasurementsInRange,
+    getAirQualityReadingsInRange,
+    getDashboardData,
 };

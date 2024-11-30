@@ -115,9 +115,9 @@ router.put(
 router.get('/node', verifyToken, usersController.getNode);
 
 router.get(
-    '/today-total-distance',
+    '/dashboard',
     verifyToken,
-    usersController.getTodayTotalDistance
+    usersController.getDashboard
 );
 
 // This route is protected and only accessible by Admin users
