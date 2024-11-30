@@ -8,27 +8,6 @@ servers:
     description: Servidor local para desarrollo
 paths:
   /measurements:
-    get:
-      tags:
-        - Mediciones
-      summary: Obtiene todas las mediciones registradas
-      description: Devuelve una lista de todas las mediciones almacenadas en la base de datos.
-      responses:
-        "200":
-          description: Lista de mediciones obtenida correctamente
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Measurement"
-        "500":
-          description: Error en el servidor al obtener las mediciones
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
     post:
       tags:
         - Mediciones

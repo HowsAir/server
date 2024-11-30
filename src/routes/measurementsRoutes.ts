@@ -31,6 +31,4 @@ router.post(
     measurementsController.createMeasurement
 );
 
-router.get('/', measurementsController.getMeasurements);
-
 export default router;
