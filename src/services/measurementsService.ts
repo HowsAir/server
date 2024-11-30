@@ -137,12 +137,6 @@ const getTodayTotalDistance = async (userId: number): Promise<number> => {
     return getMeasurementsTotalDistance(measurements);
 };
 
-//PULIR GETPROPORTIONALVALUE
-
-//Checkear lo de getDistance que funcione caminando realmente
-//Hacer el endpoint de objetivo mensual, testear y documentar
-//
-
 /**
  * Retrieves the last measurement a user's node has got.
  *

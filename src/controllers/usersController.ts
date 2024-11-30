@@ -14,6 +14,7 @@ import { PasswordResetStatus } from '../types/PasswordResetStatus';
 import { DashboardData } from '../types/DashboardData';
 import { nodesService } from '../services/nodesService';
 import { RegisterAdminAuthorizationCode } from '../types/RegisterAdminAuthorizationCode';
+import { dailyStatsService } from '../services/dailyStatsService';
 
 /**
  * Controller method for user registration.
@@ -344,6 +345,33 @@ const getDashboard = async (
 };
 
 /**
+ * Controller method for getting the total distance covered by the user in the last month
+ *
+ * @param req - The HTTP Request object containing user information, with userId extracted from the token.
+ * @param res - The HTTP Response object used to return the total monthly distance to the client.
+ *
+ * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
+ */
+const getCurrentMonthDistance = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const userId = req.userId;
+
+        const currentMonthDistance =
+            await dailyStatsService.getCurrentMonthDistance(userId);
+        return res.status(200).json({
+            message: 'Total distance for the last month retrieved successfully',
+            currentMonthDistance,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Controller method for getting the users statistics information (name, phone, nodeId, activeHours, distance)
  *
  * @param req - The HTTP Request object containing the userId and the roleId
@@ -407,6 +435,7 @@ export const usersController = {
     changePassword,
     resetPassword,
     getDashboard,
+    getCurrentMonthDistance,
     getStatistics,
     getNode,
 };

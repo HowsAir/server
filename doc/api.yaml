@@ -862,6 +862,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /users/current-month-distance:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene la distancia recorrida en el mes actual por el usuario propietario del nodo
+      description: Proporciona la distancia total recorrida en el mes actual por el usuario propietario de un nodo.
+      security:
+        - AuthTokenCookie: []
+      responses:
+        "200":
+          description: Distancia recorrida en el mes actual obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Current month distance retrieved successfully"
+                  currentMonthDistance:
+                    type: integer
+                    description: Distancia recorrida en el mes actual en metros.
+                    example: 34567
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al obtener la distancia.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /users/statistics:
     get:
       tags:

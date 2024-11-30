@@ -120,6 +120,12 @@ router.get(
     usersController.getDashboard
 );
 
+router.get(
+    '/current-month-distance',
+    verifyToken,
+    usersController.getCurrentMonthDistance
+);
+
 // This route is protected and only accessible by Admin users
 const authorizeAdminRole = authorizeRoles(UserRoleId.Admin);
 router.get(
