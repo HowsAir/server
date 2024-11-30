@@ -82,23 +82,21 @@ async function main() {
                     const timestamp = new Date(date);
                     timestamp.setHours(hour, Math.floor(Math.random() * 60)); // Random minutes
 
-                    // Generate values with required precision
-                    const coValue = parseFloat(
-                        (7 + Math.random() * 6).toFixed(3)
-                    ); // Mostly < 9 but some up to 13, rounded to 3 decimals
-                    const no2Value = parseFloat(
-                        (0.04 + Math.random() * 0.06).toFixed(3)
-                    ); // Mostly < 0.053 but some up to 0.1, rounded to 3 decimals
-                    const o3Value = parseFloat(
-                        (0.03 + Math.random() * 0.08).toFixed(3)
-                    ); // Mostly < 0.05 but some up to 0.1, rounded to 3 decimals
+                    // Helper function to generate values with required precision and probability
+                    function generateValue(max: number, threshold: number, extra: number, min?: number): number {
+                        let value = parseFloat((Math.random() * max).toFixed(3));
+                        if (min !== undefined && Math.random() < 0.7) { // 70% probability to get values below min
+                            value = parseFloat((Math.random() * min).toFixed(3));
+                        }
+                        return value > threshold ? parseFloat((value + Math.random() * extra).toFixed(3)) : value;
+                    }
 
-                    const latitude = parseFloat(
-                        (40.7128 + Math.random() * 0.01).toFixed(6)
-                    );
-                    const longitude = parseFloat(
-                        (-74.006 + Math.random() * 0.01).toFixed(6)
-                    );
+                    const coValue = generateValue(13, 12, 9, 9);
+                    const no2Value = generateValue(0.12, 0.1, 0.11, 0.053);
+                    const o3Value = generateValue(0.12, 0.1, 0.11, 0.05);
+
+                    const latitude = parseFloat((40.7128 + Math.random() * 0.01).toFixed(6));
+                    const longitude = parseFloat((-74.006 + Math.random() * 0.01).toFixed(6));
 
                     measurements.push({
                         o3Value,
