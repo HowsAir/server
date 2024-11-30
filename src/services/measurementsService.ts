@@ -34,9 +34,8 @@ const createMeasurement = async (
         throw new Error(`No active node found for user with ID ${userId}`);
     }
 
-    // Generate random values for coValue and no2Value
-    const coValue = parseFloat((Math.random() * 1.5 + 0.3).toFixed(2)); // Example: random between 0.3 and 1.8
-    const no2Value = parseFloat((Math.random() * 1.2 + 0.1).toFixed(2)); // Example: random between 0.1 and 1.3
+    const coValue = parseFloat((Math.random() * 15).toFixed(2)); // Random between 0 and 15 ppm
+    const no2Value = parseFloat((Math.random() * 0.15).toFixed(3)); // Random between 0 and 0.15 ppm
 
     // Create the measurement data object
     const measurementData = {
