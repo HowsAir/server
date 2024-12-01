@@ -89,11 +89,14 @@ const getCoordinatesDistance = (
         Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return R * c; // Distance in meters
+    return Math.round(R * c); // Distance in meters
 };
 
 /**
  * Calculates the total distance for an array of measurements.
+ * Ignoring the distance between 2 measurements when their distance is
+ * greater than the one that can be traveled considering a certain maximum speed
+ * and a certain measuring frequency.
  *
  * Array<Measurement>: measurements -> getMeasurementsTotalDistance() -> Number
  *
