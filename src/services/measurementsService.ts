@@ -6,13 +6,16 @@
 
 import { Measurement, NodeStatus } from '@prisma/client';
 import prisma from '../libs/prisma';
-import { DashboardData } from '../types/DashboardData';
-import { AirQualityReading, GasesValues } from '../types/AirQuality';
-import { AirQuality, GasesPPMThresholds } from '../types/AirQuality';
+import { DashboardData } from '../types/measurements/DashboardData';
 import {
-    airQualityUtils,
-} from '../utils/airQualityUtils';
-import { get } from 'http';
+    AirQualityReading,
+    GasesValues,
+} from '../types/measurements/AirQuality';
+import {
+    MEASURING_FREQUENCY_SECONDS,
+    MAX_PERMITTED_SPEED_MPS,
+} from '../types/measurements/Distance';
+import { airQualityUtils } from '../utils/airQualityUtils';
 
 /**
  * Saves a new measurement in the database
@@ -205,7 +208,11 @@ export const getAirQualityReadingsInRange = async (
     end: Date,
     intervalInHours: number
 ): Promise<AirQualityReading[]> => {
-    const timeRanges = airQualityUtils.splitTimeRange(start, end, intervalInHours);
+    const timeRanges = airQualityUtils.splitTimeRange(
+        start,
+        end,
+        intervalInHours
+    );
     const results: AirQualityReading[] = [];
 
     for (const range of timeRanges) {
