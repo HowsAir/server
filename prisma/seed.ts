@@ -95,8 +95,30 @@ async function main() {
                     const no2Value = generateValue(0.12, 0.1, 0.11, 0.053);
                     const o3Value = generateValue(0.12, 0.1, 0.11, 0.05);
 
-                    const latitude = parseFloat((40.7128 + Math.random() * 0.01).toFixed(6));
-                    const longitude = parseFloat((-74.006 + Math.random() * 0.01).toFixed(6));
+                    const baseLatitude = 38.995972; // Base latitude
+                    const baseLongitude = -0.165444; // Base longitude
+
+                    // Max degree variation for ~30 meters
+                    const maxLatitudeVariation = 30 / 111320; // ≈ 0.000269 degrees
+                    const maxLongitudeVariation =
+                        maxLatitudeVariation /
+                        Math.cos((baseLatitude * Math.PI) / 180);
+
+                    // Generate latitude and longitude
+                    const latitude = parseFloat(
+                        (
+                            baseLatitude +
+                            (Math.random() * maxLatitudeVariation * 2 -
+                                maxLatitudeVariation)
+                        ).toFixed(6)
+                    );
+                    const longitude = parseFloat(
+                        (
+                            baseLongitude +
+                            (Math.random() * maxLongitudeVariation * 2 -
+                                maxLongitudeVariation)
+                        ).toFixed(6)
+                    );
 
                     measurements.push({
                         o3Value,
