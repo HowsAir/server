@@ -6,7 +6,7 @@
 
 import nodemailer from 'nodemailer';
 import 'dotenv/config';
-import { ApplicationForm } from '../types/ApplicationForm';
+import { ApplicationForm } from '../types/forms/ApplicationForm';
 
 // Initialize NodeMailer transporter with the environment variables
 const transporter = nodemailer.createTransport({

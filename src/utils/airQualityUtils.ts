@@ -10,7 +10,7 @@ import {
     AirQualityReading,
     GasesPPMThresholds,
     GasesValues,
-} from '../types/AirQuality';
+} from '../types/measurements/AirQuality';
 import { Measurement } from '@prisma/client';
 
 /**
@@ -80,8 +80,6 @@ const getGasProportionalValue = (gas: AirGases, value: number): number => {
     return 100;
 };
 
-
-
 /**
  * Finds the gas with the worst air quality based on proportional values.
  *
@@ -119,17 +117,26 @@ const getAirQualityReadingFromGasesValues = (
     const gasesData = [
         {
             gas: AirGases.O3,
-            proportionalValue: getGasProportionalValue(AirGases.O3, gasesValues.o3),
+            proportionalValue: getGasProportionalValue(
+                AirGases.O3,
+                gasesValues.o3
+            ),
             airQuality: getGasAirQuality(AirGases.O3, gasesValues.o3),
         },
         {
             gas: AirGases.CO,
-            proportionalValue: getGasProportionalValue(AirGases.CO, gasesValues.co),
+            proportionalValue: getGasProportionalValue(
+                AirGases.CO,
+                gasesValues.co
+            ),
             airQuality: getGasAirQuality(AirGases.CO, gasesValues.co),
         },
         {
             gas: AirGases.NO2,
-            proportionalValue: getGasProportionalValue(AirGases.NO2, gasesValues.no2),
+            proportionalValue: getGasProportionalValue(
+                AirGases.NO2,
+                gasesValues.no2
+            ),
             airQuality: getGasAirQuality(AirGases.NO2, gasesValues.no2),
         },
     ];
@@ -152,9 +159,7 @@ const getAirQualityReadingFromGasesValues = (
  * @param measurements - Array of measurement objects with gas values.
  * @returns {Object} - The average values for O3, CO, and NO2 gases.
  */
-const calculateGasAverages = (
-    measurements: Measurement[]
-): GasesValues => {
+const calculateGasAverages = (measurements: Measurement[]): GasesValues => {
     const total = measurements.reduce(
         (acc, measurement) => {
             acc.o3 += measurement.o3Value;

@@ -7,11 +7,11 @@
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from '../libs/prisma';
-import { UserStatistics } from '../types/UserStatistics';
+import { UserStatistics } from '../types/users/UserStatistics';
 import cloudinaryService from './cloudinaryService';
-import { UserRoleId } from '../types/UserRoleId';
-import { PasswordResetStatus } from '../types/PasswordResetStatus';
-import { CloudinaryFolders } from '../types/CloudinaryFolders';
+import { UserRoleId } from '../types/users/UserRoleId';
+import { PasswordResetStatus } from '../types/auth/PasswordResetStatus';
+import { CloudinaryFolders } from '../types/users/CloudinaryFolders';
 
 const saltQuantity = 10;
 

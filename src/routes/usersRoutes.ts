@@ -14,7 +14,7 @@ import {
 } from '../middleware/auth';
 import { passwordValidationRules } from '../utils/validators';
 import multer from 'multer';
-import { UserRoleId } from '../types/UserRoleId';
+import { UserRoleId } from '../types/users/UserRoleId';
 
 const router = Router();
 
@@ -114,11 +114,7 @@ router.put(
 
 router.get('/node', verifyToken, usersController.getNode);
 
-router.get(
-    '/dashboard',
-    verifyToken,
-    usersController.getDashboard
-);
+router.get('/dashboard', verifyToken, usersController.getDashboard);
 
 router.get(
     '/current-month-distance',

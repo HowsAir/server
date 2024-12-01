@@ -17,7 +17,7 @@ import {
     password_reset_token,
     email_verified_token,
 } from '../middleware/auth';
-import { ApplicationForm } from '../types/ApplicationForm';
+import { ApplicationForm } from '../types/forms/ApplicationForm';
 
 /**
  * Login controller method.

@@ -10,10 +10,10 @@ import { usersService } from '../services/usersService';
 import { putJwtInResponse } from '../utils/auth';
 import { measurementsService } from '../services/measurementsService';
 import { auth_token, password_reset_token } from '../middleware/auth';
-import { PasswordResetStatus } from '../types/PasswordResetStatus';
-import { DashboardData } from '../types/DashboardData';
+import { PasswordResetStatus } from '../types/auth/PasswordResetStatus';
+import { DashboardData } from '../types/measurements/DashboardData';
 import { nodesService } from '../services/nodesService';
-import { RegisterAdminAuthorizationCode } from '../types/RegisterAdminAuthorizationCode';
+import { RegisterAdminAuthorizationCode } from '../types/users/RegisterAdminAuthorizationCode';
 import { dailyStatsService } from '../services/dailyStatsService';
 
 /**
@@ -327,17 +327,18 @@ const getDashboard = async (
     try {
         const userId = req.userId;
 
-        const dashboardData = await measurementsService.getDashboardData(userId);
+        const dashboardData =
+            await measurementsService.getDashboardData(userId);
 
         if (!dashboardData) {
             return res.status(404).json({
-                message: 'No dashboard data found for this user'
+                message: 'No dashboard data found for this user',
             });
         }
 
         return res.status(200).json({
             message: 'Dashboard data retrieved successfully',
-            data: dashboardData
+            data: dashboardData,
         });
     } catch (error) {
         next(error);

@@ -11,7 +11,7 @@ import {
 } from '../../src/utils/airQualityUtils';
 import prisma from '../../src/libs/prisma';
 import { Measurement, Node } from '@prisma/client';
-import { AirGases, AirQuality } from '../../src/types/AirQuality';
+import { AirGases, AirQuality } from '../../src/types/airQuality/AirQuality';
 
 vi.mock('../../src/libs/prisma');
 vi.mock('../../src/utils/airQualityUtils');
