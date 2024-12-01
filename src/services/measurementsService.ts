@@ -110,14 +110,23 @@ const getMeasurementsTotalDistance = (measurements: Measurement[]): number => {
     if (measurements.length < 2) return 0;
 
     let totalDistance = 0;
-
+    let coordinatesDistanceAux = 0;
     for (let i = 0; i < measurements.length - 1; i++) {
-        totalDistance += getCoordinatesDistance(
+        coordinatesDistanceAux = getCoordinatesDistance(
             measurements[i].latitude,
             measurements[i].longitude,
             measurements[i + 1].latitude,
             measurements[i + 1].longitude
         );
+        console.log(coordinatesDistanceAux);
+        if (
+            coordinatesDistanceAux >
+            MAX_PERMITTED_SPEED_MPS * MEASURING_FREQUENCY_SECONDS
+        ) {
+            continue;
+        }
+
+        totalDistance += coordinatesDistanceAux;
     }
 
     return totalDistance;
