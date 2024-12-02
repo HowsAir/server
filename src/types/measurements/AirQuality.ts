@@ -28,6 +28,12 @@ export const GasesPPMThresholds = {
     },
 };
 
+export const GasProportionalValueThresholds = {
+    [AirQuality.Good]: 20,
+    [AirQuality.Regular]: 60,
+    [AirQuality.Bad]: 100,
+};
+
 export interface GasesValues {
     o3: number;
     co: number;
@@ -39,4 +45,5 @@ export interface AirQualityReading {
     airQuality: AirQuality | null;
     proportionalValue: number | null;
     worstGas: AirGases | null;
+    ppmValue: number | null;
 }

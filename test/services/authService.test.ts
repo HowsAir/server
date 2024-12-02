@@ -16,7 +16,7 @@ import {
 } from '../../src/utils/emailSender';
 import { generateResetCode } from '../../src/utils/auth';
 import jwt from 'jsonwebtoken';
-import { ApplicationForm } from '../../src/types/ApplicationForm';
+import { ApplicationForm } from '../../src/types/forms/ApplicationForm';
 
 // Mock dependencies
 vi.mock('../../src/libs/prisma');

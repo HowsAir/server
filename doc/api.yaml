@@ -1381,11 +1381,24 @@ components:
           type: number
           description: Distancia recorrida en la jornada en metros.
           example: 1500
-        airQualityReadings:
-          type: array
-          description: Lecturas históricas de calidad del aire.
-          items:
-            $ref: "#/components/schemas/AirQualityReading"
+        airQualityReadingsInfo:
+          type: object
+          description: Información sobre las lecturas de calidad del aire de la ultima jornada
+          properties:
+            airQualityReadings:
+              type: array
+              description: Lecturas en rangos de calidad del aire.
+              items:
+                $ref: "#/components/schemas/AirQualityReading"
+            overallAirQuality:
+              type: string
+              description: Calidad del aire general de la jornada.
+              nullable: true
+              enum:
+                - Good
+                - Regular
+                - Bad
+              example: "Good"
     AirQualityReading:
       type: object
       properties:
@@ -1396,6 +1409,7 @@ components:
           example: "2024-11-08T14:32:00Z"
         airQuality:
           type: string
+          nullable: true
           enum:
             - Good
             - Regular
@@ -1404,16 +1418,23 @@ components:
           example: "Good"
         proportionalValue:
           type: number
+          nullable: true
           description: Valor proporcional calculado para la calidad del aire.
           example: 30
         worstGas:
           type: string
+          nullable: true
           enum:
             - CO
             - NO2
             - O3
           description: Gas más perjudicial en la lectura.
           example: "O3"
+        ppmValue:
+          type: number
+          nullable: true
+          description: Valor en ppm del gas más perjudicial.
+          example: 0.03
 
     Error:
       type: object

@@ -112,13 +112,12 @@ const getMeasurementsTotalDistance = (measurements: Measurement[]): number => {
     let totalDistance = 0;
     let coordinatesDistanceAux = 0;
     for (let i = 0; i < measurements.length - 1; i++) {
-        coordinatesDistanceAux = getCoordinatesDistance(
+        coordinatesDistanceAux = measurementsService.getCoordinatesDistance(
             measurements[i].latitude,
             measurements[i].longitude,
             measurements[i + 1].latitude,
             measurements[i + 1].longitude
         );
-        console.log(coordinatesDistanceAux);
         if (
             coordinatesDistanceAux >
             MAX_PERMITTED_SPEED_MPS * MEASURING_FREQUENCY_SECONDS
@@ -236,6 +235,7 @@ export const getAirQualityReadingsInRange = async (
                 worstGas: null,
                 airQuality: null,
                 proportionalValue: null,
+                ppmValue: null,
             });
             continue;
         }
@@ -306,10 +306,16 @@ const getDashboardData = async (
             hoursInInterval
         );
 
+    const averageAirQuality =
+        airQualityUtils.getAverageAirQualityFromAirQualityReadings(airQualityReadings);
+
     const dashboardData: DashboardData = {
         lastAirQualityReading: lastAirQualityReading,
         todayDistance: todayTotalDistance,
-        airQualityReadings: airQualityReadings,
+        airQualityReadingsInfo: {
+            airQualityReadings,
+            overallAirQuality: averageAirQuality,
+        },
     };
 
     return dashboardData;

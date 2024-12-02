@@ -4,25 +4,27 @@
  * @author Juan Diaz & Manuel Borregales
  */
 
+import { get } from 'http';
 import {
     AirGases,
     AirQuality,
     AirQualityReading,
     GasesPPMThresholds,
     GasesValues,
+    GasProportionalValueThresholds,
 } from '../types/measurements/AirQuality';
 import { Measurement } from '@prisma/client';
 
 /**
- * Determines the air quality for a given gas and its measured value.
+ * Determines the air quality for a given gas and its measured ppm value.
  *
- * AirGases -> getGasAirQuality(value: number) -> AirQuality
+ * AirGases: gas, Number: value -> getGasAirQualityFromPPMValue() -> AirQuality
  *
  * @param gas - The type of gas (e.g., CO, NO2, O3).
  * @param value - The measured value for the gas in ppm.
  * @returns {AirQuality} - The air quality category (Good, Regular, Bad).
  */
-const getGasAirQuality = (gas: AirGases, value: number): AirQuality => {
+const getAirQualityFromGasPPMValue = (gas: AirGases, value: number): AirQuality => {
     const thresholds = GasesPPMThresholds[gas];
     if (value <= thresholds[AirQuality.Good]) {
         return AirQuality.Good;
@@ -34,6 +36,55 @@ const getGasAirQuality = (gas: AirGases, value: number): AirQuality => {
 };
 
 /**
+ * Determines the air quality for a gas proportional value.
+ *
+ * Number: proportionalValue -> getGasAirQualityFromProportionalValue() -> AirQuality
+ *
+ * @param proportionalValue - The gas proportional value
+ * @returns {AirQuality} - The air quality category (Good, Regular, Bad).
+ */
+const getAirQualityFromGasProportionalValue = (proportionalValue: number): AirQuality => {
+    if (proportionalValue <= GasProportionalValueThresholds[AirQuality.Good]) {
+        return AirQuality.Good;
+    } else if (proportionalValue <= GasProportionalValueThresholds[AirQuality.Regular]) {
+        return AirQuality.Regular;
+    } else {
+        return AirQuality.Bad;
+    }
+};
+
+/**
+ * Calculates the average air quality from a set of air quality readings.
+ * 
+ * Array<AirQualityReading> -> getAverageAirQualityFromAirQualityReadings() -> AirQuality | null
+ * 
+ * @param readings - Array of air quality readings.
+ * @returns {AirQuality | null} - The average air quality or null if no valid readings. 
+ */
+const getAverageAirQualityFromAirQualityReadings = (readings: AirQualityReading[]): AirQuality | null => {
+    let countOfValidReadings = 0;
+    let sumOfProportionalValues = 0;
+
+    for (const reading of readings) {
+        if (reading.proportionalValue != null) {
+            countOfValidReadings++;
+            sumOfProportionalValues += reading.proportionalValue;
+        }
+    }
+
+    const averageProportionalValue =
+        countOfValidReadings > 0
+            ? sumOfProportionalValues / countOfValidReadings
+            : null;
+
+    const overallAirQuality = averageProportionalValue != null
+        ? airQualityUtils.getAirQualityFromGasProportionalValue(averageProportionalValue)
+        : null;
+
+    return overallAirQuality;
+}
+
+/**
  * Calculates the proportional value of air quality based on thresholds.
  *
  * AirGases -> getGasProportionalValue(value: number) -> Number
@@ -43,58 +94,66 @@ const getGasAirQuality = (gas: AirGases, value: number): AirQuality => {
  * @returns {number} - A proportional value (0 to 100) indicating air quality severity.
  */
 const getGasProportionalValue = (gas: AirGases, value: number): number => {
-    const thresholds = GasesPPMThresholds[gas];
-    const maxThreshold = thresholds[AirQuality.Bad]; // Max for Bad (e.g., 20 for CO)
-    const regularThreshold = thresholds[AirQuality.Regular]; // Threshold for Regular (e.g., 12 for CO)
-    const minThreshold = thresholds[AirQuality.Good]; // Threshold for Good (e.g., 9 for CO)
+    const gasPPMThresholds = GasesPPMThresholds[gas];
+    const maxPPMThreshold = gasPPMThresholds[AirQuality.Bad]; // Max for Bad (e.g., 20 for CO)
+    const regularPPMThreshold = gasPPMThresholds[AirQuality.Regular]; // Threshold for Regular (e.g., 12 for CO)
+    const minPPMThreshold = gasPPMThresholds[AirQuality.Good]; // Threshold for Good (e.g., 9 for CO)
+    
+    const gasProportionalValueThresholds = GasProportionalValueThresholds;
+    const maxProportionalValueThreshold = gasProportionalValueThresholds[AirQuality.Bad];
+    const regularProportionalValueThreshold = gasProportionalValueThresholds[AirQuality.Regular];
+    const minProportionalValueThreshold = gasProportionalValueThresholds[AirQuality.Good];
 
-    // Case 1: Scaling from 0 to minThreshold -> proportionally from 0 to 20
-    if (value < minThreshold) {
-        return Math.floor((value / minThreshold) * 20);
+    if (value <= minPPMThreshold) {
+        return Math.floor((value / minPPMThreshold) * minProportionalValueThreshold);
     }
 
-    // Case 2: Scaling from minThreshold to regularThreshold -> proportionally from 20 to 60
-    if (value <= regularThreshold) {
+    if (value <= regularPPMThreshold) {
         return (
-            20 +
+            minProportionalValueThreshold +
             Math.floor(
-                ((value - minThreshold) / (regularThreshold - minThreshold)) *
-                    40
+                ((value - minPPMThreshold) / (regularPPMThreshold - minPPMThreshold)) *
+                    (regularProportionalValueThreshold - minProportionalValueThreshold)
             )
         );
     }
 
-    // Case 3: Scaling from regularThreshold to maxThreshold -> proportionally from 60 to 100
-    if (value <= maxThreshold) {
+    if (value <= maxPPMThreshold) {
         return (
-            60 +
+            regularProportionalValueThreshold +
             Math.floor(
-                ((value - regularThreshold) /
-                    (maxThreshold - regularThreshold)) *
-                    40
+                ((value - regularPPMThreshold) /
+                    (maxPPMThreshold - regularPPMThreshold)) *
+                    (maxProportionalValueThreshold - regularProportionalValueThreshold)
             )
         );
     }
 
-    // Beyond the worst threshold (e.g., CO > 20)
-    return 100;
+    // Beyond the worst threshold
+    return maxProportionalValueThreshold;
 };
 
 /**
  * Finds the gas with the worst air quality based on proportional values.
  *
- * Array<{ gas, proportionalValue, airQuality }> -> getWorstGas() -> { gas, proportionalValue, airQuality }
+ * Array<{ gas, proportionalValue, airQuality, ppmValue }> -> getWorstGas() -> { gas, proportionalValue, airQuality, ppmValue }
  *
  * @param gasesData - Array of gas data containing gas type, proportional value, and air quality.
- * @returns {Object} - The worst gas data (gas, proportionalValue, airQuality).
+ * @returns {Object} - The worst gas data (gas, proportionalValue, airQuality, ppmValue).
  */
 const getWorstGasOnProportionalValue = (
     gasesData: Array<{
         gas: AirGases;
         proportionalValue: number;
         airQuality: AirQuality;
+        ppmValue: number;
     }>
-) => {
+): {
+    gas: AirGases;
+    proportionalValue: number;
+    airQuality: AirQuality;
+    ppmValue: number;
+} => {
     return gasesData.reduce((worst, current) =>
         current.proportionalValue > worst.proportionalValue ? current : worst
     );
@@ -117,37 +176,51 @@ const getAirQualityReadingFromGasesValues = (
     const gasesData = [
         {
             gas: AirGases.O3,
-            proportionalValue: getGasProportionalValue(
+            proportionalValue: airQualityUtils.getGasProportionalValue(
                 AirGases.O3,
                 gasesValues.o3
             ),
-            airQuality: getGasAirQuality(AirGases.O3, gasesValues.o3),
+            airQuality: airQualityUtils.getAirQualityFromGasPPMValue(
+                AirGases.O3,
+                gasesValues.o3
+            ),
+            ppmValue: gasesValues.o3,
         },
         {
             gas: AirGases.CO,
-            proportionalValue: getGasProportionalValue(
+            proportionalValue: airQualityUtils.getGasProportionalValue(
                 AirGases.CO,
                 gasesValues.co
             ),
-            airQuality: getGasAirQuality(AirGases.CO, gasesValues.co),
+            airQuality: airQualityUtils.getAirQualityFromGasPPMValue(
+                AirGases.CO,
+                gasesValues.co
+            ),
+            ppmValue: gasesValues.co,
         },
         {
             gas: AirGases.NO2,
-            proportionalValue: getGasProportionalValue(
+            proportionalValue: airQualityUtils.getGasProportionalValue(
                 AirGases.NO2,
                 gasesValues.no2
             ),
-            airQuality: getGasAirQuality(AirGases.NO2, gasesValues.no2),
+            airQuality: airQualityUtils.getAirQualityFromGasPPMValue(
+                AirGases.NO2,
+                gasesValues.no2
+            ),
+            ppmValue: gasesValues.no2,
         },
     ];
 
-    const worstGasData = getWorstGasOnProportionalValue(gasesData);
+    const worstGasData =
+        airQualityUtils.getWorstGasOnProportionalValue(gasesData);
 
     return {
         timestamp: timestamp,
         worstGas: worstGasData.gas,
         airQuality: worstGasData.airQuality,
         proportionalValue: worstGasData.proportionalValue,
+        ppmValue: worstGasData.ppmValue,
     };
 };
 
@@ -227,7 +300,9 @@ const splitTimeRange = (
 };
 
 export const airQualityUtils = {
-    getGasAirQuality,
+    getAirQualityFromGasPPMValue,
+    getAirQualityFromGasProportionalValue,
+    getAverageAirQualityFromAirQualityReadings,
     getGasProportionalValue,
     getWorstGasOnProportionalValue,
     getAirQualityReadingFromGasesValues,

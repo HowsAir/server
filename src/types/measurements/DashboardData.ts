@@ -1,7 +1,10 @@
-import { AirQualityReading } from './AirQuality';
+import { AirQualityReading, AirQuality } from './AirQuality';
 
 export interface DashboardData {
     lastAirQualityReading: AirQualityReading;
     todayDistance: number;
-    airQualityReadings: AirQualityReading[];
+    airQualityReadingsInfo: {
+        airQualityReadings: AirQualityReading[];
+        overallAirQuality: AirQuality | null;
+    };
 }

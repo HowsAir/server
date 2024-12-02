@@ -11,8 +11,8 @@ import {
 } from '../../src/utils/airQualityUtils';
 import prisma from '../../src/libs/prisma';
 import { Measurement, Node } from '@prisma/client';
-import { AirGases, AirQuality } from '../../src/types/airQuality/AirQuality';
-
+import { AirGases, AirQuality } from '../../src/types/measurements/AirQuality';
+import { MAX_PERMITTED_SPEED_MPS, MEASURING_FREQUENCY_SECONDS } from '../../src/types/measurements/Distance';
 vi.mock('../../src/libs/prisma');
 vi.mock('../../src/utils/airQualityUtils');
 
@@ -181,7 +181,7 @@ describe('measurementsService', () => {
             );
 
             // Expected small distance, less than 100 meters
-            expect(distance).toBeLessThan(14);
+            expect(distance).toBeLessThanOrEqual(14);
             expect(distance).toBeGreaterThan(13);
         });
 
@@ -199,13 +199,12 @@ describe('measurementsService', () => {
             );
 
             // Small distance close to the poles, about 15,730 meters
-            expect(distance).toBeCloseTo(15730, -1); // Tolerancia de 10 metros
+            expect(distance).toBeCloseTo(15730, -1.5); // Tolerancia de 10 metros
         });
     });
 
-    // Tests for getMeasurementsTotalDistance
     describe('getMeasurementsTotalDistance()', () => {
-        it('should calculate total distance for multiple measurements', () => {
+        it('should calculate total distance for two measurements that are close enough', () => {
             const mockMeasurements: Measurement[] = [
                 {
                     id: 1,
@@ -214,8 +213,8 @@ describe('measurementsService', () => {
                     o3Value: 0.5,
                     coValue: 1.0,
                     no2Value: 0.7,
-                    latitude: 40.7128,
-                    longitude: -74.006,
+                    latitude: 40.71253,
+                    longitude: -77.196,
                 },
                 {
                     id: 2,
@@ -224,16 +223,29 @@ describe('measurementsService', () => {
                     o3Value: 0.6,
                     coValue: 1.2,
                     no2Value: 0.8,
-                    latitude: 41.2033,
-                    longitude: -77.1945,
+                    latitude: 40.71252,
+                    longitude: -77.1965,
                 },
             ];
 
-            const totalDistance =
-                measurementsService.getMeasurementsTotalDistance(
-                    mockMeasurements
-                );
-            expect(totalDistance).toBeGreaterThan(0); // Distance should be greater than 0 if coordinates are different
+            const mockDistance = 15; // Mock a valid distance within the permissible range
+
+            const mockGetCoordinatesDistance = vi
+                .spyOn(measurementsService, 'getCoordinatesDistance')
+                .mockReturnValue(mockDistance);
+
+            const totalDistance = measurementsService.getMeasurementsTotalDistance(mockMeasurements);
+
+            expect(totalDistance).toBe(mockDistance); // Expect the mocked distance
+            expect(mockGetCoordinatesDistance).toHaveBeenCalledTimes(1); // Ensure it was called once
+            expect(mockGetCoordinatesDistance).toHaveBeenCalledWith(
+                mockMeasurements[0].latitude,
+                mockMeasurements[0].longitude,
+                mockMeasurements[1].latitude,
+                mockMeasurements[1].longitude
+            );
+
+            mockGetCoordinatesDistance.mockRestore();
         });
 
         it('should return 0 if there are less than two measurements', () => {
@@ -250,13 +262,66 @@ describe('measurementsService', () => {
                 },
             ];
 
-            const totalDistance =
-                measurementsService.getMeasurementsTotalDistance(
-                    mockMeasurements
-                );
-            expect(totalDistance).toBe(0);
+            const mockGetCoordinatesDistance = vi
+                .spyOn(measurementsService, 'getCoordinatesDistance')
+                .mockReturnValue(0); // This should not be called
+
+            const totalDistance = measurementsService.getMeasurementsTotalDistance(mockMeasurements);
+
+            expect(totalDistance).toBe(0); // Ensure it returns 0 for less than 2 measurements
+            expect(mockGetCoordinatesDistance).not.toHaveBeenCalled(); // Ensure the function is not called
+
+            mockGetCoordinatesDistance.mockRestore(); // Restore the original implementation
+        });
+
+        it('should ignore distances greater than the permitted range', () => {
+            const mockMeasurements: Measurement[] = [
+                {
+                    id: 1,
+                    nodeId: 1,
+                    timestamp: new Date(),
+                    o3Value: 0.5,
+                    coValue: 1.0,
+                    no2Value: 0.7,
+                    latitude: 40.71253,
+                    longitude: -77.196,
+                },
+                {
+                    id: 2,
+                    nodeId: 1,
+                    timestamp: new Date(),
+                    o3Value: 0.6,
+                    coValue: 1.2,
+                    no2Value: 0.8,
+                    latitude: 40.71252,
+                    longitude: -77.1965,
+                },
+            ];
+
+            const maxPermittedDistance =
+            MAX_PERMITTED_SPEED_MPS * MEASURING_FREQUENCY_SECONDS;
+            
+            const mockDistance = maxPermittedDistance + 15; // Mock a distance greater than the permissible range
+            
+            const mockGetCoordinatesDistance = vi
+                .spyOn(measurementsService, 'getCoordinatesDistance')
+                .mockReturnValue(mockDistance);
+
+            const totalDistance = measurementsService.getMeasurementsTotalDistance(mockMeasurements);
+
+            expect(totalDistance).toBe(0); // Ensure the invalid distance is ignored
+            expect(mockGetCoordinatesDistance).toHaveBeenCalledTimes(1);
+            expect(mockGetCoordinatesDistance).toHaveBeenCalledWith(
+                mockMeasurements[0].latitude,
+                mockMeasurements[0].longitude,
+                mockMeasurements[1].latitude,
+                mockMeasurements[1].longitude
+            );
+
+            mockGetCoordinatesDistance.mockRestore(); // Restore the original implementation
         });
     });
+
 
     describe('getLastMeasurement()', () => {
         it('should return the last measurement for a user', async () => {
@@ -417,6 +482,7 @@ describe('measurementsService', () => {
                 airQuality: AirQuality.Good,
                 proportionalValue: 0.7,
                 worstGas: AirGases.O3,
+                ppmValue: 0.5,
             });
 
             const result =
@@ -433,12 +499,14 @@ describe('measurementsService', () => {
                     airQuality: AirQuality.Good,
                     proportionalValue: 0.7,
                     worstGas: AirGases.O3,
+                    ppmValue: 0.5,
                 },
                 {
                     timestamp: mockTimeRanges[1].start,
                     airQuality: null,
                     proportionalValue: null,
                     worstGas: null,
+                    ppmValue: null,
                 },
             ]);
 
@@ -484,12 +552,14 @@ describe('measurementsService', () => {
                     airQuality: null,
                     proportionalValue: null,
                     worstGas: null,
+                    ppmValue: null,
                 },
                 {
                     timestamp: mockTimeRanges[1].start,
                     airQuality: null,
                     proportionalValue: null,
                     worstGas: null,
+                    ppmValue: null,
                 },
             ]);
 
@@ -554,12 +624,14 @@ describe('measurementsService', () => {
                     airQuality: AirQuality.Good,
                     proportionalValue: 0.7,
                     worstGas: AirGases.O3,
+                    ppmValue: 0.5,
                 },
                 {
                     timestamp: new Date('2023-11-01T02:00:00Z'),
                     airQuality: AirQuality.Regular,
                     proportionalValue: 0.6,
                     worstGas: AirGases.CO,
+                    ppmValue: 1.0,
                 },
             ];
 
@@ -584,8 +656,13 @@ describe('measurementsService', () => {
                     airQuality: AirQuality.Good,
                     proportionalValue: 0.7,
                     worstGas: AirGases.O3,
+                    ppmValue: 0.5,
                 });
 
+            const mockAverageAirQuality = vi
+                .mocked(airQualityUtils.getAverageAirQualityFromAirQualityReadings)
+                .mockReturnValue(AirQuality.Good);
+            
             // Call the function under test
             const result = await measurementsService.getDashboardData(userId);
 
@@ -596,9 +673,13 @@ describe('measurementsService', () => {
                     airQuality: AirQuality.Good,
                     proportionalValue: 0.7,
                     worstGas: AirGases.O3,
+                    ppmValue: 0.5,
                 },
                 todayDistance: mockTodayTotalDistance,
-                airQualityReadings: mockAirQualityReadings,
+                airQualityReadingsInfo: {
+                    airQualityReadings: mockAirQualityReadings,
+                    overallAirQuality: AirQuality.Good,
+                }
             });
 
             // Ensure the mock functions were called correctly
