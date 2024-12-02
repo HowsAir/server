@@ -5,6 +5,7 @@
  */
 
 import prisma from '../libs/prisma';
+import { measurementsService } from './measurementsService';
 
 /**
  * Retrieves the total distance covered by a user in the current month
@@ -38,14 +39,17 @@ const getCurrentMonthDistance = async (userId: number): Promise<number> => {
         },
     });
 
-    let totalDistance = dailyStats.reduce(
+    let currentMonthDistance = dailyStats.reduce(
         (sum, stat) => sum + stat.distance,
         0
     );
 
-    totalDistance = Math.round(totalDistance);
+    currentMonthDistance = Math.round(currentMonthDistance);
 
-    return totalDistance;
+    const todayTotalDistance =
+        await measurementsService.getTodayTotalDistance(userId);
+    
+    return currentMonthDistance + todayTotalDistance;
 };
 
 export const dailyStatsService = {
