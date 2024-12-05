@@ -164,20 +164,10 @@ const getGasProportionalValue = (gas: AirGases, value: number): number => {
  * @returns {Object} - The worst gas data (gas, proportionalValue, airQuality, ppmValue).
  */
 const getWorstGasOnProportionalValue = (
-    gasesData: Array<{
-        gas: AirGases;
-        proportionalValue: number;
-        airQuality: AirQualities;
-        ppmValue: number;
-    }>
-): {
-    gas: AirGases;
-    proportionalValue: number;
-    airQuality: AirQualities;
-    ppmValue: number;
-} => {
+    gasesData: Omit<AirQualityReading, 'timestamp'>[]
+): Omit<AirQualityReading, 'timestamp'> => {
     return gasesData.reduce((worst, current) =>
-        current.proportionalValue > worst.proportionalValue ? current : worst
+        current.proportionalValue! > worst.proportionalValue! ? current : worst
     );
 };
 
@@ -195,7 +185,7 @@ const getAirQualityReadingFromGasesValues = (
     measurementGasesValues: MeasurementGasesValues,
     timestamp: Date
 ): AirQualityReading => {
-    const gasesData = [
+    const gasesData: Omit<AirQualityReading,'timestamp'>[] = [
         {
             gas: AirGases.O3,
             proportionalValue: airQualityUtils.getGasProportionalValue(
