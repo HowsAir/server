@@ -395,7 +395,69 @@ describe('measurementsService', () => {
                 .fn()
                 .mockResolvedValue(mockMeasurements);
 
-            const result = await measurementsService.getMeasurementsInRange(
+            const result =
+                await measurementsService.getMeasurementsInRange(
+                    timeRange
+                );
+
+            expect(result).toEqual(mockMeasurements); // Assert the behavior: correct results returned
+        });
+
+        it('should return an empty array if no measurements are in the range', async () => {
+            const userId = 1;
+            const timeRange = { start: new Date(), end: new Date() };
+
+            prisma.measurement.findMany = vi.fn().mockResolvedValue([]);
+
+            const result =
+                await measurementsService.getMeasurementsInRange(
+                    timeRange
+                );
+
+            expect(result).toEqual([]); // Assert behavior: empty array for no data
+        });
+
+        it('should propagate errors from the database query', async () => {
+            const userId = 1;
+            const timeRange = { start: new Date(), end: new Date() };
+
+            prisma.measurement.findMany = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                measurementsService.getMeasurementsInRange(
+                    timeRange
+                )
+            ).rejects.toThrow('Database error');
+        });
+    });
+    
+    describe('getUserMeasurementsInRange()', () => {
+        it('should return all measurements within a given time range', async () => {
+            const userId = 1;
+            const timeRange = {
+                start: new Date('2023-11-01T00:00:00Z'),
+                end: new Date('2023-11-02T00:00:00Z'),
+            };
+            const mockMeasurements: Measurement[] = [
+                {
+                    id: 1,
+                    nodeId: 1,
+                    timestamp: new Date('2023-11-01T12:00:00Z'),
+                    o3Value: 0.5,
+                    coValue: 1.0,
+                    no2Value: 0.7,
+                    latitude: 40.7128,
+                    longitude: -74.006,
+                },
+            ];
+
+            prisma.measurement.findMany = vi
+                .fn()
+                .mockResolvedValue(mockMeasurements);
+
+            const result = await measurementsService.getUserMeasurementsInRange(
                 userId,
                 timeRange
             );
@@ -409,7 +471,7 @@ describe('measurementsService', () => {
 
             prisma.measurement.findMany = vi.fn().mockResolvedValue([]);
 
-            const result = await measurementsService.getMeasurementsInRange(
+            const result = await measurementsService.getUserMeasurementsInRange(
                 userId,
                 timeRange
             );
@@ -426,7 +488,7 @@ describe('measurementsService', () => {
                 .mockRejectedValue(new Error('Database error'));
 
             await expect(
-                measurementsService.getMeasurementsInRange(userId, timeRange)
+                measurementsService.getUserMeasurementsInRange(userId, timeRange)
             ).rejects.toThrow('Database error');
         });
     });
@@ -464,8 +526,8 @@ describe('measurementsService', () => {
                 },
             ];
 
-            const mockGetMeasurementsInRange = vi
-                .spyOn(measurementsService, 'getMeasurementsInRange')
+            const mockGetUserMeasurementsInRange = vi
+                .spyOn(measurementsService, 'getUserMeasurementsInRange')
                 .mockResolvedValueOnce(mockMeasurements) // First interval
                 .mockResolvedValueOnce([]); // Second interval with no measurements
 
@@ -510,7 +572,7 @@ describe('measurementsService', () => {
                 },
             ]);
 
-            mockGetMeasurementsInRange.mockRestore();
+            mockGetUserMeasurementsInRange.mockRestore();
         });
 
         it('should return empty intervals when no measurements exist', async () => {
@@ -534,8 +596,8 @@ describe('measurementsService', () => {
                 mockTimeRanges
             );
 
-            const mockGetMeasurementsInRange = vi
-                .spyOn(measurementsService, 'getMeasurementsInRange')
+            const mockgetUserMeasurementsInRange = vi
+                .spyOn(measurementsService, 'getUserMeasurementsInRange')
                 .mockResolvedValue([]); // Always empty for this test case
 
             const result =
@@ -563,10 +625,10 @@ describe('measurementsService', () => {
                 },
             ]);
 
-            mockGetMeasurementsInRange.mockRestore();
+            mockgetUserMeasurementsInRange.mockRestore();
         });
 
-        it('should propagate errors from getMeasurementsInRange', async () => {
+        it('should propagate errors from getUserMeasurementsInRange', async () => {
             const userId = 1;
             const start = new Date();
             const end = new Date();
@@ -583,8 +645,8 @@ describe('measurementsService', () => {
                 mockTimeRanges
             );
 
-            const mockGetMeasurementsInRange = vi
-                .spyOn(measurementsService, 'getMeasurementsInRange')
+            const mockgetUserMeasurementsInRange = vi
+                .spyOn(measurementsService, 'getUserMeasurementsInRange')
                 .mockRejectedValue(new Error('Database error'));
 
             await expect(
@@ -596,7 +658,7 @@ describe('measurementsService', () => {
                 )
             ).rejects.toThrow('Database error');
 
-            mockGetMeasurementsInRange.mockRestore();
+            mockgetUserMeasurementsInRange.mockRestore();
         });
     });
 

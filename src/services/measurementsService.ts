@@ -143,7 +143,7 @@ const getTodayTotalDistance = async (userId: number): Promise<number> => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of the day
 
-    const measurements = await getMeasurementsInRange(userId, {
+    const measurements = await getUserMeasurementsInRange(userId, {
         start: today,
         end: new Date(),
     });
@@ -173,15 +173,37 @@ const getLastMeasurement = async (
 };
 
 /**
+ * Retrieves all measurements for within a specified time range.
+ *
+ *  { Date: start, Date: end }: timeRange -> getMeasurementsInRange() -> Promise<Array<Measurement>>
+ *
+ * @param timeRange - An object containing the start and end timestamps defining the time range.
+ * @returns {Promise<Measurement[]>} - A promise that resolves to an array of measurements within the specified time range.
+ */
+const getMeasurementsInRange = async (
+    timeRange: { start: Date; end: Date }
+): Promise<Measurement[]> => {
+    return await prisma.measurement.findMany({
+        where: {
+            timestamp: {
+                gte: timeRange.start,
+                lte: timeRange.end,
+            },
+        },
+        orderBy: { timestamp: 'asc' },
+    });
+};
+
+/**
  * Retrieves all measurements for a user within a specified time range.
  *
- * { Number: userId, { Date: start, Date: end }: timeRange } -> getMeasurementsInRange() -> Promise<Array<Measurement>>
+ * { Number: userId, { Date: start, Date: end }: timeRange } -> getUserMeasurementsInRange() -> Promise<Array<Measurement>>
  *
  * @param userId - The ID of the user whose measurements are to be retrieved.
  * @param timeRange - An object containing the start and end timestamps defining the time range.
  * @returns {Promise<Measurement[]>} - A promise that resolves to an array of measurements within the specified time range.
  */
-const getMeasurementsInRange = async (
+const getUserMeasurementsInRange = async (
     userId: number,
     timeRange: { start: Date; end: Date }
 ): Promise<Measurement[]> => {
@@ -224,7 +246,7 @@ export const getAirQualityReadingsInRange = async (
     const results: AirQualityReading[] = [];
 
     for (const range of timeRanges) {
-        const measurements = await measurementsService.getMeasurementsInRange(
+        const measurements = await measurementsService.getUserMeasurementsInRange(
             userId,
             range
         );
@@ -328,6 +350,7 @@ export const measurementsService = {
     getTodayTotalDistance,
     getLastMeasurement,
     getMeasurementsInRange,
+    getUserMeasurementsInRange,
     getAirQualityReadingsInRange,
     getDashboardData,
 };
