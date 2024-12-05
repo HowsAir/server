@@ -1421,7 +1421,7 @@ components:
           nullable: true
           description: Valor proporcional calculado para la calidad del aire.
           example: 30
-        worstGas:
+        gas:
           type: string
           nullable: true
           enum:
