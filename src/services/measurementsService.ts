@@ -222,9 +222,9 @@ const getUserMeasurementsInRange = async (
 };
 
 /**
- * Retrieves air quality readings for a given time range and interval size.
+ * Retrieves air quality readings from a user for a given time range and interval size.
  *
- * Number:userId, Date: start, Date: end, Number: intervalInHours  -> getAirQualityReadingInRange() -> Promise<Array<AirQualityReading>>
+ * Number:userId, Date: start, Date: end, Number: intervalInHours  -> getUserAirQualityReadingInRange() -> Promise<Array<AirQualityReading>>
  *
  * @param userId - The ID of the user to retrieve measurements for.
  * @param start - The start timestamp of the range.
@@ -232,7 +232,7 @@ const getUserMeasurementsInRange = async (
  * @param intervalInHours - The interval size in hours (e.g., 4 for 4-hour intervals).
  * @returns {Promise<AirQualityReading[]>} - An array of air quality readings for each interval.
  */
-export const getAirQualityReadingsInRange = async (
+export const getUserAirQualityReadingsInRange = async (
     userId: number,
     start: Date,
     end: Date,
@@ -321,7 +321,7 @@ const getDashboardData = async (
     const start = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
 
     const airQualityReadings =
-        await measurementsService.getAirQualityReadingsInRange(
+        await measurementsService.getUserAirQualityReadingsInRange(
             userId,
             start,
             now,
@@ -351,6 +351,6 @@ export const measurementsService = {
     getLastMeasurement,
     getMeasurementsInRange,
     getUserMeasurementsInRange,
-    getAirQualityReadingsInRange,
+    getUserAirQualityReadingsInRange,
     getDashboardData,
 };

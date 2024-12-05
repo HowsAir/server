@@ -493,7 +493,7 @@ describe('measurementsService', () => {
         });
     });
 
-    describe('getAirQualityReadingsInRange()', () => {
+    describe('getUserAirQualityReadingsInRange()', () => {
         it('should return air quality readings for valid time intervals', async () => {
             const userId = 1;
             const start = new Date('2023-11-01T00:00:00Z');
@@ -548,7 +548,7 @@ describe('measurementsService', () => {
             });
 
             const result =
-                await measurementsService.getAirQualityReadingsInRange(
+                await measurementsService.getUserAirQualityReadingsInRange(
                     userId,
                     start,
                     end,
@@ -601,7 +601,7 @@ describe('measurementsService', () => {
                 .mockResolvedValue([]); // Always empty for this test case
 
             const result =
-                await measurementsService.getAirQualityReadingsInRange(
+                await measurementsService.getUserAirQualityReadingsInRange(
                     userId,
                     start,
                     end,
@@ -650,7 +650,7 @@ describe('measurementsService', () => {
                 .mockRejectedValue(new Error('Database error'));
 
             await expect(
-                measurementsService.getAirQualityReadingsInRange(
+                measurementsService.getUserAirQualityReadingsInRange(
                     userId,
                     start,
                     end,
@@ -706,8 +706,8 @@ describe('measurementsService', () => {
                 .spyOn(measurementsService, 'getTodayTotalDistance')
                 .mockResolvedValue(mockTodayTotalDistance);
 
-            const getAirQualityReadingsInRangeSpy = vi
-                .spyOn(measurementsService, 'getAirQualityReadingsInRange')
+            const getUserAirQualityReadingsInRangeSpy = vi
+                .spyOn(measurementsService, 'getUserAirQualityReadingsInRange')
                 .mockResolvedValue(mockAirQualityReadings);
 
             // Mocking the air quality reading calculation
@@ -747,7 +747,7 @@ describe('measurementsService', () => {
             // Ensure the mock functions were called correctly
             expect(getLastMeasurementSpy).toHaveBeenCalledWith(userId);
             expect(getTodayTotalDistanceSpy).toHaveBeenCalledWith(userId);
-            expect(getAirQualityReadingsInRangeSpy).toHaveBeenCalledWith(
+            expect(getUserAirQualityReadingsInRangeSpy).toHaveBeenCalledWith(
                 userId,
                 expect.any(Date), // start date
                 expect.any(Date), // end date
@@ -757,7 +757,7 @@ describe('measurementsService', () => {
             // Clean up
             getLastMeasurementSpy.mockRestore();
             getTodayTotalDistanceSpy.mockRestore();
-            getAirQualityReadingsInRangeSpy.mockRestore();
+            getUserAirQualityReadingsInRangeSpy.mockRestore();
             mockAirQualityReadingFromGasesValues.mockRestore();
         });
 
