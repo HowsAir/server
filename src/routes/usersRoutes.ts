@@ -12,7 +12,7 @@ import {
     verifyResetPasswordToken,
     authorizeRoles,
 } from '../middleware/auth';
-import { passwordValidationRules } from '../utils/validators';
+import { passwordValidationRules } from '../utils/validatorsUtils';
 import multer from 'multer';
 import { UserRoleId } from '../types/users/UserRoleId';
 

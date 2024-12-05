@@ -10,7 +10,7 @@ import {
     putJwtInResponse,
     putJwtWithEmailInResponse,
     getEmailFromToken,
-} from '../utils/auth';
+} from '../utils/authUtils';
 import { authService } from '../services/authService';
 import {
     auth_token,
