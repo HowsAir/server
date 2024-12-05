@@ -7,7 +7,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { usersService } from '../services/usersService';
-import { putJwtInResponse } from '../utils/auth';
+import { putJwtInResponse } from '../utils/authUtils';
 import { measurementsService } from '../services/measurementsService';
 import { auth_token, password_reset_token } from '../middleware/auth';
 import { PasswordResetStatus } from '../types/auth/PasswordResetStatus';
