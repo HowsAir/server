@@ -780,4 +780,159 @@ describe('measurementsService', () => {
             getLastMeasurementSpy.mockRestore();
         });
     });
+
+    describe('getGeolocatedAirQualityReadingsInRange', () => {
+        it('should return geolocated air quality readings for a valid time range', async () => {
+            const mockTimeRange = {
+                start: new Date('2023-11-01T00:00:00Z'),
+                end: new Date('2023-11-01T08:00:00Z'),
+            };
+
+            const mockMeasurements = [
+                {
+                    id: 1,
+                    nodeId: 1,
+                    o3Value: 0.05,
+                    coValue: 1.2,
+                    no2Value: 0.07,
+                    latitude: 40.7128,
+                    longitude: -74.006,
+                    timestamp: new Date('2023-11-01T00:00:00Z'),
+                },
+                {
+                    id: 2,
+                    nodeId: 2,
+                    o3Value: 0.1,
+                    coValue: 1.5,
+                    no2Value: 0.09,
+                    latitude: 34.0522,
+                    longitude: -118.2437,
+                    timestamp: new Date('2023-11-01T02:00:00Z'),
+                },
+            ];
+
+            const mockAirQualityReadings = [
+                {
+                    timestamp: mockMeasurements[0].timestamp,
+                    airQuality: AirQualities.Good,
+                    proportionalValue: 0.5,
+                    gas: AirGases.O3,
+                    ppmValue: 0.05,
+                },
+                {
+                    timestamp: mockMeasurements[1].timestamp,
+                    airQuality: AirQualities.Regular,
+                    proportionalValue: 0.7,
+                    gas: AirGases.CO,
+                    ppmValue: 1.5,
+                },
+            ];
+
+            // Mocking dependencies
+            vi.spyOn(
+                measurementsService,
+                'getMeasurementsInRange'
+            ).mockResolvedValue(mockMeasurements);
+
+            vi.spyOn(airQualityUtils, 'getAirQualityReadingFromGasesValues')
+                .mockReturnValueOnce(mockAirQualityReadings[0])
+                .mockReturnValueOnce(mockAirQualityReadings[1]);
+
+            const result =
+                await measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange);
+
+            expect(result).toEqual([
+                {
+                    ...mockAirQualityReadings[0],
+                    latitude: mockMeasurements[0].latitude,
+                    longitude: mockMeasurements[0].longitude,
+                },
+                {
+                    ...mockAirQualityReadings[1],
+                    latitude: mockMeasurements[1].latitude,
+                    longitude: mockMeasurements[1].longitude,
+                },
+            ]);
+
+            vi.restoreAllMocks();
+        });
+
+        it('should return an empty array when no measurements exist', async () => {
+            const mockTimeRange = {
+                start: new Date('2023-11-01T00:00:00Z'),
+                end: new Date('2023-11-01T08:00:00Z'),
+            };
+
+            // Mocking dependencies
+            vi.spyOn(
+                measurementsService,
+                'getMeasurementsInRange'
+            ).mockResolvedValue([]);
+
+            const result =
+                await measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange);
+
+            expect(result).toEqual([]);
+
+            vi.restoreAllMocks();
+        });
+
+        it('should propagate errors from getMeasurementsInRange', async () => {
+            const mockTimeRange = {
+                start: new Date('2023-11-01T00:00:00Z'),
+                end: new Date('2023-11-01T08:00:00Z'),
+            };
+
+            // Mocking dependencies
+            vi.spyOn(
+                measurementsService,
+                'getMeasurementsInRange'
+            ).mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange)
+            ).rejects.toThrow('Database error');
+
+            vi.restoreAllMocks();
+        });
+
+        it('should handle errors in air quality reading computation gracefully', async () => {
+            const mockTimeRange = {
+                start: new Date('2023-11-01T00:00:00Z'),
+                end: new Date('2023-11-01T08:00:00Z'),
+            };
+
+            const mockMeasurements = [
+                {
+                    id: 1,
+                    nodeId: 1,
+                    o3Value: 0.05,
+                    coValue: 1.2,
+                    no2Value: 0.07,
+                    latitude: 40.7128,
+                    longitude: -74.006,
+                    timestamp: new Date('2023-11-01T00:00:00Z'),
+                },
+            ];
+
+            // Mocking dependencies
+            vi.spyOn(
+                measurementsService,
+                'getMeasurementsInRange'
+            ).mockResolvedValue(mockMeasurements);
+
+            vi.spyOn(
+                airQualityUtils,
+                'getAirQualityReadingFromGasesValues'
+            ).mockImplementation(() => {
+                throw new Error('Error calculating air quality');
+            });
+
+            await expect(
+                measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange)
+            ).rejects.toThrow('Error calculating air quality');
+
+            vi.restoreAllMocks();
+        });
+    });
 });

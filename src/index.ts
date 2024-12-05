@@ -9,9 +9,12 @@ import 'dotenv/config';
 import path from 'path';
 import https from 'https';
 import fs from 'fs';
+import { initializeCronJobs } from './cron';
 
 const PORT = 3000;
 const IP = '0.0.0.0';
+
+initializeCronJobs();
 
 if (process.env.NODE_ENV != 'development') {
     const options = {

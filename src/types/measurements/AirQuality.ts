@@ -53,3 +53,14 @@ export interface AirQualityReading {
     gas: AirGases | null; //
     ppmValue: number | null;
 }
+
+/**
+ *
+ * This corresponds to a reading of air quality data at a specific time and location.
+ * It extends the AirQualityReading interface to include the latitude and longitude of the location.
+ * 
+ */
+export interface GeolocatedAirQualityReading extends AirQualityReading {
+    latitude: number;
+    longitude: number;
+}

@@ -9,6 +9,7 @@ import prisma from '../libs/prisma';
 import { DashboardData } from '../types/measurements/DashboardData';
 import {
     AirQualityReading,
+    GeolocatedAirQualityReading,
     MeasurementGasesValues,
 } from '../types/measurements/AirQuality';
 import {
@@ -343,6 +344,46 @@ const getDashboardData = async (
     return dashboardData;
 };
 
+/**
+ * Retrieves geolocated air quality readings for a given time range.
+ * 
+ * { start: Date, end: Date } -> getGeolocatedAirQualityReadingsInRange() -> Promise<GeolocatedAirQualityReading[]>
+ * 
+ * @param timeRange - An object containing the start and end timestamps defining the time range.
+ * @returns {Promise<GeolocatedAirQualityReading[]>} - A promise that resolves to an array of geolocated air quality readings within the specified time range.
+ */
+const getGeolocatedAirQualityReadingsInRange = async(
+    timeRange: { start: Date; end: Date }
+): Promise<GeolocatedAirQualityReading[]> => {
+    const measurements = await measurementsService.getMeasurementsInRange(timeRange);
+
+    const geolocatedAirQualityReadings: GeolocatedAirQualityReading[] = [];
+
+    for (const measurement of measurements) {
+        const measurementGasesValues: MeasurementGasesValues = {
+            o3: measurement.o3Value,
+            co: measurement.coValue,
+            no2: measurement.no2Value,
+        };
+
+        const airQualityReading = airQualityUtils.getAirQualityReadingFromGasesValues(
+            measurementGasesValues,
+            measurement.timestamp
+        );
+
+        const geolocatedAirQualityReading: GeolocatedAirQualityReading = {
+            ...airQualityReading,
+            latitude: measurement.latitude,
+            longitude: measurement.longitude,
+        }
+
+        geolocatedAirQualityReadings.push(geolocatedAirQualityReading);
+    }
+
+    return geolocatedAirQualityReadings;
+}
+
+
 export const measurementsService = {
     createMeasurement,
     getCoordinatesDistance,
@@ -353,4 +394,5 @@ export const measurementsService = {
     getUserMeasurementsInRange,
     getUserAirQualityReadingsInRange,
     getDashboardData,
+    getGeolocatedAirQualityReadingsInRange,
 };
