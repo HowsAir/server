@@ -13,16 +13,16 @@ import {
     sendPasswordResetEmail,
     sendEmailVerification,
     sendEmailApplication,
-} from '../../src/utils/emailSender';
-import { generateResetCode } from '../../src/utils/auth';
+} from '../../src/utils/emailSenderUtils';
+import { generateResetCode } from '../../src/utils/authUtils';
 import jwt from 'jsonwebtoken';
 import { ApplicationForm } from '../../src/types/forms/ApplicationForm';
 
 // Mock dependencies
 vi.mock('../../src/libs/prisma');
 vi.mock('bcryptjs');
-vi.mock('../../src/utils/auth');
-vi.mock('../../src/utils/emailSender', () => ({
+vi.mock('../../src/utils/authUtils');
+vi.mock('../../src/utils/emailSenderUtils', () => ({
     sendPasswordResetEmail: vi.fn(),
     sendEmailVerification: vi.fn(),
     sendEmailApplication: vi.fn(),
