@@ -11,7 +11,7 @@ import {
 } from '../../src/utils/airQualityUtils';
 import prisma from '../../src/libs/prisma';
 import { Measurement, Node } from '@prisma/client';
-import { AirGases, AirQuality } from '../../src/types/measurements/AirQuality';
+import { AirGases, AirQualities } from '../../src/types/measurements/AirQuality';
 import { MAX_PERMITTED_SPEED_MPS, MEASURING_FREQUENCY_SECONDS } from '../../src/types/measurements/Distance';
 vi.mock('../../src/libs/prisma');
 vi.mock('../../src/utils/airQualityUtils');
@@ -479,9 +479,9 @@ describe('measurementsService', () => {
                 airQualityUtils.getAirQualityReadingFromGasesValues
             ).mockReturnValueOnce({
                 timestamp: mockTimeRanges[0].start,
-                airQuality: AirQuality.Good,
+                airQuality: AirQualities.Good,
                 proportionalValue: 0.7,
-                worstGas: AirGases.O3,
+                gas: AirGases.O3,
                 ppmValue: 0.5,
             });
 
@@ -496,16 +496,16 @@ describe('measurementsService', () => {
             expect(result).toEqual([
                 {
                     timestamp: mockTimeRanges[0].start,
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: 0.7,
-                    worstGas: AirGases.O3,
+                    gas: AirGases.O3,
                     ppmValue: 0.5,
                 },
                 {
                     timestamp: mockTimeRanges[1].start,
                     airQuality: null,
                     proportionalValue: null,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
             ]);
@@ -551,14 +551,14 @@ describe('measurementsService', () => {
                     timestamp: mockTimeRanges[0].start,
                     airQuality: null,
                     proportionalValue: null,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
                 {
                     timestamp: mockTimeRanges[1].start,
                     airQuality: null,
                     proportionalValue: null,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
             ]);
@@ -621,16 +621,16 @@ describe('measurementsService', () => {
             const mockAirQualityReadings = [
                 {
                     timestamp: new Date('2023-11-01T00:00:00Z'),
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: 0.7,
-                    worstGas: AirGases.O3,
+                    gas: AirGases.O3,
                     ppmValue: 0.5,
                 },
                 {
                     timestamp: new Date('2023-11-01T02:00:00Z'),
-                    airQuality: AirQuality.Regular,
+                    airQuality: AirQualities.Regular,
                     proportionalValue: 0.6,
-                    worstGas: AirGases.CO,
+                    gas: AirGases.CO,
                     ppmValue: 1.0,
                 },
             ];
@@ -653,15 +653,15 @@ describe('measurementsService', () => {
                 .mocked(airQualityUtils.getAirQualityReadingFromGasesValues)
                 .mockReturnValue({
                     timestamp: mockLastMeasurement.timestamp,
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: 0.7,
-                    worstGas: AirGases.O3,
+                    gas: AirGases.O3,
                     ppmValue: 0.5,
                 });
 
             const mockAverageAirQuality = vi
                 .mocked(airQualityUtils.getAverageAirQualityFromAirQualityReadings)
-                .mockReturnValue(AirQuality.Good);
+                .mockReturnValue(AirQualities.Good);
             
             // Call the function under test
             const result = await measurementsService.getDashboardData(userId);
@@ -670,15 +670,15 @@ describe('measurementsService', () => {
             expect(result).toEqual({
                 lastAirQualityReading: {
                     timestamp: mockLastMeasurement.timestamp,
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: 0.7,
-                    worstGas: AirGases.O3,
+                    gas: AirGases.O3,
                     ppmValue: 0.5,
                 },
                 todayDistance: mockTodayTotalDistance,
                 airQualityReadingsInfo: {
                     airQualityReadings: mockAirQualityReadings,
-                    overallAirQuality: AirQuality.Good,
+                    overallAirQuality: AirQualities.Good,
                 }
             });
 

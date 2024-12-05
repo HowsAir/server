@@ -9,7 +9,7 @@ import prisma from '../libs/prisma';
 import { DashboardData } from '../types/measurements/DashboardData';
 import {
     AirQualityReading,
-    GasesValues,
+    MeasurementGasesValues,
 } from '../types/measurements/AirQuality';
 import {
     MEASURING_FREQUENCY_SECONDS,
@@ -232,7 +232,7 @@ export const getAirQualityReadingsInRange = async (
         if (measurements.length === 0) {
             results.push({
                 timestamp: range.start,
-                worstGas: null,
+                gas: null,
                 airQuality: null,
                 proportionalValue: null,
                 ppmValue: null,
@@ -278,7 +278,7 @@ const getDashboardData = async (
         return null;
     }
 
-    const gasesValues: GasesValues = {
+    const gasesValues: MeasurementGasesValues = {
         o3: lastMeasurement.o3Value,
         co: lastMeasurement.coValue,
         no2: lastMeasurement.no2Value,

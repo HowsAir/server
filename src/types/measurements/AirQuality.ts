@@ -4,7 +4,7 @@ export enum AirGases {
     O3 = 'O3',
 }
 
-export enum AirQuality {
+export enum AirQualities {
     Good = 'Good',
     Regular = 'Regular',
     Bad = 'Bad',
@@ -12,38 +12,44 @@ export enum AirQuality {
 
 export const GasesPPMThresholds = {
     [AirGases.CO]: {
-        [AirQuality.Good]: 9,
-        [AirQuality.Regular]: 12,
-        [AirQuality.Bad]: 20,
+        [AirQualities.Good]: 9,
+        [AirQualities.Regular]: 12,
+        [AirQualities.Bad]: 20,
     },
     [AirGases.NO2]: {
-        [AirQuality.Good]: 0.053,
-        [AirQuality.Regular]: 0.1,
-        [AirQuality.Bad]: 0.2,
+        [AirQualities.Good]: 0.053,
+        [AirQualities.Regular]: 0.1,
+        [AirQualities.Bad]: 0.2,
     },
     [AirGases.O3]: {
-        [AirQuality.Good]: 0.05,
-        [AirQuality.Regular]: 0.1,
-        [AirQuality.Bad]: 0.2,
+        [AirQualities.Good]: 0.05,
+        [AirQualities.Regular]: 0.1,
+        [AirQualities.Bad]: 0.2,
     },
 };
 
 export const GasProportionalValueThresholds = {
-    [AirQuality.Good]: 20,
-    [AirQuality.Regular]: 60,
-    [AirQuality.Bad]: 100,
+    [AirQualities.Good]: 20,
+    [AirQualities.Regular]: 60,
+    [AirQualities.Bad]: 100,
 };
 
-export interface GasesValues {
+export interface MeasurementGasesValues {
     o3: number;
     co: number;
     no2: number;
 }
 
+/**
+ *
+ * This corresponds to a reading of air quality data at a specific time.
+ * The gas field is the worst gas in the reading, which is used to determine the air quality.
+ *
+ */
 export interface AirQualityReading {
     timestamp: Date;
-    airQuality: AirQuality | null;
+    airQuality: AirQualities | null;
     proportionalValue: number | null;
-    worstGas: AirGases | null;
+    gas: AirGases | null; //
     ppmValue: number | null;
 }

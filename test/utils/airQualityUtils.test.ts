@@ -8,10 +8,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { airQualityUtils } from '../../src/utils/airQualityUtils';
 import {
     AirGases,
-    AirQuality,
+    AirQualities,
     GasesPPMThresholds,
     GasProportionalValueThresholds,
-    GasesValues,
+    MeasurementGasesValues,
     AirQualityReading,
 } from '../../src/types/measurements/AirQuality';
 
@@ -26,7 +26,7 @@ describe('airQualityUtils', () => {
             const gas = AirGases.O3;
 
             const result = airQualityUtils.getAirQualityFromGasPPMValue(gas, value);
-            expect(result).toBe(AirQuality.Good);
+            expect(result).toBe(AirQualities.Good);
         });
 
         it('should return Regular air quality when value is within the Regular range', () => {
@@ -34,7 +34,7 @@ describe('airQualityUtils', () => {
             const gas = AirGases.O3;
 
             const result = airQualityUtils.getAirQualityFromGasPPMValue(gas, value);
-            expect(result).toBe(AirQuality.Regular);
+            expect(result).toBe(AirQualities.Regular);
         });
 
         it('should return Bad air quality when value exceeds the Regular range', () => {
@@ -42,7 +42,7 @@ describe('airQualityUtils', () => {
             const gas = AirGases.O3;
 
             const result = airQualityUtils.getAirQualityFromGasPPMValue(gas, value);
-            expect(result).toBe(AirQuality.Bad);
+            expect(result).toBe(AirQualities.Bad);
         });
 
         it('should return Good air quality for CO within its Good range', () => {
@@ -50,7 +50,7 @@ describe('airQualityUtils', () => {
             const gas = AirGases.CO;
 
             const result = airQualityUtils.getAirQualityFromGasPPMValue(gas, value);
-            expect(result).toBe(AirQuality.Good);
+            expect(result).toBe(AirQualities.Good);
         });
 
         it('should return Regular air quality for CO within its Regular range', () => {
@@ -58,7 +58,7 @@ describe('airQualityUtils', () => {
             const gas = AirGases.CO;
 
             const result = airQualityUtils.getAirQualityFromGasPPMValue(gas, value);
-            expect(result).toBe(AirQuality.Regular);
+            expect(result).toBe(AirQualities.Regular);
         });
 
         it('should return Bad air quality for CO above its Regular threshold', () => {
@@ -66,57 +66,57 @@ describe('airQualityUtils', () => {
             const gas = AirGases.CO;
 
             const result = airQualityUtils.getAirQualityFromGasPPMValue(gas, value);
-            expect(result).toBe(AirQuality.Bad);
+            expect(result).toBe(AirQualities.Bad);
         });
     });
 
     describe('getAirQualityFromGasProportionalValue()', () => {
         it('should return Good air quality when the proportional value is within the Good range', () => {
             const proportionalValue =
-                GasProportionalValueThresholds[AirQuality.Good] - 10;
+                GasProportionalValueThresholds[AirQualities.Good] - 10;
             const result =
                 airQualityUtils.getAirQualityFromGasProportionalValue(proportionalValue);
-            expect(result).toBe(AirQuality.Good);
+            expect(result).toBe(AirQualities.Good);
         });
 
         it('should return Regular air quality when the proportional value is within the Regular range', () => {
             const proportionalValue =
-                GasProportionalValueThresholds[AirQuality.Regular] - 10;
+                GasProportionalValueThresholds[AirQualities.Regular] - 10;
             const result =
                 airQualityUtils.getAirQualityFromGasProportionalValue(proportionalValue);
-            expect(result).toBe(AirQuality.Regular);
+            expect(result).toBe(AirQualities.Regular);
         });
 
         it('should return Bad air quality when the proportional value exceeds the Regular range', () => {
             const proportionalValue =
-                GasProportionalValueThresholds[AirQuality.Bad] - 10;
+                GasProportionalValueThresholds[AirQualities.Bad] - 10;
             const result =
                 airQualityUtils.getAirQualityFromGasProportionalValue(proportionalValue);
-            expect(result).toBe(AirQuality.Bad);
+            expect(result).toBe(AirQualities.Bad);
         });
 
         it('should return Good air quality for proportional value at the exact Good threshold', () => {
             const proportionalValue =
-                GasProportionalValueThresholds[AirQuality.Good];
+                GasProportionalValueThresholds[AirQualities.Good];
             const result =
                 airQualityUtils.getAirQualityFromGasProportionalValue(proportionalValue);
-            expect(result).toBe(AirQuality.Good);
+            expect(result).toBe(AirQualities.Good);
         });
 
         it('should return Regular air quality for proportional value at the exact Regular threshold', () => {
             const proportionalValue =
-                GasProportionalValueThresholds[AirQuality.Regular];
+                GasProportionalValueThresholds[AirQualities.Regular];
             const result =
                 airQualityUtils.getAirQualityFromGasProportionalValue(proportionalValue);
-            expect(result).toBe(AirQuality.Regular);
+            expect(result).toBe(AirQualities.Regular);
         });
 
         it('should return Bad air quality for proportional value at the exact Bad threshold', () => {
             const proportionalValue =
-                GasProportionalValueThresholds[AirQuality.Bad];
+                GasProportionalValueThresholds[AirQualities.Bad];
             const result =
                 airQualityUtils.getAirQualityFromGasProportionalValue(proportionalValue);
-            expect(result).toBe(AirQuality.Bad);
+            expect(result).toBe(AirQualities.Bad);
         });
     });
 
@@ -125,37 +125,37 @@ describe('airQualityUtils', () => {
             const readings: AirQualityReading[] = [
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: 15,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Regular,
+                    airQuality: AirQualities.Regular,
                     proportionalValue: 45,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Bad,
+                    airQuality: AirQualities.Bad,
                     proportionalValue: 80,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
             ];
 
             const mockGetAirQualityFromGasProportionalValue = vi
                 .spyOn(airQualityUtils, 'getAirQualityFromGasProportionalValue')
-                .mockReturnValue(AirQuality.Regular);
+                .mockReturnValue(AirQualities.Regular);
 
             const result = airQualityUtils.getAverageAirQualityFromAirQualityReadings(readings);
 
             expect(
                 mockGetAirQualityFromGasProportionalValue
             ).toHaveBeenCalledWith(46.666666666666664); // Average proportional value
-            expect(result).toBe(AirQuality.Regular);
+            expect(result).toBe(AirQualities.Regular);
 
             mockGetAirQualityFromGasProportionalValue.mockRestore();
         });
@@ -164,9 +164,9 @@ describe('airQualityUtils', () => {
             const readings: AirQualityReading[] = [
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: null,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
             ];
@@ -180,37 +180,37 @@ describe('airQualityUtils', () => {
             const readings: AirQualityReading[] = [
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     proportionalValue: 20,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Regular,
+                    airQuality: AirQualities.Regular,
                     proportionalValue: null,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
                 {
                     timestamp: new Date(),
-                    airQuality: AirQuality.Bad,
+                    airQuality: AirQualities.Bad,
                     proportionalValue: 60,
-                    worstGas: null,
+                    gas: null,
                     ppmValue: null,
                 },
             ];
 
             const mockGetAirQualityFromGasProportionalValue = vi
                 .spyOn(airQualityUtils, 'getAirQualityFromGasProportionalValue')
-                .mockReturnValue(AirQuality.Regular);
+                .mockReturnValue(AirQualities.Regular);
 
             const result = airQualityUtils.getAverageAirQualityFromAirQualityReadings(readings);
 
             expect(
                 mockGetAirQualityFromGasProportionalValue
             ).toHaveBeenCalledWith(40); // Average of 20 and 60
-            expect(result).toBe(AirQuality.Regular);
+            expect(result).toBe(AirQualities.Regular);
 
             mockGetAirQualityFromGasProportionalValue.mockRestore();
         });
@@ -286,19 +286,19 @@ describe('airQualityUtils', () => {
                 {
                     gas: AirGases.O3,
                     proportionalValue: 10,
-                    airQuality: AirQuality.Regular,
+                    airQuality: AirQualities.Regular,
                     ppmValue: 0.08,
                 },
                 {
                     gas: AirGases.CO,
                     proportionalValue: 40,
-                    airQuality: AirQuality.Bad,
+                    airQuality: AirQualities.Bad,
                     ppmValue: 13,
                 },
                 {
                     gas: AirGases.NO2,
                     proportionalValue: 25,
-                    airQuality: AirQuality.Good,
+                    airQuality: AirQualities.Good,
                     ppmValue: 0.05,
                 },
             ];
@@ -311,7 +311,7 @@ describe('airQualityUtils', () => {
                 {
                     gas: AirGases.CO,
                     proportionalValue: 40,
-                    airQuality: AirQuality.Bad,
+                    airQuality: AirQualities.Bad,
                     ppmValue: 13,
                 }
             )
@@ -321,7 +321,7 @@ describe('airQualityUtils', () => {
     describe('getAirQualityReadingFromGasesValues()', () => {
         it('should return an AirQualityReading with the worst gas', async () => {
             // Mock data
-            const gasesValues: GasesValues = { o3: 0.12, co: 0.2, no2: 0.06 };
+            const gasesValues: MeasurementGasesValues = { o3: 0.12, co: 0.2, no2: 0.06 };
             const timestamp = new Date();
 
             // Mocked return values for the utility functions
@@ -331,9 +331,9 @@ describe('airQualityUtils', () => {
                 [AirGases.NO2]: 40,
             };
             const mockAirQualities = {
-                [AirGases.O3]: AirQuality.Regular,
-                [AirGases.CO]: AirQuality.Bad,
-                [AirGases.NO2]: AirQuality.Good,
+                [AirGases.O3]: AirQualities.Regular,
+                [AirGases.CO]: AirQualities.Bad,
+                [AirGases.NO2]: AirQualities.Good,
             };
 
             // Spies for mocking the internal functions as async
@@ -362,8 +362,8 @@ describe('airQualityUtils', () => {
 
             // Assertions
             expect(result.timestamp).toBe(timestamp);
-            expect(result.worstGas).toBe(AirGases.CO); // CO should be the worst gas
-            expect(result.airQuality).toBe(AirQuality.Bad); // CO's air quality is Bad
+            expect(result.gas).toBe(AirGases.CO); // CO should be the worst gas
+            expect(result.airQuality).toBe(AirQualities.Bad); // CO's air quality is Bad
             expect(result.proportionalValue).toBe(
                 mockProportionalValues[AirGases.CO]
             );
