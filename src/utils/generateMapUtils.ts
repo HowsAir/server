@@ -1,37 +1,28 @@
-import fs from 'fs';
+/**
+ * @file generateMapUtils.test.ts
+ * @brief Utilities file for Map generation
+ * @author Manuel Borregales
+ */
 import {
     GasProportionalValueThresholds,
     GeolocatedAirQualityReading,
-    AirGases,
-    AirQualities,
 } from '../types/measurements/AirQuality';
 import { config } from 'dotenv';
 
 config();
 
-function getIntensity(airQuality: number): number {
-    if (airQuality <= GasProportionalValueThresholds.Good) {
-        return 0.3;
-    } else if (airQuality <= GasProportionalValueThresholds.Regular) {
-        return 0.6;
-    } else if (airQuality <= GasProportionalValueThresholds.Bad) {
-        return 1.0;
-    }
-    return 0.1;
-}
-
-function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
-    return data
-        .map((reading) => {
-            const intensity = getIntensity(reading.proportionalValue as number);
-            return `[${reading.latitude}, ${reading.longitude}, ${intensity}]`;
-        })
-        .join(',');
-}
-
+/**
+ * Generates a HTML file with a map displaying the air quality data and layers UI.
+ *
+ * GeoLocationAirQualityReading[] -> generateHTMLMap() -> string: HTML content
+ *
+ * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
+ * @returns {string} - The HTML content of the map.
+ */
 export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     const token = process.env.WAQI_API_KEY as string;
     const heatmapData = generateHeatmapData(data);
+    // It might be a good idea to
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -191,28 +182,67 @@ export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     return htmlContent;
 }
 
-// // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
-// const randomData: GeolocatedAirQualityReading[] = Array.from(
-//     { length: 50 },
-//     () => ({
-//         latitude: 39.4699 + (Math.random() - 0.5) * 0.05,
-//         longitude: -0.3763 + (Math.random() - 0.5) * 0.05,
-//         airQuality:
-//             Object.values(AirQualities)[
-//                 Math.floor(Math.random() * Object.values(AirQualities).length)
-//             ],
-//         // Asignar un valor aleatorio dentro de AirQualities
-//         proportionalValue: Math.random() * 100, // Valor proporcional aleatorio
-//         gas: Object.values(AirGases)[
-//             Math.floor(Math.random() * Object.values(AirGases).length)
-//         ] as AirGases, // Asignar gas aleatorio
-//         ppmValue: Math.random() * 1000, // Valor de ppm aleatorio
-//         timestamp: new Date(), // Timestamp actual
-//     })
-// );
+/**
+ *  Maps the data for the heatmap layer in the map.
+ *
+ * GeoLocationAirQualityReading[] -> generateHeatmapData() -> string: Heatmap data
+ *
+ * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
+ * @returns {string} - The data for the heatmap layer.
+ */
+function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
+    return data
+        .map((reading) => {
+            const intensity = getIntensity(reading.proportionalValue as number);
+            return `[${reading.latitude}, ${reading.longitude}, ${intensity}]`;
+        })
+        .join(',');
+}
 
-// function generateHTMLFile(content: string): void {
-//     fs.writeFileSync('heatmap.html', content);
-// }
+/**
+ * Returns the intensity of the air quality reading.
+ *
+ * number -> getIntensity() -> number: Intensity
+ *
+ * @param airQuality - The air quality value.
+ * @returns {number} - The intensity of the air quality reading.
+ */
+function getIntensity(airQuality: number): number {
+    if (airQuality <= GasProportionalValueThresholds.Good) {
+        return 0.3;
+    } else if (airQuality <= GasProportionalValueThresholds.Regular) {
+        return 0.6;
+    } else if (airQuality <= GasProportionalValueThresholds.Bad) {
+        return 1.0;
+    }
+    return 0.1;
+}
 
-// generateHTMLFile(generateHTMLMap(randomData));
+/* FUNCTIONS FOR TESTING PURPOSES
+
+// Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
+const randomData: GeolocatedAirQualityReading[] = Array.from(
+    { length: 50 },
+    () => ({
+        latitude: 39.4699 + (Math.random() - 0.5) * 0.05,
+        longitude: -0.3763 + (Math.random() - 0.5) * 0.05,
+        airQuality:
+            Object.values(AirQualities)[
+                Math.floor(Math.random() * Object.values(AirQualities).length)
+            ],
+        // Asignar un valor aleatorio dentro de AirQualities
+        proportionalValue: Math.random() * 100, // Valor proporcional aleatorio
+        gas: Object.values(AirGases)[
+            Math.floor(Math.random() * Object.values(AirGases).length)
+        ] as AirGases, // Asignar gas aleatorio
+        ppmValue: Math.random() * 1000, // Valor de ppm aleatorio
+        timestamp: new Date(), // Timestamp actual
+    })
+);
+
+function generateHTMLFile(content: string): void {
+    fs.writeFileSync('heatmap.html', content);
+}
+
+generateHTMLFile(generateHTMLMap(randomData));
+*/

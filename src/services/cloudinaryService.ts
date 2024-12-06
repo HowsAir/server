@@ -103,7 +103,7 @@ export const uploadMapToCloudinary = async (
  * @returns {Promise<boolean>} - A promise that resolves with a boolean indicating whether the "latest" map exists.
  * @throws {Error} - Throws an error if the verification of the latest file fails.
  */
-const checkIfLatestExists = async (
+export const checkIfLatestExists = async (
     latestMapPublicId: string
 ): Promise<boolean> => {
     try {
@@ -133,7 +133,7 @@ const checkIfLatestExists = async (
  * @returns {Promise<void>} - A promise that resolves when the archival process is complete.
  * @throws {Error} - Throws an error if renaming fails.
  */
-const archivePreviousMap = async (
+export const archivePreviousMap = async (
     previousMapPublicId: string
 ): Promise<void> => {
     const timestamp = new Date(Date.now() - frequencyInMinutes) // Current time minus 30 minutes
