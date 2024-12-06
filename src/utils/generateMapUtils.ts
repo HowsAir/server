@@ -29,7 +29,7 @@ function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
         .join(',');
 }
 
-function generateMap(data: GeolocatedAirQualityReading[]): string {
+export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     const token = process.env.WAQI_API_KEY as string;
     console.log('Token:', token);
     const heatmapData = generateHeatmapData(data);
@@ -189,32 +189,31 @@ function generateMap(data: GeolocatedAirQualityReading[]): string {
 </body>
 </html>`;
 
-    fs.writeFileSync('heatmap.html', htmlContent);
-
     return htmlContent;
 }
-// Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
-const randomData: GeolocatedAirQualityReading[] = Array.from(
-    { length: 50 },
-    () => ({
-        latitude: 39.4699 + (Math.random() - 0.5) * 0.05,
-        longitude: -0.3763 + (Math.random() - 0.5) * 0.05,
-        airQuality:
-            Object.values(AirQualities)[
-                Math.floor(Math.random() * Object.values(AirQualities).length)
-            ],
-        // Asignar un valor aleatorio dentro de AirQualities
-        proportionalValue: Math.random() * 100, // Valor proporcional aleatorio
-        gas: Object.values(AirGases)[
-            Math.floor(Math.random() * Object.values(AirGases).length)
-        ] as AirGases, // Asignar gas aleatorio
-        ppmValue: Math.random() * 1000, // Valor de ppm aleatorio
-        timestamp: new Date(), // Timestamp actual
-    })
-);
 
-function generateHTMLFile(content: string): void {
-    fs.writeFileSync('heatmap.html', content);
-}
+// // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
+// const randomData: GeolocatedAirQualityReading[] = Array.from(
+//     { length: 50 },
+//     () => ({
+//         latitude: 39.4699 + (Math.random() - 0.5) * 0.05,
+//         longitude: -0.3763 + (Math.random() - 0.5) * 0.05,
+//         airQuality:
+//             Object.values(AirQualities)[
+//                 Math.floor(Math.random() * Object.values(AirQualities).length)
+//             ],
+//         // Asignar un valor aleatorio dentro de AirQualities
+//         proportionalValue: Math.random() * 100, // Valor proporcional aleatorio
+//         gas: Object.values(AirGases)[
+//             Math.floor(Math.random() * Object.values(AirGases).length)
+//         ] as AirGases, // Asignar gas aleatorio
+//         ppmValue: Math.random() * 1000, // Valor de ppm aleatorio
+//         timestamp: new Date(), // Timestamp actual
+//     })
+// );
 
-generateHTMLFile(generateMap(randomData));
+// function generateHTMLFile(content: string): void {
+//     fs.writeFileSync('heatmap.html', content);
+// }
+
+// generateHTMLFile(generateHTMLMap(randomData));
