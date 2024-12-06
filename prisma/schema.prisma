@@ -16,9 +16,10 @@ model DailyStat {
   userId      Int
   date        DateTime
   activeHours Float
-  distance    Float
+  distance    Float    
   user        User     @relation(fields: [userId], references: [id])
 
+  @@index([userId, date])
   @@unique([userId, date])
   @@map("daily_stats")
 }
@@ -41,6 +42,7 @@ model User {
   stats    DailyStat[]
   passwordResetTokens  PasswordResetToken[]
 
+  @@index([email])
   @@map("users")
 }
 
@@ -60,7 +62,7 @@ model Node {
   user              User?     @relation("UserNode", fields: [userId], references: [id])
   measurements      Measurement[]
 
-  @@index([status])
+  @@index([userId])
   @@map("nodes")
 }
 
@@ -75,9 +77,7 @@ model Measurement {
   nodeId     Int
   node       Node      @relation(fields: [nodeId], references: [id])
 
-  @@index([timestamp])
   @@index([nodeId, timestamp])
-
   @@map("measurements")
 }
 
@@ -91,6 +91,15 @@ model PasswordResetToken {
 
   @@index([userId, timestamp])
   @@map("password_reset_tokens")
+}
+
+model HistoricAirQualityMap {
+  id         Int       @id @default(autoincrement())
+  timestamp  DateTime  @unique
+  url        String    @unique
+
+  @@index([timestamp])
+  @@map("historic_air_quality_maps")
 }
 
 enum NodeStatus {

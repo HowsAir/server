@@ -69,6 +69,12 @@ Table password_reset_tokens {
   user users [not null]
 }
 
+Table historic_air_quality_maps {
+  id Int [pk, increment]
+  timestamp DateTime [unique, not null]
+  url String [unique, not null]
+}
+
 Enum NodeStatus {
   ACTIVE
   INACTIVE
