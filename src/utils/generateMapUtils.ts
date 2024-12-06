@@ -1,4 +1,5 @@
 import fs from 'fs';
+import 'dotenv/config';
 
 import {
     GasProportionalValueThresholds,
@@ -28,6 +29,7 @@ function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
 }
 
 function generateMap(data: GeolocatedAirQualityReading[]): string {
+    const token = process.env.WAQI_API_KEY as string;
     const heatmapData = generateHeatmapData(data);
     const htmlContent = `
 <!DOCTYPE html>
@@ -123,18 +125,44 @@ function generateMap(data: GeolocatedAirQualityReading[]): string {
 
         idwLayer.addTo(map);
 
+        // Capa de estaciones oficiales (nuevo)
+        const estacionesOficiales = L.layerGroup();
+
+        // Fetching todas las estaciones de calidad del aire en Valencia
+        fetch('https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=${token}')
+        .then(response => response.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    // Iteramos sobre cada estación
+                    data.data.forEach(station => {
+                        const aqi = station.aqi; // AQI de la estación
+                        const latitude = station.lat; // Latitud
+                        const longitude = station.lon; // Longitud
+                        
+                        // Crear el marcador para cada estación
+                        const marker = L.marker([latitude, longitude])
+                            .addTo(estacionesOficiales)
+                            .bindPopup(\`Estación: \${station.station.name}<br> AQI: \${aqi}\`)
+                            .openPopup();
+                    });
+                } else {
+                    console.log("No se pudieron obtener los datos de las estaciones");
+                }
+            })
+            .catch(error => console.error('Error fetching WAQI data:', error));
+
         // Layers control with "Capas" title and additional layers
         const additionalLayers = {
             "<span class='disabled'>Ozono O3</span>": L.layerGroup(),
             "<span class='disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
             "<span class='disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
-            "<span class='disabled'>Estaciones oficiales</span>": L.layerGroup()
         };
 
         // Layers control added to the map
         L.control.layers(null, { 
             "Mapa de calidad general": idwLayer,
-            ...additionalLayers
+            ...additionalLayers, 
+            "Estaciones oficiales": estacionesOficiales
         }, { collapsed: false }).addTo(map);
 
         // Add legend
@@ -159,7 +187,6 @@ function generateMap(data: GeolocatedAirQualityReading[]): string {
 
     return htmlContent;
 }
-
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
     { length: 50 },
