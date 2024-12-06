@@ -1,37 +1,34 @@
 import fs from 'fs';
 
-function generateMap(
-    data: { lat: number; lon: number; airQuality: number }[]
-): string {
-    const thresholds = {
-        good: { min: 0, max: 80, color: 'green' },
-        regular: { min: 80, max: 90, color: 'yellow' },
-        bad: { min: 90, max: 100, color: 'red' },
-    };
+import {
+    GasProportionalValueThresholds,
+    GeolocatedAirQualityReading,
+    AirGases,
+    AirQualities,
+} from '../types/measurements/AirQuality';
 
-    const heatmapData = data
-        .map(({ lat, lon, airQuality }) => {
-            let intensity = 0.1;
-            if (
-                airQuality >= thresholds.good.min &&
-                airQuality <= thresholds.good.max
-            ) {
-                intensity = 0.3;
-            } else if (
-                airQuality > thresholds.regular.min &&
-                airQuality <= thresholds.regular.max
-            ) {
-                intensity = 0.6;
-            } else if (
-                airQuality > thresholds.bad.min &&
-                airQuality <= thresholds.bad.max
-            ) {
-                intensity = 1.0;
-            }
-            return `[${lat}, ${lon}, ${intensity}]`;
+function getIntensity(airQuality: number): number {
+    if (airQuality <= GasProportionalValueThresholds.Good) {
+        return 0.3;
+    } else if (airQuality <= GasProportionalValueThresholds.Regular) {
+        return 0.6;
+    } else if (airQuality <= GasProportionalValueThresholds.Bad) {
+        return 1.0;
+    }
+    return 0.1;
+}
+
+function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
+    return data
+        .map((reading) => {
+            const intensity = getIntensity(reading.proportionalValue as number);
+            return `[${reading.latitude}, ${reading.longitude}, ${intensity}]`;
         })
         .join(',');
+}
 
+function generateMap(data: GeolocatedAirQualityReading[]): string {
+    const heatmapData = generateHeatmapData(data);
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -81,19 +78,19 @@ function generateMap(
 <body>
     <div id="map"></div>
     <script>
-        const map = L.map('map').setView([39.4699, -0.3763], 16);
+        const map = L.map('map').setView([39.4699, -0.3763], 15);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
             subdomains: 'abcd',
-            minZoom: 15,
+            minZoom: 14,
             maxZoom: 19
         }).addTo(map);
 
         const idwLayer = L.idwLayer(
             [${heatmapData}], // Normalizar intensidad entre 0 y 1
             {
-                opacity: 0.5,          // Ajustar opacidad
+                opacity: 0.4,          // Ajustar opacidad
                 cellSize: 6,          // Tamaño de celda (ajusta según detalle)
                 exp: 2,                // Exponente para ponderación (2 es estándar para IDW)
                 max: 1,                // Máximo valor (intensidad normalizada)
@@ -105,33 +102,25 @@ function generateMap(
             }
         );
 
-        // Función para ajustar dinámicamente el tamaño de celda según el nivel de zoom
+        map.on('zoomend', updateCellSize);
+
         function updateCellSize() {
             const zoom = map.getZoom();
             let newCellSize;
 
             if (zoom < 16) {
-                newCellSize = 8;
+                newCellSize = 6;
             } else if (zoom >= 16 && zoom < 18) {
-                newCellSize = 10; //
+                newCellSize = 10; 
             } else if (zoom >= 18) {
-                newCellSize = 30;
+                newCellSize = 25; // Ajuste de tamaño de celda a medida que el zoom es más alto
             }
 
-            console.log('Zoom level', zoom, ' New cell size:', newCellSize);
-
-            // Actualizar el tamaño de celda en la capa IDW
+            // Actualiza las opciones del layer de IDW con el nuevo tamaño de celda
             idwLayer.setOptions({ cellSize: newCellSize });
             idwLayer.redraw();
         }
 
-        // Escuchar el evento de zoom y actualizar el tamaño de celda
-        map.on('zoomend', updateCellSize);
-
-        // Llamar a la función inicial para establecer el tamaño de celda correcto
-        updateCellSize();
-
-        // Agrega la capa al mapa
         idwLayer.addTo(map);
 
         // Layers control with "Capas" title and additional layers
@@ -171,11 +160,28 @@ function generateMap(
     return htmlContent;
 }
 
-// Example usage
-const randomData = Array.from({ length: 50 }, () => ({
-    lat: 39.4699 + (Math.random() - 0.5) * 0.05,
-    lon: -0.3763 + (Math.random() - 0.5) * 0.05,
-    airQuality: Math.floor(Math.random() * 101),
-}));
+// Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
+const randomData: GeolocatedAirQualityReading[] = Array.from(
+    { length: 50 },
+    () => ({
+        latitude: 39.4699 + (Math.random() - 0.5) * 0.05,
+        longitude: -0.3763 + (Math.random() - 0.5) * 0.05,
+        airQuality:
+            Object.values(AirQualities)[
+                Math.floor(Math.random() * Object.values(AirQualities).length)
+            ],
+        // Asignar un valor aleatorio dentro de AirQualities
+        proportionalValue: Math.random() * 100, // Valor proporcional aleatorio
+        gas: Object.values(AirGases)[
+            Math.floor(Math.random() * Object.values(AirGases).length)
+        ] as AirGases, // Asignar gas aleatorio
+        ppmValue: Math.random() * 1000, // Valor de ppm aleatorio
+        timestamp: new Date(), // Timestamp actual
+    })
+);
 
-generateMap(randomData);
+function generateHTMLFile(content: string): void {
+    fs.writeFileSync('heatmap.html', content);
+}
+
+generateHTMLFile(generateMap(randomData));
