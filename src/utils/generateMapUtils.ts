@@ -8,6 +8,8 @@ import {
     GeolocatedAirQualityReading,
 } from '../types/measurements/AirQuality';
 import { config } from 'dotenv';
+import fs from 'fs';
+import { AirQualities, AirGases } from '../types/measurements/AirQuality';
 
 config();
 
@@ -33,7 +35,7 @@ export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat"></script>
-    <script src="src/libs/leaflet_plugins/leaflet-idw.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw/src/leaflet-idw.js"></script>
     <style>
         #map {
             height: 100vh;
@@ -218,7 +220,7 @@ function getIntensity(airQuality: number): number {
     return 0.1;
 }
 
-/* FUNCTIONS FOR TESTING PURPOSES
+// /* FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
@@ -245,4 +247,4 @@ function generateHTMLFile(content: string): void {
 }
 
 generateHTMLFile(generateHTMLMap(randomData));
-*/
+// */
