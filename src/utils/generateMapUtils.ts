@@ -220,7 +220,7 @@ function getIntensity(airQuality: number): number {
     return 0.1;
 }
 
-// /* FUNCTIONS FOR TESTING PURPOSES
+/* FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
