@@ -112,7 +112,7 @@ export const checkIfLatestExists = async (
         });
         return true;
     } catch (error) {
-        if ((error as any).http_code === 404) {
+        if ((error as any).error.http_code === 404) {
             console.log(
                 "'Latest' map does not exist in Cloudinary. Proceeding with upload."
             );
