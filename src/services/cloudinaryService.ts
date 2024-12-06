@@ -6,6 +6,7 @@
 
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryFolders } from '../types/users/CloudinaryFolders';
+import { frequencyInMinutes } from '../cron/jobs/airQualityMapJob';
 
 /**
  * Uploads an image file to Cloudinary and stores it in the specified folder. Returns the URL of the uploaded image.
@@ -71,32 +72,11 @@ export const uploadMapToCloudinary = async (
 ): Promise<string> => {
     const latestMapPublicId = `${folder}/latest`;
 
-    let latestExists = false; // Flag para comprobar si el mapa "latest" existe
+    const latestExists = await checkIfLatestExists(latestMapPublicId);
 
-    try {
-        // Comprobar si "latest" existe en Cloudinary
-        const resource = await cloudinary.api.resource(latestMapPublicId, {
-            resource_type: 'raw', // Asegurarse de que el tipo de recurso es "raw"
-        });
-        console.log('Recurso encontrado:', resource);
-        latestExists = true; // Si encontramos el recurso, lo marcamos como existente
-    } catch (error) {
-        // Si el error es 404, ignoramos y seguimos
-        if ((error as any).http_code === 404) {
-            console.log("El archivo 'latest' no existe, se creará uno nuevo.");
-            latestExists = false; // No existe, debemos proceder con la subida del nuevo archivo
-        } else {
-            // Si el error no es 404, lo lanzamos
-            console.error('Error al comprobar recurso:', error);
-            throw error;
-        }
-    }
-
-    // Si el archivo "latest" existe, lo archivamos
     if (latestExists) {
         await archivePreviousMap(latestMapPublicId);
     }
-    console.log('Found existing map:', latestExists);
 
     // Convert the HTML content into a Base64-encoded string
     const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
@@ -115,31 +95,32 @@ export const uploadMapToCloudinary = async (
 };
 
 /**
- * Finds the existing "latest" map file in the Cloudinary folder.
+ * Verifies if latest map does exist in Cloudinary. If it does, it returns true. If it doesn't, it returns false.
  *
- * @param folder - The Cloudinary folder to search for the "latest" map.
- * @returns {Promise<{ public_id: string } | null>} - The existing map's public_id or null if not found.
+ * string: latestMapPublicId -> checkIfLatestExists() -> Promise<boolean>
+ *
+ * @param latestMapPublicId - The public ID of the "latest" map in Cloudinary..
+ * @returns {Promise<boolean>} - A promise that resolves with a boolean indicating whether the "latest" map exists.
+ * @throws {Error} - Throws an error if the verification of the latest file fails.
  */
-const findExistingLatestMap = async (
-    folder: CloudinaryFolders
-): Promise<{ public_id: string } | null> => {
+const checkIfLatestExists = async (
+    latestMapPublicId: string
+): Promise<boolean> => {
     try {
-        const response = await cloudinary.api.resources({
-            type: 'upload',
-            prefix: folder,
+        const resource = await cloudinary.api.resource(latestMapPublicId, {
             resource_type: 'raw',
-            max_results: 10, // Limit the number of results returned
         });
-
-        // Search for the map with the public_id "latest"
-        const existingMap = response.resources.find(
-            (resource: { public_id: string }) => resource.public_id === 'latest'
-        );
-
-        return existingMap || null;
+        return true;
     } catch (error) {
-        console.error('Error checking for existing map:', error);
-        return null;
+        if ((error as any).http_code === 404) {
+            console.log(
+                "'Latest' map does not exist in Cloudinary. Proceeding with upload."
+            );
+            return false;
+        } else {
+            console.error('Error checking resource: ', error);
+            throw error;
+        }
     }
 };
 
@@ -155,7 +136,7 @@ const findExistingLatestMap = async (
 const archivePreviousMap = async (
     previousMapPublicId: string
 ): Promise<void> => {
-    const timestamp = new Date(Date.now() - 15 * 60 * 1000) // Current time minus 15 minutes
+    const timestamp = new Date(Date.now() - frequencyInMinutes) // Current time minus 30 minutes
         .toISOString()
         .replace(/:/g, '-'); // Replace colons for Cloudinary naming compatibility
 

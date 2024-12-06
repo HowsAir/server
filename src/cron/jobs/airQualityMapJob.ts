@@ -10,7 +10,7 @@ import { generateHTMLMap } from '../../utils/generateMapUtils';
 import { uploadMapToCloudinary } from '../../services/cloudinaryService';
 import { CloudinaryFolders } from '../../types/users/CloudinaryFolders';
 
-const frequencyInMinutes = 1;
+export const frequencyInMinutes = 30;
 const pattern = `*/${frequencyInMinutes} * * * *`;
 const name = 'generateAirQualityMapJob';
 
@@ -58,6 +58,7 @@ const generateAirQualityMap = async (): Promise<void> => {
     };
 
     try {
+        // 1. Get geolocated air quality readings
         const geolocatedAirQualityReadings =
             await measurementsService.getGeolocatedAirQualityReadingsInRange(
                 timeRange
