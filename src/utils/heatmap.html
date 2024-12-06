@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat"></script>
+    <script src="../libs/leaflet_plugins/leaflet-idw.js"></script>
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .leaflet-control-layers .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 1.5em;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .legend-title {
+            font-weight: bold;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        .legend-item .color-box {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        const map = L.map('map').setView([39.4699, -0.3763], 14);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        const idwLayer = L.idwLayer(
+            [[39.4782739135496, -0.3605377112665964, 0.3],[39.449595730025536, -0.354401212431371, 0.3],[39.48949239308318, -0.37432723300129067, 0.3],[39.45059580896413, -0.35943531018779296, 0.3],[39.464938662617165, -0.3781311972451617, 0.3],[39.469023930946086, -0.39142191135767307, 0.3],[39.44900305486928, -0.35770933184244513, 0.3],[39.4935989400078, -0.35190281471635343, 0.3],[39.44578347927324, -0.36964796426727164, 0.3],[39.47468618278168, -0.3702196585651706, 0.3],[39.44726686012105, -0.36741226763301, 0.3],[39.484308183961275, -0.3598748233704936, 0.3],[39.472661971606335, -0.37035969541353114, 0.3],[39.462277342545335, -0.38258893052681864, 0.3],[39.44913914496085, -0.384869970485299, 1],[39.473324645821435, -0.3690299511808593, 0.3],[39.49320834933524, -0.3654575273224366, 0.3],[39.47285616641534, -0.36111333799399264, 0.3],[39.451952451193584, -0.3543574633320448, 0.3],[39.45480882536419, -0.36047337439897204, 1],[39.469261415650486, -0.3798692695595272, 0.3],[39.460366826811054, -0.3581830694452327, 0.3],[39.445483427106744, -0.3632619262072611, 0.3],[39.483452572808105, -0.3972754899255489, 0.3],[39.449034335291444, -0.3890864690789319, 0.3],[39.48407993708781, -0.37471111241461225, 0.3],[39.4611677814546, -0.3923974953101475, 0.3],[39.48862687822982, -0.3882275055604727, 0.3],[39.44930295693868, -0.3714864525012098, 1],[39.46631272429957, -0.3654171444494397, 0.3],[39.4879773671312, -0.3727002263829236, 0.3],[39.46896083548724, -0.37581287342096464, 0.3],[39.460022077084034, -0.3867163631351883, 0.3],[39.461823105650666, -0.3823075948306362, 0.3],[39.485029215360576, -0.3952754464658411, 0.3],[39.44811675657152, -0.3775381772091668, 0.3],[39.47986415964352, -0.38623659713529246, 0.3],[39.46154309853331, -0.3597145244444767, 0.3],[39.48969515140789, -0.37391255327666145, 0.3],[39.49338585324841, -0.36314843714911205, 0.3],[39.475245695781, -0.3722626094798044, 0.3],[39.45549875813092, -0.36197568756426546, 0.3],[39.468893876640365, -0.3887273476257516, 0.3],[39.463951720704884, -0.3681680971582903, 0.3],[39.447562375080615, -0.35301186203109747, 0.3],[39.47074495402214, -0.36440109176605723, 1],[39.4680501353623, -0.35892345001987436, 0.3],[39.4890900029954, -0.37088311191890977, 0.3],[39.461157946720604, -0.37081052655914853, 0.3],[39.44829115622264, -0.355493300470498, 0.3],[39.469804798139606, -0.38663748745258664, 0.3],[39.49443442077185, -0.3825009755703538, 0.3],[39.46669471808961, -0.3866951706388374, 0.3],[39.448730035292236, -0.3929560878216493, 0.3],[39.48283738938543, -0.37756918814567375, 0.3],[39.46196606911797, -0.3654426471699762, 0.3],[39.49250694825775, -0.3979855038621412, 0.3],[39.47348211142452, -0.36755203383132934, 0.3],[39.44720747874062, -0.38728460344822985, 0.6],[39.4549574171388, -0.3579411852178334, 0.3],[39.47614191662462, -0.38955256702391716, 0.3],[39.465916492154506, -0.3982217212133865, 0.3],[39.49227481622647, -0.3525804461231551, 0.3],[39.48907408979127, -0.37944224429167583, 0.3],[39.49479049249878, -0.39783610802021285, 0.3],[39.461414676363205, -0.3576105217446947, 0.3],[39.49041239088716, -0.3770750003711758, 0.3],[39.455562781321994, -0.3551521749242746, 1],[39.48393587376971, -0.36218648456845437, 0.6],[39.48805645070272, -0.39024102566207575, 0.3],[39.4873722425241, -0.39930432368927526, 0.3],[39.46823226975214, -0.3600692167048606, 0.3],[39.47118048757635, -0.3952981883622271, 0.3],[39.450988034033024, -0.363943514590184, 0.3],[39.48976785962352, -0.40007363442843613, 0.3],[39.48467069092518, -0.3798099934581671, 0.3],[39.46584941792818, -0.4000817976496335, 0.6],[39.48226025859711, -0.36470026284645035, 0.3],[39.472077584797425, -0.35870525434761835, 0.3],[39.44536172168435, -0.378544289830502, 0.3],[39.47209679718995, -0.3857740371421538, 0.3],[39.45054698693682, -0.4008257884446931, 0.3],[39.46194669353165, -0.3686918233105483, 0.3],[39.4654865494217, -0.36470280918833514, 0.3],[39.49283846294521, -0.4012400868402866, 0.3],[39.450297801198055, -0.37271014284887466, 0.3],[39.482638606640826, -0.3645832011982434, 0.3],[39.44705178023254, -0.39007932234218506, 0.3],[39.46674244430444, -0.35888043565378, 0.3],[39.49473798245504, -0.3765069037248644, 0.3],[39.48086400010688, -0.38199433628656765, 0.3],[39.45217705083682, -0.3746023143395889, 0.3],[39.460640671281276, -0.3957596529153307, 0.3],[39.468107098481624, -0.3904968898197898, 0.3],[39.452226253592585, -0.39118315818557803, 0.3],[39.48348032420057, -0.3543749883365116, 0.3],[39.49308040644928, -0.3876716279719517, 0.6],[39.49429298821873, -0.39155339990300636, 0.3],[39.479710327262666, -0.3842279442084844, 0.3],[39.49423884657129, -0.381054317255949, 0.3]], // Normalizar intensidad entre 0 y 1
+            {
+                opacity: 0.5,          // Ajustar opacidad
+                cellSize: 10,          // Tamaño de celda (ajusta según detalle)
+                exp: 2,                // Exponente para ponderación (2 es estándar para IDW)
+                max: 1,                // Máximo valor (intensidad normalizada)
+                gradient: {            // Gradiente de colores
+                    0.3: 'green',
+                    0.6: 'yellow',
+                    1.0: 'red'
+                }
+            }
+        );
+
+        // Función para ajustar dinámicamente el tamaño de celda según el nivel de zoom
+        function updateCellSize() {
+            const zoom = map.getZoom();
+            let newCellSize;
+
+            if (zoom >= 14) {
+                newCellSize = 6; // Detalle intermedio
+            } else if (zoom >= 12) {
+                newCellSize = 10; // Detalle intermedio
+            } else if (zoom >= 10) {
+                newCellSize = 12; // Vista general
+            } else {
+                newCellSize = 15; // Muy alejado
+            }
+            console.log('Zoom level', zoom, ' New cell size:', newCellSize);
+
+            // Actualizar el tamaño de celda en la capa IDW
+            idwLayer.setOptions({ cellSize: newCellSize });
+            idwLayer.redraw();
+        }
+
+        // Escuchar el evento de zoom y actualizar el tamaño de celda
+        map.on('zoomend', updateCellSize);
+
+        // Llamar a la función inicial para establecer el tamaño de celda correcto
+        updateCellSize();
+
+        // Agrega la capa al mapa
+        idwLayer.addTo(map);
+
+        // Layers control with "Capas" title and additional layers
+        const additionalLayers = {
+            "<span class='disabled'>Ozono O3</span>": L.layerGroup(),
+            "<span class='disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
+            "<span class='disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
+            "<span class='disabled'>Estaciones oficiales</span>": L.layerGroup()
+        };
+
+        // Layers control added to the map
+        L.control.layers(null, { 
+            "Mapa de calidad general": idwLayer,
+            ...additionalLayers
+        }, { collapsed: false }).addTo(map);
+
+        // Add legend
+        const legend = L.control({ position: 'bottomleft' });
+        legend.onAdd = function () {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <div class="legend-title">Leyenda</div>
+                <div class="legend-item"><div class="color-box" style="background: green;"></div>Bueno</div>
+                <div class="legend-item"><div class="color-box" style="background: yellow;"></div>Regular</div>
+                <div class="legend-item"><div class="color-box" style="background: red;"></div>Malo</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+    </script>
+</body>
+</html>

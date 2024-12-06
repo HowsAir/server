@@ -42,6 +42,7 @@ function generateMap(
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat"></script>
+    <script src="../libs/leaflet_plugins/leaflet-idw.js"></script>
     <style>
         #map {
             height: 100vh;
@@ -80,7 +81,7 @@ function generateMap(
 <body>
     <div id="map"></div>
     <script>
-        const map = L.map('map').setView([39.4699, -0.3763], 13);
+        const map = L.map('map').setView([39.4699, -0.3763], 14);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
@@ -88,23 +89,50 @@ function generateMap(
             maxZoom: 19
         }).addTo(map);
 
-        const heatLayer = L.heatLayer([${heatmapData}], {
-            radius: 20,
-            blur: 10,
-            maxZoom: 17,
-            max: 1.0,
-            minOpacity: 0.3,
-            gradient: {
-              0.3: 'green',
-              0.6: 'yellow',
-              0.9: 'red'
+        const idwLayer = L.idwLayer(
+            [${heatmapData}], // Normalizar intensidad entre 0 y 1
+            {
+                opacity: 0.5,          // Ajustar opacidad
+                cellSize: 10,          // Tamaño de celda (ajusta según detalle)
+                exp: 2,                // Exponente para ponderación (2 es estándar para IDW)
+                max: 1,                // Máximo valor (intensidad normalizada)
+                gradient: {            // Gradiente de colores
+                    0.3: 'green',
+                    0.6: 'yellow',
+                    1.0: 'red'
+                }
             }
-        });
+        );
 
-        // // Add the heatmap layer to the map
-        // const layersControl = {
-        //     "<b>Mapa de calidad general</b>": heatLayer
-        // };
+        // Función para ajustar dinámicamente el tamaño de celda según el nivel de zoom
+        function updateCellSize() {
+            const zoom = map.getZoom();
+            let newCellSize;
+
+            if (zoom >= 14) {
+                newCellSize = 6; // Detalle intermedio
+            } else if (zoom >= 12) {
+                newCellSize = 10; // Detalle intermedio
+            } else if (zoom >= 10) {
+                newCellSize = 12; // Vista general
+            } else {
+                newCellSize = 15; // Muy alejado
+            }
+            console.log('Zoom level', zoom, ' New cell size:', newCellSize);
+
+            // Actualizar el tamaño de celda en la capa IDW
+            idwLayer.setOptions({ cellSize: newCellSize });
+            idwLayer.redraw();
+        }
+
+        // Escuchar el evento de zoom y actualizar el tamaño de celda
+        map.on('zoomend', updateCellSize);
+
+        // Llamar a la función inicial para establecer el tamaño de celda correcto
+        updateCellSize();
+
+        // Agrega la capa al mapa
+        idwLayer.addTo(map);
 
         // Layers control with "Capas" title and additional layers
         const additionalLayers = {
@@ -116,7 +144,7 @@ function generateMap(
 
         // Layers control added to the map
         L.control.layers(null, { 
-            "Mapa de calidad general": heatLayer,
+            "Mapa de calidad general": idwLayer,
             ...additionalLayers
         }, { collapsed: false }).addTo(map);
 
@@ -134,7 +162,6 @@ function generateMap(
         };
         legend.addTo(map);
 
-        heatLayer.addTo(map);
     </script>
 </body>
 </html>`;
