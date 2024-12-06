@@ -83,12 +83,26 @@ async function main() {
                     timestamp.setHours(hour, Math.floor(Math.random() * 60)); // Random minutes
 
                     // Helper function to generate values with required precision and probability
-                    function generateValue(max: number, threshold: number, extra: number, min?: number): number {
-                        let value = parseFloat((Math.random() * max).toFixed(3));
-                        if (min !== undefined && Math.random() < 0.7) { // 70% probability to get values below min
-                            value = parseFloat((Math.random() * min).toFixed(3));
+                    function generateValue(
+                        max: number,
+                        threshold: number,
+                        extra: number,
+                        min?: number
+                    ): number {
+                        let value = parseFloat(
+                            (Math.random() * max).toFixed(3)
+                        );
+                        if (min !== undefined && Math.random() < 0.7) {
+                            // 70% probability to get values below min
+                            value = parseFloat(
+                                (Math.random() * min).toFixed(3)
+                            );
                         }
-                        return value > threshold ? parseFloat((value + Math.random() * extra).toFixed(3)) : value;
+                        return value > threshold
+                            ? parseFloat(
+                                  (value + Math.random() * extra).toFixed(3)
+                              )
+                            : value;
                     }
 
                     const coValue = generateValue(13, 12, 9, 9);
@@ -163,6 +177,24 @@ async function main() {
             data: dailyStats,
         });
     }
+    
+    // Create some historic air quality maps
+    const historicMaps: any[] = [];
+    for (let i = 1; i <= 5; i++) {
+        const timestamp = new Date();
+        timestamp.setHours(Math.floor(Math.random() * 24)); // Random hour
+        timestamp.setMinutes(Math.floor(Math.random() * 60)); // Random minute
+        const mapUrl = `https://cloudinary.com/maps/air-quality-map-${timestamp.toISOString()}`;
+        historicMaps.push({
+            url: mapUrl,
+            timestamp,
+        });
+    }
+
+    // Save the historic maps to the database
+    await prisma.historicAirQualityMap.createMany({
+        data: historicMaps,
+    });
 
     console.log(
         'Seed data created successfully with users, nodes, measurements, and daily stats.'
