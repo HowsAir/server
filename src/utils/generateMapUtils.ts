@@ -1,12 +1,13 @@
 import fs from 'fs';
-import 'dotenv/config';
-
 import {
     GasProportionalValueThresholds,
     GeolocatedAirQualityReading,
     AirGases,
     AirQualities,
 } from '../types/measurements/AirQuality';
+import { config } from 'dotenv';
+
+config();
 
 function getIntensity(airQuality: number): number {
     if (airQuality <= GasProportionalValueThresholds.Good) {
@@ -30,6 +31,7 @@ function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
 
 function generateMap(data: GeolocatedAirQualityReading[]): string {
     const token = process.env.WAQI_API_KEY as string;
+    console.log('Token:', token);
     const heatmapData = generateHeatmapData(data);
     const htmlContent = `
 <!DOCTYPE html>
@@ -41,7 +43,7 @@ function generateMap(data: GeolocatedAirQualityReading[]): string {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat"></script>
-    <script src="../libs/leaflet_plugins/leaflet-idw.js"></script>
+    <script src="src/libs/leaflet_plugins/leaflet-idw.js"></script>
     <style>
         #map {
             height: 100vh;
@@ -128,8 +130,10 @@ function generateMap(data: GeolocatedAirQualityReading[]): string {
         // Capa de estaciones oficiales (nuevo)
         const estacionesOficiales = L.layerGroup();
 
-        // Fetching todas las estaciones de calidad del aire en Valencia
-        fetch('https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=${token}')
+        const token = "${token}"; // Aquí se inserta el token
+        console.log('Token in client:', token);
+
+        fetch(\`https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=\${token}\`)
         .then(response => response.json())
             .then(data => {
                 if (data.status === "ok") {
@@ -157,6 +161,8 @@ function generateMap(data: GeolocatedAirQualityReading[]): string {
             "<span class='disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
             "<span class='disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
         };
+
+        estacionesOficiales.addTo(map);
 
         // Layers control added to the map
         L.control.layers(null, { 
