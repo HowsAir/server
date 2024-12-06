@@ -8,7 +8,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { dailyStatsService } from '../../src/services/dailyStatsService';
 import { measurementsService } from '../../src/services/measurementsService';
 import prisma from '../../src/libs/prisma';
-import { mock } from 'node:test';
 
 vi.mock('../../src/libs/prisma');
 vi.mock('../../src/services/measurementsService');
