@@ -10,7 +10,7 @@ import { generateHTMLMap } from '../../utils/generateMapUtils';
 import { uploadMapToCloudinary } from '../../services/cloudinaryService';
 import { CloudinaryFolders } from '../../types/users/CloudinaryFolders';
 
-const frequencyInMinutes = 30;
+const frequencyInMinutes = 1;
 const pattern = `*/${frequencyInMinutes} * * * *`;
 const name = 'generateAirQualityMapJob';
 

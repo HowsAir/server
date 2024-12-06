@@ -69,13 +69,34 @@ export const uploadMapToCloudinary = async (
     htmlContent: string,
     folder: CloudinaryFolders
 ): Promise<string> => {
-    // Check if there is already a "latest" map
-    const existingMap = await findExistingLatestMap(folder);
+    const latestMapPublicId = `${folder}/latest`;
 
-    // If there is an existing "latest" map, archive it
-    if (existingMap) {
-        await archivePreviousMap(existingMap.public_id);
+    let latestExists = false; // Flag para comprobar si el mapa "latest" existe
+
+    try {
+        // Comprobar si "latest" existe en Cloudinary
+        const resource = await cloudinary.api.resource(latestMapPublicId, {
+            resource_type: 'raw', // Asegurarse de que el tipo de recurso es "raw"
+        });
+        console.log('Recurso encontrado:', resource);
+        latestExists = true; // Si encontramos el recurso, lo marcamos como existente
+    } catch (error) {
+        // Si el error es 404, ignoramos y seguimos
+        if ((error as any).http_code === 404) {
+            console.log("El archivo 'latest' no existe, se creará uno nuevo.");
+            latestExists = false; // No existe, debemos proceder con la subida del nuevo archivo
+        } else {
+            // Si el error no es 404, lo lanzamos
+            console.error('Error al comprobar recurso:', error);
+            throw error;
+        }
     }
+
+    // Si el archivo "latest" existe, lo archivamos
+    if (latestExists) {
+        await archivePreviousMap(latestMapPublicId);
+    }
+    console.log('Found existing map:', latestExists);
 
     // Convert the HTML content into a Base64-encoded string
     const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
@@ -139,7 +160,6 @@ const archivePreviousMap = async (
         .replace(/:/g, '-'); // Replace colons for Cloudinary naming compatibility
 
     const newPublicId = `${timestamp}`;
-
     // Rename the existing "latest" map
     await cloudinary.uploader.rename(previousMapPublicId, newPublicId, {
         resource_type: 'raw', // Ensure correct resource type for non-image files

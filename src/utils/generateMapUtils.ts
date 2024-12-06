@@ -31,7 +31,6 @@ function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
 
 export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     const token = process.env.WAQI_API_KEY as string;
-    console.log('Token:', token);
     const heatmapData = generateHeatmapData(data);
     const htmlContent = `
 <!DOCTYPE html>
