@@ -4,9 +4,9 @@ function generateMap(
     data: { lat: number; lon: number; airQuality: number }[]
 ): string {
     const thresholds = {
-        good: { min: 0, max: 90, color: 'green' },
-        regular: { min: 90, max: 95, color: 'yellow' },
-        bad: { min: 95, max: 100, color: 'red' },
+        good: { min: 0, max: 80, color: 'green' },
+        regular: { min: 80, max: 90, color: 'yellow' },
+        bad: { min: 90, max: 100, color: 'red' },
     };
 
     const heatmapData = data
@@ -81,11 +81,12 @@ function generateMap(
 <body>
     <div id="map"></div>
     <script>
-        const map = L.map('map').setView([39.4699, -0.3763], 14);
+        const map = L.map('map').setView([39.4699, -0.3763], 16);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
             subdomains: 'abcd',
+            minZoom: 15,
             maxZoom: 19
         }).addTo(map);
 
@@ -93,7 +94,7 @@ function generateMap(
             [${heatmapData}], // Normalizar intensidad entre 0 y 1
             {
                 opacity: 0.5,          // Ajustar opacidad
-                cellSize: 10,          // Tamaño de celda (ajusta según detalle)
+                cellSize: 6,          // Tamaño de celda (ajusta según detalle)
                 exp: 2,                // Exponente para ponderación (2 es estándar para IDW)
                 max: 1,                // Máximo valor (intensidad normalizada)
                 gradient: {            // Gradiente de colores
@@ -109,15 +110,14 @@ function generateMap(
             const zoom = map.getZoom();
             let newCellSize;
 
-            if (zoom >= 14) {
-                newCellSize = 6; // Detalle intermedio
-            } else if (zoom >= 12) {
-                newCellSize = 10; // Detalle intermedio
-            } else if (zoom >= 10) {
-                newCellSize = 12; // Vista general
-            } else {
-                newCellSize = 15; // Muy alejado
+            if (zoom < 16) {
+                newCellSize = 8;
+            } else if (zoom >= 16 && zoom < 18) {
+                newCellSize = 10; //
+            } else if (zoom >= 18) {
+                newCellSize = 30;
             }
+
             console.log('Zoom level', zoom, ' New cell size:', newCellSize);
 
             // Actualizar el tamaño de celda en la capa IDW
@@ -172,7 +172,7 @@ function generateMap(
 }
 
 // Example usage
-const randomData = Array.from({ length: 100 }, () => ({
+const randomData = Array.from({ length: 50 }, () => ({
     lat: 39.4699 + (Math.random() - 0.5) * 0.05,
     lon: -0.3763 + (Math.random() - 0.5) * 0.05,
     airQuality: Math.floor(Math.random() * 101),
