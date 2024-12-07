@@ -64,3 +64,14 @@ export interface GeolocatedAirQualityReading extends AirQualityReading {
     latitude: number;
     longitude: number;
 }
+
+/**
+ * 
+ * This corresponds to a set of air quality readings 
+ * and the overall air quality for the set of readings.
+ * 
+ */
+export interface AirQualityReadingsInfo {
+    airQualityReadings: AirQualityReading[];
+    overallAirQuality: AirQualities | null;
+}

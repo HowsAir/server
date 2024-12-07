@@ -9,6 +9,7 @@ import prisma from '../libs/prisma';
 import { DashboardData } from '../types/measurements/DashboardData';
 import {
     AirQualityReading,
+    AirQualityReadingsInfo,
     GeolocatedAirQualityReading,
     MeasurementGasesValues,
 } from '../types/measurements/AirQuality';
@@ -17,6 +18,7 @@ import {
     MAX_PERMITTED_SPEED_MPS,
 } from '../types/measurements/Distance';
 import { airQualityUtils } from '../utils/airQualityUtils';
+import cacheService from './cacheService';
 
 /**
  * Saves a new measurement in the database
@@ -285,7 +287,8 @@ export const getUserAirQualityReadingsInRange = async (
 
 /**
  * Retrieves the dashboard data for a given user, including air quality information and traveled distance.
- *
+ * We use caching to store the air quality readings info for 15 minutes.
+ * 
  * { userId } -> getDashboardData() -> Promise<DashboardData | null>
  *
  * @param userId - The ID of the user whose dashboard data is to be retrieved.
@@ -316,29 +319,45 @@ const getDashboardData = async (
     const todayTotalDistance =
         await measurementsService.getTodayTotalDistance(userId);
 
-    const hoursAgo = 24;
-    const hoursInInterval = 2;
-    const now = new Date();
-    const start = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
+    const cacheKey = `airQualityReadingsInfo:userId:${userId}`;
+    let airQualityReadingsInfo: AirQualityReadingsInfo | null;
 
-    const airQualityReadings =
-        await measurementsService.getUserAirQualityReadingsInRange(
-            userId,
-            start,
-            now,
-            hoursInInterval
-        );
+    airQualityReadingsInfo = await cacheService.get<AirQualityReadingsInfo>(cacheKey);
 
-    const averageAirQuality =
-        airQualityUtils.getAverageAirQualityFromAirQualityReadings(airQualityReadings);
+    //If cache miss, get the data from the database
+    //and store it in the cache
+    //else, cache hit, use the data from the cache
+    if (!airQualityReadingsInfo) {
+        const hoursAgo = 24;
+        const hoursInInterval = 2;
+        const now = new Date();
+        const start = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
+
+        const airQualityReadings =
+            await measurementsService.getUserAirQualityReadingsInRange(
+                userId,
+                start,
+                now,
+                hoursInInterval
+            );
+
+        const averageAirQuality =
+            airQualityUtils.getAverageAirQualityFromAirQualityReadings(
+                airQualityReadings
+            );
+
+        airQualityReadingsInfo = {
+            airQualityReadings,
+            overallAirQuality: averageAirQuality,
+        };
+
+        cacheService.set<AirQualityReadingsInfo>(cacheKey, airQualityReadingsInfo, 900);
+    }
 
     const dashboardData: DashboardData = {
         lastAirQualityReading: lastAirQualityReading,
         todayDistance: todayTotalDistance,
-        airQualityReadingsInfo: {
-            airQualityReadings,
-            overallAirQuality: averageAirQuality,
-        },
+        airQualityReadingsInfo,
     };
 
     return dashboardData;

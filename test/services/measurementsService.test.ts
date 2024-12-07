@@ -13,6 +13,7 @@ import prisma from '../../src/libs/prisma';
 import { Measurement, Node } from '@prisma/client';
 import { AirGases, AirQualities } from '../../src/types/measurements/AirQuality';
 import { MAX_PERMITTED_SPEED_MPS, MEASURING_FREQUENCY_SECONDS } from '../../src/types/measurements/Distance';
+import cacheService from '../../src/services/cacheService';
 vi.mock('../../src/libs/prisma');
 vi.mock('../../src/utils/airQualityUtils');
 
@@ -663,10 +664,10 @@ describe('measurementsService', () => {
     });
 
     describe('getDashboardData()', () => {
-        it('should return dashboard data when valid data is available', async () => {
+        it('should return dashboard data when valid data is available and cache is not used', async () => {
             const userId = 1;
 
-            // Mocking the service methods
+            // Mock data
             const mockLastMeasurement = {
                 id: 1,
                 latitude: 40.7128,
@@ -697,7 +698,7 @@ describe('measurementsService', () => {
                 },
             ];
 
-            // Spy on service methods
+            // Mocked methods
             const getLastMeasurementSpy = vi
                 .spyOn(measurementsService, 'getLastMeasurement')
                 .mockResolvedValue(mockLastMeasurement);
@@ -710,7 +711,6 @@ describe('measurementsService', () => {
                 .spyOn(measurementsService, 'getUserAirQualityReadingsInRange')
                 .mockResolvedValue(mockAirQualityReadings);
 
-            // Mocking the air quality reading calculation
             const mockAirQualityReadingFromGasesValues = vi
                 .mocked(airQualityUtils.getAirQualityReadingFromGasesValues)
                 .mockReturnValue({
@@ -724,7 +724,13 @@ describe('measurementsService', () => {
             const mockAverageAirQuality = vi
                 .mocked(airQualityUtils.getAverageAirQualityFromAirQualityReadings)
                 .mockReturnValue(AirQualities.Good);
-            
+
+            const getCacheSpy = vi
+                .spyOn(cacheService, 'get')
+                .mockResolvedValue(null); // Simulate no cache hit
+
+            const setCacheSpy = vi.spyOn(cacheService, 'set').mockResolvedValue();
+
             // Call the function under test
             const result = await measurementsService.getDashboardData(userId);
 
@@ -741,8 +747,21 @@ describe('measurementsService', () => {
                 airQualityReadingsInfo: {
                     airQualityReadings: mockAirQualityReadings,
                     overallAirQuality: AirQualities.Good,
-                }
+                },
             });
+
+            // Ensure cache was checked and set
+            expect(getCacheSpy).toHaveBeenCalledWith(
+                `airQualityReadingsInfo:userId:${userId}`
+            );
+            expect(setCacheSpy).toHaveBeenCalledWith(
+                `airQualityReadingsInfo:userId:${userId}`,
+                {
+                    airQualityReadings: mockAirQualityReadings,
+                    overallAirQuality: AirQualities.Good,
+                },
+                900
+            );
 
             // Ensure the mock functions were called correctly
             expect(getLastMeasurementSpy).toHaveBeenCalledWith(userId);
@@ -759,6 +778,94 @@ describe('measurementsService', () => {
             getTodayTotalDistanceSpy.mockRestore();
             getUserAirQualityReadingsInRangeSpy.mockRestore();
             mockAirQualityReadingFromGasesValues.mockRestore();
+            mockAverageAirQuality.mockRestore();
+            getCacheSpy.mockRestore();
+            setCacheSpy.mockRestore();
+        });
+
+        it('should return dashboard data from cache when available', async () => {
+            const userId = 1;
+
+            const cachedAirQualityReadingsInfo = {
+                airQualityReadings: [
+                    {
+                        timestamp: new Date('2023-11-01T00:00:00Z'),
+                        airQuality: AirQualities.Good,
+                        proportionalValue: 0.7,
+                        gas: AirGases.O3,
+                        ppmValue: 0.5,
+                    },
+                ],
+                overallAirQuality: AirQualities.Good,
+            };
+
+            const mockLastMeasurement = {
+                id: 1,
+                latitude: 40.7128,
+                longitude: -74.006,
+                nodeId: 1,
+                o3Value: 0.5,
+                coValue: 1.0,
+                no2Value: 0.7,
+                timestamp: new Date('2023-11-01T00:00:00Z'),
+            };
+
+            const mockLastAirQualityReading = {
+                timestamp: mockLastMeasurement.timestamp,
+                airQuality: AirQualities.Good,
+                proportionalValue: 0.7,
+                gas: AirGases.O3,
+                ppmValue: 0.5,
+            };
+            const mockTodayTotalDistance = 120;
+
+            // Spies
+            const getLastMeasurementSpy = vi
+                .spyOn(measurementsService, 'getLastMeasurement')
+                .mockResolvedValue(mockLastMeasurement);
+
+            const mockAirQualityReadingFromGasesValues = vi
+                .mocked(
+                    airQualityUtils.getAirQualityReadingFromGasesValues
+                )
+                .mockReturnValue(mockLastAirQualityReading);
+            
+            const getTodayTotalDistanceSpy = vi
+                .spyOn(measurementsService, 'getTodayTotalDistance')
+                .mockResolvedValue(mockTodayTotalDistance);
+
+            const getCacheSpy = vi
+                .spyOn(cacheService, 'get')
+                .mockResolvedValue(cachedAirQualityReadingsInfo); // Cache hit
+
+            const setCacheSpy = vi.spyOn(cacheService, 'set'); // Should not be called
+
+            // Call the function under test
+            const result = await measurementsService.getDashboardData(userId);
+
+            // Assertions
+            expect(result).toEqual({
+                lastAirQualityReading:mockLastAirQualityReading,
+                todayDistance: mockTodayTotalDistance,
+                airQualityReadingsInfo: cachedAirQualityReadingsInfo,
+            });
+
+            // Ensure cache was checked
+            expect(getCacheSpy).toHaveBeenCalledWith(
+                `airQualityReadingsInfo:userId:${userId}`
+            );
+            // Ensure setCache was not called
+            expect(setCacheSpy).not.toHaveBeenCalled();
+
+            // Ensure no additional database calls
+            expect(getLastMeasurementSpy).toHaveBeenCalledWith(userId);
+            expect(getTodayTotalDistanceSpy).toHaveBeenCalledWith(userId);
+
+            // Clean up
+            getLastMeasurementSpy.mockRestore();
+            getTodayTotalDistanceSpy.mockRestore();
+            getCacheSpy.mockRestore();
+            setCacheSpy.mockRestore();
         });
 
         it('should return null when no last measurement exists', async () => {
@@ -780,6 +887,7 @@ describe('measurementsService', () => {
             getLastMeasurementSpy.mockRestore();
         });
     });
+
 
     describe('getGeolocatedAirQualityReadingsInRange', () => {
         it('should return geolocated air quality readings for a valid time range', async () => {
