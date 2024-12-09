@@ -24,9 +24,58 @@ config();
 export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     const token = process.env.WAQI_API_KEY as string;
     const heatmapData = generateHeatmapData(data);
-    // It might be a good idea to
-    const htmlContent = `
-<!DOCTYPE html>
+    const htmlContent = getMapTemplateFilled(token, heatmapData);
+
+    return htmlContent;
+}
+
+/**
+ *  Maps the data for the heatmap layer in the map.
+ *
+ * GeoLocationAirQualityReading[] -> generateHeatmapData() -> string: Heatmap data
+ *
+ * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
+ * @returns {string} - The data for the heatmap layer.
+ */
+function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
+    return data
+        .map((reading) => {
+            const intensity = getIntensity(reading.proportionalValue as number);
+            return `[${reading.latitude}, ${reading.longitude}, ${intensity}]`;
+        })
+        .join(',');
+}
+
+/**
+ * Returns the intensity of the air quality reading.
+ *
+ * number -> getIntensity() -> number: Intensity
+ *
+ * @param airQuality - The air quality value.
+ * @returns {number} - The intensity of the air quality reading.
+ */
+function getIntensity(airQuality: number): number {
+    if (airQuality <= GasProportionalValueThresholds.Good) {
+        return 0.3;
+    } else if (airQuality <= GasProportionalValueThresholds.Regular) {
+        return 0.6;
+    } else if (airQuality <= GasProportionalValueThresholds.Bad) {
+        return 1.0;
+    }
+    return 0.1;
+}
+
+/**
+ * Returns a string with the HTML content of the map.
+ *
+ * token:string
+ * heatmapDaTa:string -> getMapTemplateFilled() -> string: HTML content
+ *
+ * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
+ * @returns {string} - The HTML content of the map.
+ */
+function getMapTemplateFilled(token: string, heatmapData: string): string {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -180,44 +229,6 @@ export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
     </script>
 </body>
 </html>`;
-
-    return htmlContent;
-}
-
-/**
- *  Maps the data for the heatmap layer in the map.
- *
- * GeoLocationAirQualityReading[] -> generateHeatmapData() -> string: Heatmap data
- *
- * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
- * @returns {string} - The data for the heatmap layer.
- */
-function generateHeatmapData(data: GeolocatedAirQualityReading[]): string {
-    return data
-        .map((reading) => {
-            const intensity = getIntensity(reading.proportionalValue as number);
-            return `[${reading.latitude}, ${reading.longitude}, ${intensity}]`;
-        })
-        .join(',');
-}
-
-/**
- * Returns the intensity of the air quality reading.
- *
- * number -> getIntensity() -> number: Intensity
- *
- * @param airQuality - The air quality value.
- * @returns {number} - The intensity of the air quality reading.
- */
-function getIntensity(airQuality: number): number {
-    if (airQuality <= GasProportionalValueThresholds.Good) {
-        return 0.3;
-    } else if (airQuality <= GasProportionalValueThresholds.Regular) {
-        return 0.6;
-    } else if (airQuality <= GasProportionalValueThresholds.Bad) {
-        return 1.0;
-    }
-    return 0.1;
 }
 
 /* FUNCTIONS FOR TESTING PURPOSES
