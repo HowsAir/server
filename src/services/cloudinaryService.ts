@@ -70,7 +70,7 @@ export const uploadMapToCloudinary = async (
     htmlContent: string,
     folder: CloudinaryFolders
 ): Promise<string> => {
-    const latestMapPublicId = `${folder}/latest`;
+    const latestMapPublicId = `${folder}/latest.html`;
 
     const latestExists = await checkIfLatestExists(latestMapPublicId);
 
@@ -88,7 +88,7 @@ export const uploadMapToCloudinary = async (
     const result = await cloudinary.uploader.upload(dataURI, {
         folder,
         resource_type: 'raw', // Specify that this is raw content
-        public_id: 'latest', // Set the public ID to "latest" for easy identification
+        public_id: 'latest.html', // Set the public ID to "latest" for easy identification
     });
 
     return result.url; // Return the URL of the newly uploaded content
@@ -107,7 +107,7 @@ export const checkIfLatestExists = async (
     latestMapPublicId: string
 ): Promise<boolean> => {
     try {
-        const resource = await cloudinary.api.resource(latestMapPublicId, {
+        await cloudinary.api.resource(latestMapPublicId, {
             resource_type: 'raw',
         });
         return true;

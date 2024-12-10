@@ -231,7 +231,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
 </html>`;
 }
 
-/* FUNCTIONS FOR TESTING PURPOSES
+// FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
