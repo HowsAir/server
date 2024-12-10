@@ -6,8 +6,11 @@
 
 import { Cron, scheduledJobs } from 'croner';
 import { measurementsService } from '../../services/measurementsService';
+import { generateHTMLMap } from '../../utils/generateMapUtils';
+import { uploadMapToCloudinary } from '../../services/cloudinaryService';
+import { CloudinaryFolders } from '../../types/users/CloudinaryFolders';
 
-const frequencyInMinutes = 30;
+export const frequencyInMinutes = 30;
 const pattern = `*/${frequencyInMinutes} * * * *`;
 const name = 'generateAirQualityMapJob';
 
@@ -43,7 +46,7 @@ export const setUpGenerateAirQualityMapJob = (): void => {
  * The map is generated in HTML and uploaded to Cloudinary
  *
  * generateAirQualityMapJob -> Promise<void>
- * 
+ *
  * @returns Promise<void>
  */
 const generateAirQualityMap = async (): Promise<void> => {
@@ -53,28 +56,31 @@ const generateAirQualityMap = async (): Promise<void> => {
         start: new Date(Date.now() - frequencyInMinutes * 60 * 1000),
         end: new Date(),
     };
-    
+
     try {
+        // 1. Get geolocated air quality readings
         const geolocatedAirQualityReadings =
             await measurementsService.getGeolocatedAirQualityReadingsInRange(
                 timeRange
             );
-        
-        console.log('Geolocated air quality readings:', JSON.stringify(geolocatedAirQualityReadings));
-        /*
+
+        console.log(
+            'Geolocated air quality readings:',
+            JSON.stringify(geolocatedAirQualityReadings)
+        );
+
         // 2. Generate HTML
-        const html = await generateHtmlMap(data);
+        const html = await generateHTMLMap(geolocatedAirQualityReadings);
 
         // 3. Upload to Cloudinary
-        const newMapUrl = await uploadToCloudinary(html);
-
-        // 4. Archive previous map and save new one
-        await archivePreviousMap(newMapUrl);
-        */
+        const newMapUrl = await uploadMapToCloudinary(
+            html,
+            CloudinaryFolders.AIR_QUALITY_MAPS
+        );
 
         console.log('Task executed successfully.');
+        console.log('New map URL:', newMapUrl);
     } catch (error) {
         console.error('Error occurred during task execution:', error);
     }
 };
-
