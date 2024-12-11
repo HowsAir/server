@@ -118,7 +118,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         width: 110px; /* Adjust size as needed */
                         height: 30px;
                         background-color: var(--marker-bg-color);
-                        color: var(--marker-text-color);
+                        color: white;
                         border-radius: 20px;
                         padding: 3px;
                         box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
@@ -131,11 +131,13 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         width: 20px; /* Adjust the icon size */
                         height: 20px;
                         margin-right: 5px;
+                        filter: invert(1) sepia(1) saturate(5) hue-rotate(180deg); /* Example for white color */
                     }
 
                     .marker-text {
                         font-size: 10px;
-                        font-weight: bold;
+                        font-weight: bold
+                        color: white;
                     }
 
                     /*-------------------------------------*/
@@ -297,12 +299,12 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                             return { color: "#35B765", text: "Limpio" };
                         }
                         if (aqi <= 100) { // yellow
-                            return { color: "#EFBF2D", text: "Moderado" };
+                            return { color: "#E5B41C", text: "Moderado" };
                         }
                         if (aqi <= 200) { // red 
                             return { color: "#E24C4C", text: "Insalubre" };
                         } // purple
-                        return { color: "#DE7CD2", text: "Peligroso" };
+                        return { color: "#EF5CDD", text: "Peligroso" };
                     }
 
                     // Function to create custom HTML markers
@@ -313,13 +315,13 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         const svgIcon = \`
                             <img src="https://res.cloudinary.com/dcup5oalu/image/upload/v1733928181/assets/antenna-icon.svg" 
                                 alt="Icon" 
-                                class="marker-svg-icon" />\`;
+                                class="marker-svg-icon" style="color:#ffffff"/>\`;
 
                         const iconHtml = \`
                             <div class="custom-marker" style="--marker-bg-color: \${color}\;
-                                                              --marker-text-color: "black">
+                                                              --marker-text-color: "white">
                                 <div style="margin-top:auto">\${svgIcon}\</div>
-                                <div>\${text}\</div>
+                                <div style="color:#ffffff">\${text}\</div>
                             </div>\`;
 
                         return L.divIcon({
@@ -416,7 +418,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             </html>`;
 }
 
-/* FUNCTIONS FOR TESTING PURPOSES
+// FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
