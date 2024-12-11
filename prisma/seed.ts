@@ -109,8 +109,8 @@ async function main() {
                     const no2Value = generateValue(0.12, 0.1, 0.11, 0.053);
                     const o3Value = generateValue(0.12, 0.1, 0.11, 0.05);
 
-                    const baseLatitude = 38.995972; // Base latitude
-                    const baseLongitude = -0.165444; // Base longitude
+                    const baseLatitude = 39.47; // Base latitude
+                    const baseLongitude = -0.376; // Base longitude
 
                     // Max degree variation for ~30 meters
                     const maxLatitudeVariation = 30 / 111320; // ≈ 0.000269 degrees
@@ -177,7 +177,7 @@ async function main() {
             data: dailyStats,
         });
     }
-    
+
     // Create some historic air quality maps
     const historicMaps: any[] = [];
     for (let i = 1; i <= 5; i++) {
