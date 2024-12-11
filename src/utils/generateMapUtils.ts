@@ -115,7 +115,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         flex-direction: row;
                         align-items: center;
                         justify-content: center;
-                        width: 110px; /* Adjust size as needed */
+                        width: 110px;
                         height: 30px;
                         background-color: var(--marker-bg-color);
                         color: white;
@@ -125,6 +125,16 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         font-family: 'Outfit', sans-serif;
                         font-size: 14px;
                         text-align: center;
+                        transition: background-color 0.3s, transform 0.3s; /* Smooth transition for hover effect */
+                    }
+
+                    .custom-marker:hover {
+                        transform: scale(1.1); /* Slightly scale up the marker */
+                    }
+
+                    /* Ensure :active doesn't override hover */
+                    .custom-marker:active {
+                        transform: scale(1); /* No scaling when clicked */
                     }
 
                     .marker-svg-icon {
