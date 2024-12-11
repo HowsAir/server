@@ -76,162 +76,217 @@ function getIntensity(airQuality: number): number {
  */
 function getMapTemplateFilled(token: string, heatmapData: string): string {
     return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Air Quality Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.heat"></script>
-    <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw/src/leaflet-idw.js"></script>
-    <style>
-        #map {
-            height: 100vh;
-            width: 100%;
-        }
-        .leaflet-control-layers .disabled {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-        .legend {
-            position: absolute;
-            bottom: 30px;
-            left: 10px;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            line-height: 1.5em;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-        .legend-title {
-            font-weight: bold;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-        }
-        .legend-item .color-box {
-            width: 15px;
-            height: 15px;
-            margin-right: 5px;
-            border-radius: 50%;
-        }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <script>
-        const map = L.map('map').setView([39.4699, -0.3763], 15);
+            <html lang="en">
+            
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Air Quality Map</title>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <script src="https://unpkg.com/leaflet.heat"></script>
+                <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw/src/leaflet-idw.js"></script>
+                
+                <style>
+                    #map {
+                        height: 100vh;
+                        width: 100%;
+                    }
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
-            subdomains: 'abcd',
-            minZoom: 14,
-            maxZoom: 19
-        }).addTo(map);
+                    /* Custom title for the layers control */
+                    .layers-control-title {
+                        font-size: 16px;
+                        font-weight: bold;
+                        background-color: #fff;
+                        border-radius: 5px;
+                        margin-bottom: 10px;
+                    }
 
-        const idwLayer = L.idwLayer(
-            [${heatmapData}], // Normalizar intensidad entre 0 y 1
-            {
-                opacity: 0.4,          // Ajustar opacidad
-                cellSize: 6,          // Tamaño de celda (ajusta según detalle)
-                exp: 2,                // Exponente para ponderación (2 es estándar para IDW)
-                max: 1,                // Máximo valor (intensidad normalizada)
-                gradient: {            // Gradiente de colores
-                    0.3: 'green',
-                    0.6: 'yellow',
-                    1.0: 'red'
-                }
-            }
-        );
+                    /* Style the layers control box */
+                    .leaflet-control-layers {
+                        background-color: #fff;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+                        padding: 20px;
+                        font-size: 14px;
+                        font-family: Arial, sans-serif;
+                    }
 
-        map.on('zoomend', updateCellSize);
+                    .leaflet-control-layers .disabled {
+                        pointer-events: none;
+                        opacity: 0.5;
+                    }
 
-        function updateCellSize() {
-            const zoom = map.getZoom();
-            let newCellSize;
+                </style>
 
-            if (zoom < 16) {
-                newCellSize = 6;
-            } else if (zoom >= 16 && zoom < 18) {
-                newCellSize = 10; 
-            } else if (zoom >= 18) {
-                newCellSize = 25; // Ajuste de tamaño de celda a medida que el zoom es más alto
-            }
+            </head>
 
-            // Actualiza las opciones del layer de IDW con el nuevo tamaño de celda
-            idwLayer.setOptions({ cellSize: newCellSize });
-            idwLayer.redraw();
-        }
+            <body>
 
-        idwLayer.addTo(map);
+                <div id="map"></div>
 
-        // Capa de estaciones oficiales (nuevo)
-        const estacionesOficiales = L.layerGroup();
+                <script>
 
-        const token = "${token}"; // Aquí se inserta el token
-        console.log('Token in client:', token);
+                    // Initialize the map and set the initial view and zoom level
+                    const map = L.map('map').setView([39.47, -0.376], 15);
 
-        fetch(\`https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=\${token}\`)
-        .then(response => response.json())
-            .then(data => {
-                if (data.status === "ok") {
-                    // Iteramos sobre cada estación
-                    data.data.forEach(station => {
-                        const aqi = station.aqi; // AQI de la estación
-                        const latitude = station.lat; // Latitud
-                        const longitude = station.lon; // Longitud
+                    // Add the tile layer for the map's background
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+                        subdomains: 'abcd',
+                        minZoom: 14,
+                        maxZoom: 18
+                    }).addTo(map);
+
+                    //---------------------------------------------------------------------------------
+                    //  GENERAL QUALITY MAP WITH IDW LAYER
+                    //---------------------------------------------------------------------------------
+
+                    // Create the IDW layer from the plugin with the heatmap data
+                    const idwLayer = L.idwLayer(
+                        [${heatmapData}], 
+                        {
+                            opacity: 0.4,          
+                            cellSize: 15,          // Initially 15, it changes depending of the zoom, for better performance
+                            exp: 2,                
+                            max: 1,                
+                            gradient: {            
+                                0.3: 'green',
+                                0.6: 'yellow',
+                                1.0: 'red'
+                            }
+                        }
+                    );
+
+                    // Everytime the zoom changes, update the cell size using Debounce
+                    map.on('zoomend', updateCellSize);
+
+                    let redrawTimeout;
+
+                    function updateCellSize() {
+                        clearTimeout(redrawTimeout);
+
+                        // After 200ms has passed since the zoom changed, redraws the IDW layer
+                        redrawTimeout = setTimeout(() => {
+                            const zoom = map.getZoom();
+                            let newCellSize = zoom < 15 ? 8 : zoom < 16 ? 15 : zoom < 17 ? 30 : zoom < 18 ? 35 : 75;
+    
+                            idwLayer.setOptions({ cellSize: newCellSize });
+                            idwLayer.redraw();
+                        }, 200); 
+
+                    }
+                    
+                    idwLayer.addTo(map);
+
+                    //---------------------------------------------------------------------------------
+                    //  FETCH TO API WAQI
+                    //---------------------------------------------------------------------------------
+
+                    const officialStations = L.layerGroup();
+
+                    const token = "${token}"; 
+
+                    //---------------------------------------------------------------------------------
+                    //  I MUST CHANGE THESE FUNCTIONS'
+
+                    function getAQIInfo(aqi) {
+                        if (aqi <= 50) {
+                            return { color: "green", text: "Buena" };
+                        }
+                        if (aqi <= 100) {
+                            return { color: "yellow", text: "Regular" };
+                        }
+                        if (aqi <= 200) {
+                            return { color: "red", text: "Insalubre" };
+                        }
+                        return { color: "purple", text: "Peligroso" };
+                    }
+
+
+                    // Function to create custom HTML markers
+                    function createCustomMarker(aqi) {
+                        const color = getAQIInfo(aqi).color; 
+                        const text = getAQIInfo(aqi).text; 
                         
-                        // Crear el marcador para cada estación
-                        const marker = L.marker([latitude, longitude])
-                            .addTo(estacionesOficiales)
-                            .bindPopup(\`Estación: \${station.station.name}<br> AQI: \${aqi}\`)
-                            .openPopup();
-                    });
-                } else {
-                    console.log("No se pudieron obtener los datos de las estaciones");
-                }
-            })
-            .catch(error => console.error('Error fetching WAQI data:', error));
+                        const iconHtml = \`
+                            <div style="background-color: \${color}\; color: white; 
+                                        border-radius: 15px; padding: 10px; text-align: center;
+                                        width: 30px; height: 30px; display: flex; 
+                                        align-items: center; justify-content: center; box-shadow: 0 0 5px rgba(0,0,0,0.5);
+                                        text-size: 14px">
+                                <div>\${text}\</div>
+                            </div>\`;
 
-        // Layers control with "Capas" title and additional layers
-        const additionalLayers = {
-            "<span class='disabled'>Ozono O3</span>": L.layerGroup(),
-            "<span class='disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
-            "<span class='disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
-        };
+                        return L.divIcon({
+                            html: iconHtml,
+                            className: 'custom-marker',
+                            iconSize: [30, 30], // Adjust the size as needed
+                            iconAnchor: [20, 20], // Center the icon
+                        });
+                    }
+                    //---------------------------------------------------------------------------------
 
-        estacionesOficiales.addTo(map);
+                    // Fetch the data from the WAQI API using HowsAir token
+                    fetch(\`https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=\${token}\`)
+                    .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "ok") {
+                                data.data.forEach(station => {
+                                    const aqi = station.aqi; 
+                                    const latitude = station.lat; 
+                                    const longitude = station.lon; 
+                                    
+                                    // Create a marker with the custom color for each official station
+                                    const marker = L.marker([latitude, longitude], {
+                                        icon: createCustomMarker(aqi),
+                                    }).addTo(officialStations)
+                                    .bindPopup(\`Estación: \${station.station.name}<br> AQI: \${aqi}\`);
 
-        // Layers control added to the map
-        L.control.layers(null, { 
-            "Mapa de calidad general": idwLayer,
-            ...additionalLayers, 
-            "Estaciones oficiales": estacionesOficiales
-        }, { collapsed: false }).addTo(map);
+                                });
+                            } else {
+                                console.log("Couldn't obtain the official stations data");
+                            }
+                        })
+                        .catch(error => console.error('Error fetching WAQI data:', error));
 
-        // Add legend
-        const legend = L.control({ position: 'bottomleft' });
-        legend.onAdd = function () {
-            const div = L.DomUtil.create('div', 'legend');
-            div.innerHTML = \`
-                <div class="legend-title">Leyenda</div>
-                <div class="legend-item"><div class="color-box" style="background: green;"></div>Bueno</div>
-                <div class="legend-item"><div class="color-box" style="background: yellow;"></div>Regular</div>
-                <div class="legend-item"><div class="color-box" style="background: red;"></div>Malo</div>
-            \`;
-            return div;
-        };
-        legend.addTo(map);
+                    officialStations.addTo(map);
 
-    </script>
-</body>
-</html>`;
+                    //---------------------------------------------------------------------------------
+                    //  LAYERS CONTROL
+                    //---------------------------------------------------------------------------------
+
+                    // Disabled layers for each gas type that will be added later
+                    const additionalLayers = {
+                        "<span class='disabled'>Ozono O3</span>": L.layerGroup(),
+                        "<span class='disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
+                        "<span class='disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
+                    };
+
+                    // Layer controler with the IDW layer, official stations and the additional layers
+                    const layersControl = L.control.layers(null, { 
+                        "Mapa de calidad general": idwLayer,
+                        ...additionalLayers, 
+                        "Estaciones oficiales": officialStations
+                    }, { collapsed: false }).addTo(map);
+
+                    // Access the layers control container to style it
+                    const layersControlContainer = layersControl.getContainer();
+
+                    const title = document.createElement('div');
+                    title.innerHTML = '<strong>Capas</strong>';
+                    title.className = 'layers-control-title'; // Reference to the Class on the css side
+
+                    // Insert the title into the layers control box
+                    layersControlContainer.insertBefore(title, layersControlContainer.firstChild);
+
+                </script>
+
+            </body>
+            </html>`;
 }
 
-// FUNCTIONS FOR TESTING PURPOSES
+/* FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
