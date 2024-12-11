@@ -101,13 +101,21 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         height: 100vh;
                         width: 100%;
                     }
+                        
+                    .leaflet-touch .leaflet-control-layers {
+                        border: 0px;
+                    }
+
+                    /*-------------------------------------*/
+                    /* Custom marker style */
+                    /*-------------------------------------*/
 
                     .custom-marker {
                         display: flex;
                         flex-direction: row;
                         align-items: center;
                         justify-content: center;
-                        width: 100px; /* Adjust size as needed */
+                        width: 110px; /* Adjust size as needed */
                         height: 30px;
                         background-color: var(--marker-bg-color);
                         color: var(--marker-text-color);
@@ -130,11 +138,14 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         font-weight: bold;
                     }
 
+                    /*-------------------------------------*/
+                    /* Layers controller style */
+                    /*-------------------------------------*/
+
                     .layer-label {
                         font-family: 'Outfit', sans-serif;
                     }
 
-                    /* Custom title for the layers control */
                     .layers-control-title {
                         font-size: 16px;
                         font-weight: bold;
@@ -143,7 +154,6 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         margin-bottom: 10px;
                     }
 
-                    /* Style the layers control box */
                     .leaflet-control-layers {
                         background-color: #fff;
                         border-radius: 10px;
@@ -157,6 +167,60 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         pointer-events: none;
                         opacity: 0.5;
                     }
+                    
+                    /* General checkbox styles */
+                    .leaflet-control-layers-selector {
+                        appearance: none;
+                        -webkit-appearance: none;
+                        -moz-appearance: none;
+                        width: 16px;
+                        height: 16px;
+                        border: 2px solid #ccc;
+                        border-radius: 50%; /* Default circular checkboxes */
+                        cursor: pointer;
+                        outline: none;
+                        background-color: white;
+                        display: inline-block;
+                        vertical-align: middle;
+                        margin-right: 8px;
+                        transition: background-color 0.3s, border-color 0.3s;
+                    }
+
+                    /* Specific styles for the "official stations" checkbox */
+                    .leaflet-control-layers input[type="checkbox"].official-stations-checkbox {
+                        border-radius: 5px; /* Less border radius for "Estaciones oficiales" checkbox */
+                    }
+
+                    /* Checked state for the checkbox */
+                    .leaflet-control-layers-selector:checked {
+                        background-color: #1074E7; /* Blue background */
+                        border-color: #1074E7;
+                        position: relative;
+                    }
+
+                    /* Create a white checkmark */
+                    .leaflet-control-layers-selector:checked::after {
+                        content: '';
+                        display: block;
+                        width: 4px;
+                        height: 7px;
+                        border: solid white;
+                        border-width: 0 2px 2px 0;
+                        transform: rotate(45deg);
+                        position: absolute;
+                        top: 1px;
+                        left: 3px;
+                    }
+
+                    /* Style for the separator between layers */
+                    .layers-separator {
+                        height: 1px; /* Height of the separator */
+                        background-color: #f0f0f0; /* Light gray color */
+                        width: 200px; /* Width of the separator */
+                        margin: 5px auto; /* Vertical margin of 5px */
+                        border-radius: 5px; /* Border radius for smooth corners */
+                    }
+
 
                 </style>
 
@@ -230,10 +294,10 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
 
                     function getAQIInfo(aqi) {
                         if (aqi <= 50) { // green
-                            return { color: "#35B765", text: "Buena" };
+                            return { color: "#35B765", text: "Limpio" };
                         }
                         if (aqi <= 100) { // yellow
-                            return { color: "#EFBF2D", text: "Regular" };
+                            return { color: "#EFBF2D", text: "Moderado" };
                         }
                         if (aqi <= 200) { // red 
                             return { color: "#E24C4C", text: "Insalubre" };
@@ -296,27 +360,55 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
 
                     // Disabled layers for each gas type that will be added later
                     const additionalLayers = {
-                        "<span class='disabled'>Ozono O3</span>": L.layerGroup(),
-                        "<span class='disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
-                        "<span class='disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
+                        "<span class='layer-label disabled'>Ozono O3</span>": L.layerGroup(),
+                        "<span class='layer-label disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
+                        "<span class='layer-label disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
                     };
 
-                    // Layer controler with the IDW layer, official stations and the additional layers
                     const layersControl = L.control.layers(null, { 
-                        "Mapa de calidad general": idwLayer,
+                        "<span class='layer-label'>Mapa de calidad general</span>": idwLayer,
                         ...additionalLayers, 
-                        "Estaciones oficiales": officialStations
+                        "<span class='layer-label official-stations'>Estaciones oficiales</span>": officialStations
                     }, { collapsed: false }).addTo(map);
 
                     // Access the layers control container to style it
                     const layersControlContainer = layersControl.getContainer();
 
+                    // Wait for the layers control to render completely, this helps when changing the border
+                    // radius of the official stations checkbox, because leaflet adds classes too whe rendering
+                    setTimeout(() => {
+
+                    // ADDING TITLE TO LAYERS CONTROL
+
                     const title = document.createElement('div');
                     title.innerHTML = '<strong>Capas</strong>';
-                    title.className = 'layers-control-title'; // Reference to the Class on the css side
+                    title.className = 'layers-control-title';
 
                     // Insert the title into the layers control box
                     layersControlContainer.insertBefore(title, layersControlContainer.firstChild);
+
+                    // ADDING SEPARATOR TO LAYERS CONTROL AND CHANGING STYLE OF OFFICIAL STATIONS CHECKBOX
+
+                    const layerSeparator = document.createElement('div');
+                    layerSeparator.className = 'layers-separator';
+
+                    // Find the "leaflet-control-layers-overlays" container
+                    const overlaysContainer = layersControlContainer.querySelector('.leaflet-control-layers-overlays');
+
+                    if (overlaysContainer) {
+                        // Find the "Estaciones oficiales" label and its parent label
+                        const officialStationsLabelParent = overlaysContainer.querySelector('span.official-stations')?.closest('label');
+
+                        if (officialStationsLabelParent) {
+                            // Insert the separator before the "Estaciones oficiales" label
+                            overlaysContainer.insertBefore(layerSeparator, officialStationsLabelParent);
+                        }
+
+                        // Changing the style of the official stations checkbox
+                        const checkbox = officialStationsLabelParent?.querySelector('input[type="checkbox"]');
+                        checkbox?.classList.add('official-stations-checkbox');
+                    }
+                }, 100); // Delay to ensure the DOM is fully rendered
 
                 </script>
 
@@ -324,7 +416,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             </html>`;
 }
 
-// FUNCTIONS FOR TESTING PURPOSES
+/* FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
