@@ -81,16 +81,57 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
                 <title>Air Quality Map</title>
                 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <script src="https://unpkg.com/leaflet.heat"></script>
                 <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw/src/leaflet-idw.js"></script>
-                
+                <!-- Add Google Fonts -->
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
                 <style>
+
+                    /* Apply the font to all elements */
+                    body, html, .leaflet-control-layers, .layers-control-title {
+                        font-family: 'Outfit', sans-serif;
+                    }
+
                     #map {
                         height: 100vh;
                         width: 100%;
+                    }
+
+                    .custom-marker {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100px; /* Adjust size as needed */
+                        height: 30px;
+                        background-color: var(--marker-bg-color);
+                        color: var(--marker-text-color);
+                        border-radius: 20px;
+                        padding: 3px;
+                        box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 14px;
+                        text-align: center;
+                    }
+
+                    .marker-svg-icon {
+                        width: 20px; /* Adjust the icon size */
+                        height: 20px;
+                        margin-right: 5px;
+                    }
+
+                    .marker-text {
+                        font-size: 10px;
+                        font-weight: bold;
+                    }
+
+                    .layer-label {
+                        font-family: 'Outfit', sans-serif;
                     }
 
                     /* Custom title for the layers control */
@@ -128,7 +169,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                 <script>
 
                     // Initialize the map and set the initial view and zoom level
-                    const map = L.map('map').setView([39.47, -0.376], 15);
+                    const map = L.map('map').setView([39.47, -0.376], 14);
 
                     // Add the tile layer for the map's background
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -147,7 +188,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         [${heatmapData}], 
                         {
                             opacity: 0.4,          
-                            cellSize: 15,          // Initially 15, it changes depending of the zoom, for better performance
+                            cellSize: 8,          // Initially 15, it changes depending of the zoom, for better performance
                             exp: 2,                
                             max: 1,                
                             gradient: {            
@@ -187,45 +228,41 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
 
                     const token = "${token}"; 
 
-                    //---------------------------------------------------------------------------------
-                    //  I MUST CHANGE THESE FUNCTIONS'
-
                     function getAQIInfo(aqi) {
-                        if (aqi <= 50) {
-                            return { color: "green", text: "Buena" };
+                        if (aqi <= 50) { // green
+                            return { color: "#35B765", text: "Buena" };
                         }
-                        if (aqi <= 100) {
-                            return { color: "yellow", text: "Regular" };
+                        if (aqi <= 100) { // yellow
+                            return { color: "#EFBF2D", text: "Regular" };
                         }
-                        if (aqi <= 200) {
-                            return { color: "red", text: "Insalubre" };
-                        }
-                        return { color: "purple", text: "Peligroso" };
+                        if (aqi <= 200) { // red 
+                            return { color: "#E24C4C", text: "Insalubre" };
+                        } // purple
+                        return { color: "#DE7CD2", text: "Peligroso" };
                     }
-
 
                     // Function to create custom HTML markers
                     function createCustomMarker(aqi) {
-                        const color = getAQIInfo(aqi).color; 
-                        const text = getAQIInfo(aqi).text; 
-                        
+                        const color = getAQIInfo(aqi).color;
+                        const text = getAQIInfo(aqi).text;
+
+                        const svgIcon = \`
+                            <img src="https://res.cloudinary.com/dcup5oalu/image/upload/v1733928181/assets/antenna-icon.svg" 
+                                alt="Icon" 
+                                class="marker-svg-icon" />\`;
+
                         const iconHtml = \`
-                            <div style="background-color: \${color}\; color: white; 
-                                        border-radius: 15px; padding: 10px; text-align: center;
-                                        width: 30px; height: 30px; display: flex; 
-                                        align-items: center; justify-content: center; box-shadow: 0 0 5px rgba(0,0,0,0.5);
-                                        text-size: 14px">
+                            <div class="custom-marker" style="--marker-bg-color: \${color}\;
+                                                              --marker-text-color: "black">
+                                <div style="margin-top:auto">\${svgIcon}\</div>
                                 <div>\${text}\</div>
                             </div>\`;
 
                         return L.divIcon({
                             html: iconHtml,
-                            className: 'custom-marker',
-                            iconSize: [30, 30], // Adjust the size as needed
-                            iconAnchor: [20, 20], // Center the icon
+                            className: 'custom-marker-wrapper',
                         });
                     }
-                    //---------------------------------------------------------------------------------
 
                     // Fetch the data from the WAQI API using HowsAir token
                     fetch(\`https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=\${token}\`)
@@ -233,17 +270,18 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         .then(data => {
                             if (data.status === "ok") {
                                 data.data.forEach(station => {
-                                    const aqi = station.aqi; 
-                                    const latitude = station.lat; 
-                                    const longitude = station.lon; 
-                                    
-                                    // Create a marker with the custom color for each official station
-                                    const marker = L.marker([latitude, longitude], {
-                                        icon: createCustomMarker(aqi),
-                                    }).addTo(officialStations)
-                                    .bindPopup(\`Estación: \${station.station.name}<br> AQI: \${aqi}\`);
+                                const aqi = station.aqi; 
+                                const latitude = station.lat; 
+                                const longitude = station.lon; 
+                                const aqiInfo = getAQIInfo(aqi); // Retrieve AQI info here
+                                const text = aqiInfo.text; // Get the text again
 
-                                });
+                                // Create a marker with the custom color for each official station
+                                const marker = L.marker([latitude, longitude], {
+                                    icon: createCustomMarker(aqi),
+                                }).addTo(officialStations)
+                                .bindPopup(\`Estación: \${station.station.name}<br> AQI: \${aqi}<br> Calidad del aire: \${text}\`);
+                            });
                             } else {
                                 console.log("Couldn't obtain the official stations data");
                             }
@@ -286,7 +324,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             </html>`;
 }
 
-/* FUNCTIONS FOR TESTING PURPOSES
+// FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
