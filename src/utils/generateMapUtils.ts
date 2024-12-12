@@ -245,7 +245,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         left: 10px;
                         width: 105px;
                         height: 105px;
-                        background-color: rgba(255, 255, 255, 0.9);
+                        background-color: rgba(255, 255, 255);
                         border-radius: 10px;
                         padding: 15px;
                         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -486,7 +486,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             </html>`;
 }
 
-// FUNCTIONS FOR TESTING PURPOSES
+/* FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
