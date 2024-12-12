@@ -97,6 +97,8 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         font-family: 'Outfit', sans-serif;
                     }
 
+                    body { margin: 0;}
+
                     #map {
                         height: 100vh;
                         width: 100%;
@@ -232,7 +234,47 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         margin: 5px auto; /* Vertical margin of 5px */
                         border-radius: 5px; /* Border radius for smooth corners */
                     }
+                    
+                    /*-------------------------------------*/
+                    /* Legend style */
+                    /*-------------------------------------*/
 
+                    .legend {
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 105px;
+                        height: 105px;
+                        background-color: rgba(255, 255, 255, 0.9);
+                        border-radius: 10px;
+                        padding: 15px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                        font-size: 14px;
+                        color: #333;
+                        z-index: 1000;
+                    }
+
+                    .legend-title {
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+
+                    .legend-item {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                    }
+
+                    .legend-color {
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 5px;
+                        margin-right: 10px;
+                    }
+
+                    .legend-color.green { background-color: #35B765; }
+                    .legend-color.yellow { background-color: #E5B41C; }
+                    .legend-color.red { background-color: #E24C4C; }
 
                 </style>
 
@@ -241,6 +283,22 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             <body>
 
                 <div id="map"></div>
+
+                <div class="legend">
+                    <div class="legend-title">Calidad del aire</div>
+                    <div class="legend-item">
+                        <div class="legend-color green"></div>
+                        <div>Bueno</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color yellow"></div>
+                        <div>Regular</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color red"></div>
+                        <div>Peligroso</div>
+                    </div>
+                </div>
 
                 <script>
 
@@ -428,7 +486,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
             </html>`;
 }
 
-/* FUNCTIONS FOR TESTING PURPOSES
+// FUNCTIONS FOR TESTING PURPOSES
 
 // Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
 const randomData: GeolocatedAirQualityReading[] = Array.from(
