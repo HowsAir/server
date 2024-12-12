@@ -10,6 +10,11 @@ export enum AirQualities {
     Bad = 'Bad',
 }
 
+/**
+ * Thresholds for the ppm value of each gas that determine the air quality.
+ * PPM = Parts per million (concentration of a gas in the air).
+ * These are the ones that define the core logic of the air quality system.
+ */
 export const GasesPPMThresholds = {
     [AirGases.CO]: {
         [AirQualities.Good]: 9,
