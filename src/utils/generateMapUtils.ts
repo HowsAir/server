@@ -429,15 +429,15 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                     //---------------------------------------------------------------------------------
 
                     // Disabled layers for each gas type that will be added later
-                    const additionalLayers = {
-                        "<span class='layer-label disabled'>Ozono O3</span>": L.layerGroup(),
-                        "<span class='layer-label disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
-                        "<span class='layer-label disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
-                    };
+                    // const additionalLayers = {
+                    //     "<span class='layer-label disabled'>Ozono O3</span>": L.layerGroup(),
+                    //     "<span class='layer-label disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
+                    //     "<span class='layer-label disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
+                    // };
 
                     const layersControl = L.control.layers(null, { 
                         "<span class='layer-label'>Mapa de calidad general</span>": idwLayer,
-                        ...additionalLayers, 
+                        //...additionalLayers, 
                         "<span class='layer-label official-stations'>Estaciones oficiales</span>": officialStations
                     }, { collapsed: false }).addTo(map);
 
