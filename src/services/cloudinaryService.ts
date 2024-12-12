@@ -70,7 +70,7 @@ export const uploadMapToCloudinary = async (
     htmlContent: string,
     folder: CloudinaryFolders
 ): Promise<string> => {
-    const timestamp = new Date(Date.now() - frequencyInMinutes)
+    const timestamp = new Date(Date.now())
         .toISOString()
         .replace(/:\d{2}\.\d{3}Z$/, '') // Deletes th eseconds and milliseconds from the timestamp
         .replace(/:/g, '-'); // replaces the colons with dashes for Cloudinary naming compatibility

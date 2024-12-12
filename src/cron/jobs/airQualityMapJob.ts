@@ -9,6 +9,7 @@ import { measurementsService } from '../../services/measurementsService';
 import { generateHTMLMap } from '../../utils/generateMapUtils';
 import { uploadMapToCloudinary } from '../../services/cloudinaryService';
 import { CloudinaryFolders } from '../../types/users/CloudinaryFolders';
+import { historicAirQualityMapsService } from '../../services/historicAirQualityMapsService';
 
 export const frequencyInMinutes = 30;
 const pattern = `*/${frequencyInMinutes} * * * *`;
@@ -56,9 +57,12 @@ const generateAirQualityMap = async (): Promise<void> => {
         start: new Date(Date.now() - frequencyInMinutes * 60 * 1000),
         end: new Date(),
     };
+    
+    const airQualityMapTimestamp = new Date(timeRange.end);
 
+    airQualityMapTimestamp.setSeconds(0, 0);
+    
     try {
-        // 1. Get geolocated air quality readings
         const geolocatedAirQualityReadings =
             await measurementsService.getGeolocatedAirQualityReadingsInRange(
                 timeRange
@@ -69,15 +73,15 @@ const generateAirQualityMap = async (): Promise<void> => {
             JSON.stringify(geolocatedAirQualityReadings)
         );
 
-        // 2. Generate HTML
         const html = await generateHTMLMap(geolocatedAirQualityReadings);
 
-        // 3. Upload to Cloudinary
         const newMapUrl = await uploadMapToCloudinary(
             html,
             CloudinaryFolders.AIR_QUALITY_MAPS
         );
 
+        await historicAirQualityMapsService.saveHistoricAirQualityMap(newMapUrl, airQualityMapTimestamp)
+        
         console.log('Task executed successfully.');
         console.log('New map URL:', newMapUrl);
     } catch (error) {
