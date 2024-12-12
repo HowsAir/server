@@ -48,7 +48,25 @@ const getHistoricAirQualityMaps = async (): Promise<HistoricAirQualityMap[]> => 
     );
 }
 
+
+/**
+ * Retrieves the most recent historic air quality map.
+ * 
+ * getLastHistoricAirQualityMap() -> Promise<HistoricAirQualityMap | null>
+ * 
+ * @returns {Promise<HistoricAirQualityMap | null>} - A promise that resolves to the most recent historic air quality map.
+ * @throws {Error} If there is an issue while fetching the map.
+ */
+const getLastHistoricAirQualityMap = async (): Promise<HistoricAirQualityMap | null> => {
+    return await prisma.historicAirQualityMap.findFirst({
+        orderBy: {
+            timestamp: 'desc',
+        },
+    });
+}
+
 export const historicAirQualityMapsService = {
     saveHistoricAirQualityMap,
     getHistoricAirQualityMaps,
+    getLastHistoricAirQualityMap,
 };

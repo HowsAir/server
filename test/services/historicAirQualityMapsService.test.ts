@@ -124,4 +124,41 @@ describe('historicAirQualityMapsService', () => {
             ).rejects.toThrow('Database error');
         });
     });
+
+    describe('getLastHistoricAirQualityMap()', () => {
+        it('should retrieve the most recent historic air quality map', async () => {
+            // Mocking the findFirst method to return a mock map
+            const mockMap = {
+                id: 1,
+                url: 'https://cloudinary.com/map1',
+                timestamp: new Date('2024-12-06T12:00:00Z'),
+            };
+            prisma.historicAirQualityMap.findFirst = vi
+                .fn()
+                .mockResolvedValue(mockMap);
+
+            // Call the service method
+            const result =
+                await historicAirQualityMapsService.getLastHistoricAirQualityMap();
+
+            // Assertions
+            expect(result).toEqual(mockMap);
+            expect(prisma.historicAirQualityMap.findFirst).toHaveBeenCalledWith({
+                orderBy: {
+                    timestamp: 'desc',
+                },
+            });
+        });
+
+        it('should handle errors gracefully when fetching the map', async () => {
+            // Simulating an error during the fetch operation
+            prisma.historicAirQualityMap.findFirst = vi
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                historicAirQualityMapsService.getLastHistoricAirQualityMap()
+            ).rejects.toThrow('Database error');
+        });
+    });
 });

@@ -1026,6 +1026,41 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /air-quality-maps/current:
+    get:
+      tags:
+        - Mapas de calidad del aire
+      summary: Obtiene el mapa de calidad de aire actual.
+      description: Proporciona la URL del mapa de calidad de aire actual alojado en Cloudinary, junto con la fecha y hora en que se generó el mapa.
+      responses:
+        "200":
+          description: Mapa de calidad de aire actual obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: URL del mapa de calidad de aire actual en Cloudinary.
+                    example: "https://res.cloudinary.com/example/maps/current-air-quality.html"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Fecha y hora en que se generó el mapa actual.
+                    example: "2023-12-01T15:30:00Z"
+        "404":
+          description: No se encontró un mapa de calidad de aire actual.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al obtener el mapa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     AuthTokenCookie:

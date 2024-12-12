@@ -10,6 +10,7 @@ import usersRoutes from './usersRoutes';
 import authRoutes from './authRoutes';
 import checkoutRoutes from './checkoutRoutes';
 import nodesRoutes from './nodesRoutes';
+import airQualityMapsRoutes from './airQualityMapsRoutes';
 
 const router = Router();
 
@@ -18,4 +19,6 @@ router.use('/users', usersRoutes);
 router.use('/auth', authRoutes);
 router.use('/checkout', checkoutRoutes);
 router.use('/nodes', nodesRoutes);
+router.use('/air-quality-maps', airQualityMapsRoutes)
+
 export default router;
