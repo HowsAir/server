@@ -70,13 +70,12 @@ export const uploadMapToCloudinary = async (
     htmlContent: string,
     folder: CloudinaryFolders
 ): Promise<string> => {
-    const latestMapPublicId = `${folder}/latest.html`;
+    const timestamp = new Date(Date.now() - frequencyInMinutes)
+        .toISOString()
+        .replace(/:\d{2}\.\d{3}Z$/, '') // Deletes th eseconds and milliseconds from the timestamp
+        .replace(/:/g, '-'); // replaces the colons with dashes for Cloudinary naming compatibility
 
-    const latestExists = await checkIfLatestExists(latestMapPublicId);
-
-    if (latestExists) {
-        await archivePreviousMap(latestMapPublicId);
-    }
+    const publicId = `${timestamp}.html`;
 
     // Convert the HTML content into a Base64-encoded string
     const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
@@ -88,63 +87,12 @@ export const uploadMapToCloudinary = async (
     const result = await cloudinary.uploader.upload(dataURI, {
         folder,
         resource_type: 'raw', // Specify that this is raw content
-        public_id: 'latest.html', // Set the public ID to "latest" for easy identification
+        public_id: publicId, // Set the public ID to "latest" for easy identification
+        overwrite: true, // Overwrite the existing "latest" map
+        invalidate: true, // Invalidate the CDN cache to ensure the latest version is served
     });
 
     return result.url; // Return the URL of the newly uploaded content
-};
-
-/**
- * Verifies if latest map does exist in Cloudinary. If it does, it returns true. If it doesn't, it returns false.
- *
- * string: latestMapPublicId -> checkIfLatestExists() -> Promise<boolean>
- *
- * @param latestMapPublicId - The public ID of the "latest" map in Cloudinary..
- * @returns {Promise<boolean>} - A promise that resolves with a boolean indicating whether the "latest" map exists.
- * @throws {Error} - Throws an error if the verification of the latest file fails.
- */
-export const checkIfLatestExists = async (
-    latestMapPublicId: string
-): Promise<boolean> => {
-    try {
-        await cloudinary.api.resource(latestMapPublicId, {
-            resource_type: 'raw',
-        });
-        return true;
-    } catch (error) {
-        if ((error as any).error.http_code === 404) {
-            console.log(
-                "'Latest' map does not exist in Cloudinary. Proceeding with upload."
-            );
-            return false;
-        } else {
-            console.error('Error checking resource: ', error);
-            throw error;
-        }
-    }
-};
-
-/**
- * Archives the previous "latest" map by renaming it to a timestamp.
- *
- * string: previousMapPublicId -> archivePreviousMap() -> Promise<void>
- *
- * @param previousMapPublicId - The public ID of the previous "latest" map.
- * @returns {Promise<void>} - A promise that resolves when the archival process is complete.
- * @throws {Error} - Throws an error if renaming fails.
- */
-export const archivePreviousMap = async (
-    previousMapPublicId: string
-): Promise<void> => {
-    const timestamp = new Date(Date.now() - frequencyInMinutes) // Current time minus 30 minutes
-        .toISOString()
-        .replace(/:/g, '-'); // Replace colons for Cloudinary naming compatibility
-
-    const newPublicId = `${timestamp}`;
-    // Rename the existing "latest" map
-    await cloudinary.uploader.rename(previousMapPublicId, newPublicId, {
-        resource_type: 'raw', // Ensure correct resource type for non-image files
-    });
 };
 
 export default {

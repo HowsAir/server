@@ -115,27 +115,39 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         flex-direction: row;
                         align-items: center;
                         justify-content: center;
-                        width: 110px; /* Adjust size as needed */
+                        width: 110px;
                         height: 30px;
                         background-color: var(--marker-bg-color);
-                        color: var(--marker-text-color);
+                        color: white;
                         border-radius: 20px;
                         padding: 3px;
                         box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
                         font-family: 'Outfit', sans-serif;
                         font-size: 14px;
                         text-align: center;
+                        transition: background-color 0.3s, transform 0.3s; /* Smooth transition for hover effect */
+                    }
+
+                    .custom-marker:hover {
+                        transform: scale(1.1); /* Slightly scale up the marker */
+                    }
+
+                    /* Ensure :active doesn't override hover */
+                    .custom-marker:active {
+                        transform: scale(1); /* No scaling when clicked */
                     }
 
                     .marker-svg-icon {
                         width: 20px; /* Adjust the icon size */
                         height: 20px;
                         margin-right: 5px;
+                        filter: invert(1) sepia(1) saturate(5) hue-rotate(180deg); /* Example for white color */
                     }
 
                     .marker-text {
                         font-size: 10px;
                         font-weight: bold;
+                        color: white;
                     }
 
                     /*-------------------------------------*/
@@ -239,7 +251,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
                         subdomains: 'abcd',
-                        minZoom: 14,
+                        minZoom: 13,
                         maxZoom: 18
                     }).addTo(map);
 
@@ -297,12 +309,12 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                             return { color: "#35B765", text: "Limpio" };
                         }
                         if (aqi <= 100) { // yellow
-                            return { color: "#EFBF2D", text: "Moderado" };
+                            return { color: "#E5B41C", text: "Moderado" };
                         }
                         if (aqi <= 200) { // red 
                             return { color: "#E24C4C", text: "Insalubre" };
                         } // purple
-                        return { color: "#DE7CD2", text: "Peligroso" };
+                        return { color: "#EF5CDD", text: "Peligroso" };
                     }
 
                     // Function to create custom HTML markers
@@ -313,13 +325,13 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         const svgIcon = \`
                             <img src="https://res.cloudinary.com/dcup5oalu/image/upload/v1733928181/assets/antenna-icon.svg" 
                                 alt="Icon" 
-                                class="marker-svg-icon" />\`;
+                                class="marker-svg-icon" style="color:#ffffff"/>\`;
 
                         const iconHtml = \`
                             <div class="custom-marker" style="--marker-bg-color: \${color}\;
-                                                              --marker-text-color: "black">
+                                                              --marker-text-color: "white">
                                 <div style="margin-top:auto">\${svgIcon}\</div>
-                                <div>\${text}\</div>
+                                <div style="color:#ffffff">\${text}\</div>
                             </div>\`;
 
                         return L.divIcon({
