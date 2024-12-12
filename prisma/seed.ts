@@ -67,9 +67,29 @@ async function main() {
     }
 
     // Generate measurements for each node from 8am to 8pm, 3 per hour
+    const today = new Date();
+    const baseLatitude = 39.47; // Base latitude
+    const baseLongitude = -0.376; // Base longitude
+
+    // Helper function to generate values with required precision and probability
+    function generateValue(
+        max: number,
+        threshold: number,
+        extra: number,
+        min?: number
+    ): number {
+        let value = parseFloat((Math.random() * max).toFixed(3));
+        if (min !== undefined && Math.random() < 0.7) {
+            // 70% probability to get values below min
+            value = parseFloat((Math.random() * min).toFixed(3));
+        }
+        return value > threshold
+            ? parseFloat((value + Math.random() * extra).toFixed(3))
+            : value;
+    }
+
     for (const node of nodes) {
         const measurements: any = [];
-        const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
 
@@ -82,35 +102,9 @@ async function main() {
                     const timestamp = new Date(date);
                     timestamp.setHours(hour, Math.floor(Math.random() * 60)); // Random minutes
 
-                    // Helper function to generate values with required precision and probability
-                    function generateValue(
-                        max: number,
-                        threshold: number,
-                        extra: number,
-                        min?: number
-                    ): number {
-                        let value = parseFloat(
-                            (Math.random() * max).toFixed(3)
-                        );
-                        if (min !== undefined && Math.random() < 0.7) {
-                            // 70% probability to get values below min
-                            value = parseFloat(
-                                (Math.random() * min).toFixed(3)
-                            );
-                        }
-                        return value > threshold
-                            ? parseFloat(
-                                  (value + Math.random() * extra).toFixed(3)
-                              )
-                            : value;
-                    }
-
                     const coValue = generateValue(13, 12, 9, 9);
                     const no2Value = generateValue(0.12, 0.1, 0.11, 0.053);
                     const o3Value = generateValue(0.12, 0.1, 0.11, 0.05);
-
-                    const baseLatitude = 39.47; // Base latitude
-                    const baseLongitude = -0.376; // Base longitude
 
                     // Max degree variation for ~30 meters
                     const maxLatitudeVariation = 30 / 111320; // ≈ 0.000269 degrees
@@ -152,6 +146,51 @@ async function main() {
         });
     }
 
+    // Create 10,000 random measurements linked to nodes[0] within the last 30 minutes
+    const maxLatitudeVariation = -0.04;
+    const maxLongitudeVariation = 0.04;
+
+    const recentMeasurements: any = [];
+    const now = new Date();
+    for (let i = 0; i < 200; i++) {
+        const timestamp = new Date(
+            now.getTime() - Math.random() * 30 * 60 * 1000 // Random time in the last 30 minutes
+        );
+
+        const latitude = parseFloat(
+            (
+                baseLatitude +
+                (Math.random() * maxLatitudeVariation * 2 -
+                    maxLatitudeVariation)
+            ).toFixed(6)
+        );
+        const longitude = parseFloat(
+            (
+                baseLongitude +
+                (Math.random() * maxLongitudeVariation * 2 -
+                    maxLongitudeVariation)
+            ).toFixed(6)
+        );
+
+        const coValue = generateValue(13, 12, 9, 9);
+        const no2Value = generateValue(0.12, 0.1, 0.11, 0.053);
+        const o3Value = generateValue(0.12, 0.1, 0.11, 0.05);
+
+        recentMeasurements.push({
+            o3Value,
+            coValue,
+            no2Value,
+            latitude,
+            longitude,
+            nodeId: nodes[0].id,
+            timestamp,
+        });
+    }
+
+    await prisma.measurement.createMany({
+        data: recentMeasurements,
+    });
+
     // Create 2 daily stats for each user for the last two days
     for (const user of users) {
         const dailyStats: any = [];
@@ -182,6 +221,7 @@ async function main() {
     const historicMaps: any[] = [];
     for (let i = 1; i <= 5; i++) {
         const timestamp = new Date();
+        timestamp.setDate(new Date().getDate() - i); // Last 5 days
         timestamp.setHours(Math.floor(Math.random() * 24)); // Random hour
         timestamp.setMinutes(Math.floor(Math.random() * 60)); // Random minute
         const mapUrl = `https://cloudinary.com/maps/air-quality-map-${timestamp.toISOString()}`;
