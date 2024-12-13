@@ -152,7 +152,7 @@ async function main() {
 
     const recentMeasurements: any = [];
     const now = new Date();
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 50; i++) {
         const timestamp = new Date(
             now.getTime() - Math.random() * 30 * 60 * 1000 // Random time in the last 30 minutes
         );

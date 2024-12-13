@@ -322,7 +322,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         [${heatmapData}], 
                         {
                             opacity: 0.4,          
-                            cellSize: 8,          // Initially 15, it changes depending of the zoom, for better performance
+                            cellSize: 4,          // Initially 15, it changes depending of the zoom, for better performance
                             exp: 2,                
                             max: 1,                
                             gradient: {            
@@ -344,7 +344,7 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         // After 200ms has passed since the zoom changed, redraws the IDW layer
                         redrawTimeout = setTimeout(() => {
                             const zoom = map.getZoom();
-                            let newCellSize = zoom < 15 ? 8 : zoom < 16 ? 15 : zoom < 17 ? 30 : zoom < 18 ? 35 : 75;
+                            let newCellSize = zoom < 15 ? 4 : zoom < 16 ? 8 : zoom < 17 ? 16 : zoom < 18 ? 28 : 40;
     
                             idwLayer.setOptions({ cellSize: newCellSize });
                             idwLayer.redraw();
