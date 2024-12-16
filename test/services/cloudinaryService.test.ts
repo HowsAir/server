@@ -1,13 +1,14 @@
 /**
  * @file cloudinaryService.test.ts
  * @brief Unit tests for the Cloudinary service.
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { expect, describe, it, vi, beforeEach } from 'vitest'; // Import Vitest functions for testing and mocking
 import {
     uploadImageToCloudinary,
     deleteImageFromCloudinary,
+    uploadMapToCloudinary,
 } from '../../src/services/cloudinaryService'; // Import the cloudinaryService methods to be tested
 import { v2 as cloudinary } from 'cloudinary'; // Import Cloudinary SDK to mock
 import { CloudinaryFolders } from '../../src/types/users/CloudinaryFolders';
@@ -121,6 +122,56 @@ describe('cloudinaryService', () => {
                 )
             ).rejects.toThrow('Deletion failed');
             expect(cloudinary.uploader.destroy).toHaveBeenCalled();
+        });
+    });
+
+    describe('uploadMapToCloudinary()', () => {
+        it('should upload a map and return its URL', async () => {
+            const mockMap = '<html><body>fake map data</body></html>';
+
+            const mockUrl = 'https://cloudinary.com/fake_map_url.png';
+
+            // Mock cloudinary.uploader.upload to simulate a successful upload
+            cloudinary.uploader.upload = vi
+                .fn()
+                .mockResolvedValue({ url: mockUrl });
+
+            // Call the function to test
+            const result = await uploadMapToCloudinary(
+                mockMap,
+                CloudinaryFolders.AIR_QUALITY_MAPS
+            );
+
+            // Assert the URL returned matches the mock
+            expect(result).toBe(mockUrl);
+            expect(cloudinary.uploader.upload).toHaveBeenCalledWith(
+                `data:text/html;base64,${Buffer.from(mockMap).toString('base64')}`,
+                {
+                    folder: CloudinaryFolders.AIR_QUALITY_MAPS,
+                    invalidate: true,
+                    overwrite: true,
+                    public_id: expect.any(String), // Use expect.any if the exact value isn't predictable
+                    resource_type: 'raw',
+                }
+            );
+        });
+
+        it('should throw an error if the upload fails', async () => {
+            const mockMap = '<html><body>fake map data</body></html>';
+
+            // Mock cloudinary.uploader.upload to simulate a failed upload
+            cloudinary.uploader.upload = vi
+                .fn()
+                .mockRejectedValue(new Error('Upload failed'));
+
+            // Call the function and assert an error is thrown
+            await expect(
+                uploadMapToCloudinary(
+                    mockMap,
+                    CloudinaryFolders.AIR_QUALITY_MAPS
+                )
+            ).rejects.toThrow('Upload failed');
+            expect(cloudinary.uploader.upload).toHaveBeenCalled();
         });
     });
 });
