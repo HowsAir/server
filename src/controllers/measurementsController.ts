@@ -48,30 +48,6 @@ const createMeasurement = async (
     }
 };
 
-/**
- * Method in measurementsController.ts to get all measurements from the database.
- *
- * @param req - HTTP request object of type `Request`. No parameters are expected in the body or query.
- * @param res - HTTP response object of type `Response`. Used to return the measurements to the client.
- *
- * @returns Returns an array of JSON objects representing the measurements and HTTP status 200, or an error in JSON format with HTTP status 500.
- */
-
-const getMeasurements = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<Response | void> => {
-    try {
-        const measurements: Measurement[] =
-            await measurementsService.getMeasurements();
-        return res.status(200).json(measurements);
-    } catch (error) {
-        next(error);
-    }
-};
-
 export const measurementsController = {
     createMeasurement,
-    getMeasurements,
 };

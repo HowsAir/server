@@ -7,13 +7,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { usersService } from '../services/usersService';
-import { putJwtInResponse } from '../utils/auth';
+import { putJwtInResponse } from '../utils/authUtils';
 import { measurementsService } from '../services/measurementsService';
 import { auth_token, password_reset_token } from '../middleware/auth';
-import { PasswordResetStatus } from '../types/PasswordResetStatus';
-
+import { PasswordResetStatus } from '../types/auth/PasswordResetStatus';
+import { DashboardData } from '../types/measurements/DashboardData';
 import { nodesService } from '../services/nodesService';
-import { RegisterAdminAuthorizationCode } from '../types/RegisterAdminAuthorizationCode';
+import { RegisterAdminAuthorizationCode } from '../types/users/RegisterAdminAuthorizationCode';
+import { dailyStatsService } from '../services/dailyStatsService';
 
 /**
  * Controller method for user registration.
@@ -310,14 +311,15 @@ const resetPassword = async (
 };
 
 /**
- * Controller method for getting the total distance covered by the user today.
+ * Controller method for getting the user's dashboard data.
  *
  * @param req - The HTTP Request object containing user information, with userId extracted from the token.
- * @param res - The HTTP Response object used to return the total distance to the client.
+ * @param res - The HTTP Response object used to return the dashboard data to the client.
+ * @param next - Express next function for error handling.
  *
- * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
+ * @returns {Promise<Response | void>} - A promise that resolves with the HTTP response.
  */
-const getTodayTotalDistance = async (
+const getDashboard = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -325,11 +327,45 @@ const getTodayTotalDistance = async (
     try {
         const userId = req.userId;
 
-        const totalDistance =
-            await measurementsService.getTodayTotalDistance(userId);
+        const dashboardData =
+            await measurementsService.getDashboardData(userId);
+
+        if (!dashboardData) {
+            return res.status(404).json({
+                message: 'No dashboard data found for this user',
+            });
+        }
+
         return res.status(200).json({
-            message: 'Total distance for today retrieved successfully',
-            totalDistance,
+            message: 'Dashboard data retrieved successfully',
+            data: dashboardData,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Controller method for getting the total distance covered by the user in the last month
+ *
+ * @param req - The HTTP Request object containing user information, with userId extracted from the token.
+ * @param res - The HTTP Response object used to return the total monthly distance to the client.
+ *
+ * @returns {Promise<Response>} - A promise that resolves with the HTTP response.
+ */
+const getCurrentMonthDistance = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> => {
+    try {
+        const userId = req.userId;
+
+        const currentMonthDistance =
+            await dailyStatsService.getCurrentMonthDistance(userId);
+        return res.status(200).json({
+            message: 'Total distance for the last month retrieved successfully',
+            currentMonthDistance,
         });
     } catch (error) {
         next(error);
@@ -399,7 +435,8 @@ export const usersController = {
     updateProfile,
     changePassword,
     resetPassword,
-    getTodayTotalDistance,
+    getDashboard,
+    getCurrentMonthDistance,
     getStatistics,
     getNode,
 };

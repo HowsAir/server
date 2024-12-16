@@ -7,7 +7,7 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import 'dotenv/config';
-import { UserRoleId } from '../types/UserRoleId';
+import { UserRoleId } from '../types/users/UserRoleId';
 
 export const auth_token = 'auth_token';
 export const password_reset_token = 'password_reset_token';

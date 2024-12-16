@@ -10,9 +10,9 @@ import prisma from '../../src/libs/prisma'; // Import the Prisma mock
 import bcrypt from 'bcryptjs'; // Import bcrypt for password hashing
 import { User } from '@prisma/client'; // Import User type
 import cloudinaryService from '../../src/services/cloudinaryService'; // Import the Cloudinary service mock
-import { UserRoleId } from '../../src/types/UserRoleId';
-import { CloudinaryFolders } from '../../src/types/CloudinaryFolders';
-import { PasswordResetStatus } from '../../src/types/PasswordResetStatus';
+import { UserRoleId } from '../../src/types/users/UserRoleId';
+import { CloudinaryFolders } from '../../src/types/users/CloudinaryFolders';
+import { PasswordResetStatus } from '../../src/types/auth/PasswordResetStatus';
 
 // Mock the prisma and bcrypt libraries using Vitest's mock functions
 vi.mock('../../src/libs/prisma'); // Mock Prisma to avoid database calls

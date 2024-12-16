@@ -11,12 +11,12 @@ import {
     sendPasswordResetEmail,
     sendEmailVerification,
     sendEmailApplication,
-} from '../utils/emailSender';
+} from '../utils/emailSenderUtils';
 import jwt from 'jsonwebtoken';
-import { generateResetCode, jwtConfig } from '../utils/auth';
+import { generateResetCode, jwtConfig } from '../utils/authUtils';
 import { getUserByEmail } from './usersService';
 import 'dotenv/config';
-import { ApplicationForm } from '../types/ApplicationForm';
+import { ApplicationForm } from '../types/forms/ApplicationForm';
 
 /**
  * Validates the login credentials and returns the user if successful.

@@ -12,9 +12,9 @@ import {
     verifyResetPasswordToken,
     authorizeRoles,
 } from '../middleware/auth';
-import { passwordValidationRules } from '../utils/validators';
+import { passwordValidationRules } from '../utils/validatorsUtils';
 import multer from 'multer';
-import { UserRoleId } from '../types/UserRoleId';
+import { UserRoleId } from '../types/users/UserRoleId';
 
 const router = Router();
 
@@ -114,10 +114,12 @@ router.put(
 
 router.get('/node', verifyToken, usersController.getNode);
 
+router.get('/dashboard', verifyToken, usersController.getDashboard);
+
 router.get(
-    '/today-total-distance',
+    '/current-month-distance',
     verifyToken,
-    usersController.getTodayTotalDistance
+    usersController.getCurrentMonthDistance
 );
 
 // This route is protected and only accessible by Admin users

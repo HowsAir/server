@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'; // Import Vitest functions for testing and mocking
-import { putJwtInResponse, generateResetCode } from '../../src/utils/auth'; // Import the function to be tested
+import { putJwtInResponse, generateResetCode } from '../../src/utils/authUtils'; // Import the functions to test
 import { auth_token, password_reset_token } from '../../src/middleware/auth'; // Import the cookie names for the tests
 import jwt from 'jsonwebtoken'; // Mocked jwt library
 import { Response } from 'express';

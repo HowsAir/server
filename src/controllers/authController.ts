@@ -10,14 +10,14 @@ import {
     putJwtInResponse,
     putJwtWithEmailInResponse,
     getEmailFromToken,
-} from '../utils/auth';
+} from '../utils/authUtils';
 import { authService } from '../services/authService';
 import {
     auth_token,
     password_reset_token,
     email_verified_token,
 } from '../middleware/auth';
-import { ApplicationForm } from '../types/ApplicationForm';
+import { ApplicationForm } from '../types/forms/ApplicationForm';
 
 /**
  * Login controller method.

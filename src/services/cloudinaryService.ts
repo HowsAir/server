@@ -1,11 +1,12 @@
 /**
  * @file cloudinaryService.ts
  * @brief Service for handling image uploads to Cloudinary.
- * @author Juan Diaz
+ * @author Juan Diaz & Manuel Borregales
  */
 
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryFolders } from '../types/CloudinaryFolders';
+import { CloudinaryFolders } from '../types/users/CloudinaryFolders';
+import { frequencyInMinutes } from '../cron/jobs/airQualityMapJob';
 
 /**
  * Uploads an image file to Cloudinary and stores it in the specified folder. Returns the URL of the uploaded image.
@@ -55,7 +56,47 @@ export const deleteImageFromCloudinary = async (
     await cloudinary.uploader.destroy(publicId);
 };
 
+/**
+ * Uploads an HTML map file to Cloudinary as "latest" and archives the previous "latest" map by renaming it to a timestamp.
+ *
+ * string: htmlContent -> uploadMapToCloudinary() -> Promise<string>
+ *
+ * @param htmlContent - The HTML content of the map to upload.
+ * @param folder - The Cloudinary folder to store the map, as defined in the CloudinaryFolders enum.
+ * @returns {Promise<string>} - A promise that resolves with the URL of the newly uploaded map.
+ * @throws {Error} - Throws an error if the upload or archival process fails.
+ */
+export const uploadMapToCloudinary = async (
+    htmlContent: string,
+    folder: CloudinaryFolders
+): Promise<string> => {
+    const timestamp = new Date(Date.now())
+        .toISOString()
+        .replace(/:\d{2}\.\d{3}Z$/, '') // Deletes th eseconds and milliseconds from the timestamp
+        .replace(/:/g, '-'); // replaces the colons with dashes for Cloudinary naming compatibility
+
+    const publicId = `${timestamp}.html`;
+
+    // Convert the HTML content into a Base64-encoded string
+    const base64Html = Buffer.from(htmlContent, 'utf-8').toString('base64');
+
+    // Create a data URI with the base64-encoded HTML
+    const dataURI = `data:text/html;base64,${base64Html}`;
+
+    // Upload the Base64-encoded HTML content to Cloudinary
+    const result = await cloudinary.uploader.upload(dataURI, {
+        folder,
+        resource_type: 'raw', // Specify that this is raw content
+        public_id: publicId, // Set the public ID to "latest" for easy identification
+        overwrite: true, // Overwrite the existing "latest" map
+        invalidate: true, // Invalidate the CDN cache to ensure the latest version is served
+    });
+
+    return result.url; // Return the URL of the newly uploaded content
+};
+
 export default {
     uploadImageToCloudinary,
     deleteImageFromCloudinary,
+    uploadMapToCloudinary,
 };
