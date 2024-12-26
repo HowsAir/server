@@ -6,25 +6,29 @@
 import {
     GasProportionalValueThresholds,
     GeolocatedAirQualityReading,
+    MapsGeolocatedAirQualityReadings,
 } from '../types/measurements/AirQuality';
 import { config } from 'dotenv';
-import fs from 'fs';
-import { AirQualities, AirGases } from '../types/measurements/AirQuality';
 
 config();
 
 /**
  * Generates a HTML file with a map displaying the air quality data and layers UI.
  *
- * GeoLocationAirQualityReading[] -> generateHTMLMap() -> string: HTML content
+ * MapsGeolocatedAirQualityReadings -> generateHTMLMap() -> string: HTML content
  *
- * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
+ * @param data - A set of geolocated air quality readings for building air quality maps.
  * @returns {string} - The HTML content of the map.
  */
-export function generateHTMLMap(data: GeolocatedAirQualityReading[]): string {
+export function generateHTMLMap(data: MapsGeolocatedAirQualityReadings): string {
     const token = process.env.WAQI_API_KEY as string;
-    const heatmapData = generateHeatmapData(data);
-    const htmlContent = getMapTemplateFilled(token, heatmapData);
+    
+    const generalHeatmapData = generateHeatmapData(data.generalGeolocatedAirQualityReadings);
+    const coHeatmapData = generateHeatmapData(data.coGeolocatedAirQualityReadings);
+    const o3HeatmapData = generateHeatmapData(data.o3GeolocatedAirQualityReadings);
+    const no2HeatmapData = generateHeatmapData(data.no2GeolocatedAirQualityReadings);
+
+    const htmlContent = getMapTemplateFilled(token, generalHeatmapData, coHeatmapData, no2HeatmapData, o3HeatmapData);
 
     return htmlContent;
 }
@@ -69,12 +73,19 @@ function getIntensity(airQuality: number): number {
  * Returns a string with the HTML content of the map.
  *
  * token:string
- * heatmapDaTa:string -> getMapTemplateFilled() -> string: HTML content
- *
- * @param data - An array of GeolocatedAirQualityReading objects containing the air quality data.
+ * generalHeatmapData:string -> getMapTemplateFilled() -> string: HTML content
+ * coHeatmapData:string
+ * no2HeatmapData:string
+ * o3HeatmapData:string
+ * 
+ * @param token - The token for the WAQI API.
+ * @param generalHeatmapData - The data for the general air quality heatmap.
+ * @param coHeatmapData - The data for the CO air quality heatmap.
+ * @param no2HeatmapData - The data for the NO2 air quality heatmap.
+ * @param o3HeatmapData - The data for the O3 air quality heatmap.
  * @returns {string} - The HTML content of the map.
  */
-function getMapTemplateFilled(token: string, heatmapData: string): string {
+function getMapTemplateFilled(token: string, generalHeatmapData: string, coHeatmapData: string, no2HeatmapData: string, o3HeatmapData: string): string {
     return `<!DOCTYPE html>
             <html lang="en">
             
@@ -313,25 +324,70 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                         maxZoom: 18
                     }).addTo(map);
 
-                    //---------------------------------------------------------------------------------
-                    //  GENERAL QUALITY MAP WITH IDW LAYER
-                    //---------------------------------------------------------------------------------
-
-                    // Create the IDW layer from the plugin with the heatmap data
-                    const idwLayer = L.idwLayer(
-                        [${heatmapData}], 
-                        {
-                            opacity: 0.4,          
-                            cellSize: 4,          // Initially 15, it changes depending of the zoom, for better performance
-                            exp: 2,                
-                            max: 1,                
-                            gradient: {            
-                                0.3: 'green',
-                                0.6: 'yellow',
-                                1.0: 'red'
+                    // General Air Quality Layer
+                        const idwLayerGeneral = L.idwLayer(
+                            [${generalHeatmapData}],
+                            {
+                                opacity: 0.4,
+                                cellSize: 4,
+                                exp: 2,
+                                max: 1,
+                                gradient: {
+                                    0.3: 'green',
+                                    0.6: 'yellow',
+                                    1.0: 'red'
+                                }
                             }
-                        }
-                    );
+                        );
+
+                        // CO Layer
+                        const idwLayerCO = L.idwLayer(
+                            [${coHeatmapData}],
+                            {
+                                opacity: 0.4,
+                                cellSize: 4,
+                                exp: 2,
+                                max: 1,
+                                gradient: {
+                                    0.3: 'green',
+                                    0.6: 'yellow',
+                                    1.0: 'red'
+                                }
+                            }
+                        );
+
+                        // NO2 Layer
+                        const idwLayerNO2 = L.idwLayer(
+                            [${no2HeatmapData}],
+                            {
+                                opacity: 0.4,
+                                cellSize: 4,
+                                exp: 2,
+                                max: 1,
+                                gradient: {
+                                    0.3: 'green',
+                                    0.6: 'yellow',
+                                    1.0: 'red'
+                                }
+                            }
+                        );
+
+                        // O3 Layer
+                        const idwLayerO3 = L.idwLayer(
+                            [${o3HeatmapData}],
+                            {
+                                opacity: 0.4,
+                                cellSize: 4,
+                                exp: 2,
+                                max: 1,
+                                gradient: {
+                                    0.3: 'green',
+                                    0.6: 'yellow',
+                                    1.0: 'red'
+                                }
+                            }
+                        );
+
 
                     // Everytime the zoom changes, update the cell size using Debounce
                     map.on('zoomend', updateCellSize);
@@ -346,13 +402,18 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                             const zoom = map.getZoom();
                             let newCellSize = zoom < 15 ? 4 : zoom < 16 ? 8 : zoom < 17 ? 16 : zoom < 18 ? 28 : 40;
     
-                            idwLayer.setOptions({ cellSize: newCellSize });
-                            idwLayer.redraw();
+                            idwLayerGeneral.setOptions({ cellSize: newCellSize }).redraw();
+                            idwLayerCO.setOptions({ cellSize: newCellSize }).redraw();
+                            idwLayerNO2.setOptions({ cellSize: newCellSize }).redraw();
+                            idwLayerO3.setOptions({ cellSize: newCellSize }).redraw();
                         }, 200); 
 
                     }
                     
-                    idwLayer.addTo(map);
+                    idwLayerGeneral.addTo(map);
+                    idwLayerCO.addTo(map);
+                    idwLayerNO2.addTo(map);
+                    idwLayerO3.addTo(map);
 
                     //---------------------------------------------------------------------------------
                     //  FETCH TO API WAQI
@@ -427,17 +488,12 @@ function getMapTemplateFilled(token: string, heatmapData: string): string {
                     //---------------------------------------------------------------------------------
                     //  LAYERS CONTROL
                     //---------------------------------------------------------------------------------
-
-                    // Disabled layers for each gas type that will be added later
-                    // const additionalLayers = {
-                    //     "<span class='layer-label disabled'>Ozono O3</span>": L.layerGroup(),
-                    //     "<span class='layer-label disabled'>Monóxido de carbono CO</span>": L.layerGroup(),
-                    //     "<span class='layer-label disabled'>Dióxido de nitrógeno NO2</span>": L.layerGroup(),
-                    // };
-
+                    
                     const layersControl = L.control.layers(null, { 
-                        "<span class='layer-label'>Mapa de calidad general</span>": idwLayer,
-                        //...additionalLayers, 
+                        "<span class='layer-label'>Mapa de calidad general</span>": idwLayerGeneral,
+                        "<span class='layer-label'>Monóxido de carbono CO</span>": idwLayerCO,
+                        "<span class='layer-label'>Dióxido de nitrógeno NO2</span>": idwLayerNO2,
+                        "<span class='layer-label'>Ozono O3</span>": idwLayerO3,
                         "<span class='layer-label official-stations'>Estaciones oficiales</span>": officialStations
                     }, { collapsed: false }).addTo(map);
 

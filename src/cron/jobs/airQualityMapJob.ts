@@ -63,17 +63,17 @@ const generateAirQualityMap = async (): Promise<void> => {
     airQualityMapTimestamp.setSeconds(0, 0);
     
     try {
-        const geolocatedAirQualityReadings =
-            await measurementsService.getGeolocatedAirQualityReadingsInRange(
+        const mapsGeolocatedAirQualityReadings =
+            await measurementsService.getMapsGeolocatedAirQualityReadingsInRange(
                 timeRange
             );
 
         console.log(
             'Geolocated air quality readings:',
-            JSON.stringify(geolocatedAirQualityReadings)
+            JSON.stringify(mapsGeolocatedAirQualityReadings, null, 2)
         );
 
-        const html = await generateHTMLMap(geolocatedAirQualityReadings);
+        const html = await generateHTMLMap(mapsGeolocatedAirQualityReadings);
 
         const newMapUrl = await uploadMapToCloudinary(
             html,

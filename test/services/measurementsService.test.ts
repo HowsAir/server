@@ -539,7 +539,7 @@ describe('measurementsService', () => {
             });
 
             vi.mocked(
-                airQualityUtils.getAirQualityReadingFromGasesValues
+                airQualityUtils.getAirQualityReadingFromMeasurementGasesValues
             ).mockReturnValueOnce({
                 timestamp: mockTimeRanges[0].start,
                 airQuality: AirQualities.Good,
@@ -712,7 +712,7 @@ describe('measurementsService', () => {
                 .mockResolvedValue(mockAirQualityReadings);
 
             const mockAirQualityReadingFromGasesValues = vi
-                .mocked(airQualityUtils.getAirQualityReadingFromGasesValues)
+                .mocked(airQualityUtils.getAirQualityReadingFromMeasurementGasesValues)
                 .mockReturnValue({
                     timestamp: mockLastMeasurement.timestamp,
                     airQuality: AirQualities.Good,
@@ -826,7 +826,7 @@ describe('measurementsService', () => {
 
             const mockAirQualityReadingFromGasesValues = vi
                 .mocked(
-                    airQualityUtils.getAirQualityReadingFromGasesValues
+                    airQualityUtils.getAirQualityReadingFromMeasurementGasesValues
                 )
                 .mockReturnValue(mockLastAirQualityReading);
             
@@ -889,8 +889,8 @@ describe('measurementsService', () => {
     });
 
 
-    describe('getGeolocatedAirQualityReadingsInRange', () => {
-        it('should return geolocated air quality readings for a valid time range', async () => {
+    describe('getMapsGeolocatedAirQualityReadingsInRange', () => {
+        it('should return geolocated air quality readings for all gas types within a valid time range', async () => {
             const mockTimeRange = {
                 start: new Date('2023-11-01T00:00:00Z'),
                 end: new Date('2023-11-01T08:00:00Z'),
@@ -919,68 +919,84 @@ describe('measurementsService', () => {
                 },
             ];
 
-            const mockAirQualityReadings = [
-                {
-                    timestamp: mockMeasurements[0].timestamp,
-                    airQuality: AirQualities.Good,
-                    proportionalValue: 0.5,
-                    gas: AirGases.O3,
-                    ppmValue: 0.05,
-                },
-                {
-                    timestamp: mockMeasurements[1].timestamp,
-                    airQuality: AirQualities.Regular,
-                    proportionalValue: 0.7,
-                    gas: AirGases.CO,
-                    ppmValue: 1.5,
-                },
-            ];
+            const mockAirQualityReadings = {
+                general: [
+                    { airQuality: AirQualities.Good, proportionalValue: 0.5, gas: AirGases.O3, ppmValue: 0.05, timestamp: mockMeasurements[0].timestamp },
+                    { airQuality: AirQualities.Regular, proportionalValue: 0.7, gas: AirGases.CO, ppmValue: 1.5, timestamp: mockMeasurements[0].timestamp },
+                ],
+                co: [
+                    { airQuality: AirQualities.Good, proportionalValue: 0.5, gas: AirGases.CO, ppmValue: 1.2, timestamp: mockMeasurements[0].timestamp },
+                    { airQuality: AirQualities.Bad, proportionalValue: 0.9, gas: AirGases.CO, ppmValue: 1.5, timestamp: mockMeasurements[0].timestamp },
+                ],
+                no2: [
+                    { airQuality: AirQualities.Regular, proportionalValue: 0.6, gas: AirGases.NO2, ppmValue: 0.07, timestamp: mockMeasurements[0].timestamp },
+                    { airQuality: AirQualities.Regular, proportionalValue: 0.65, gas: AirGases.NO2, ppmValue: 0.09, timestamp: mockMeasurements[0].timestamp },
+                ],
+                o3: [
+                    { airQuality: AirQualities.Good, proportionalValue: 0.4, gas: AirGases.O3, ppmValue: 0.05, timestamp: mockMeasurements[0].timestamp },
+                    { airQuality: AirQualities.Regular, proportionalValue: 0.8, gas: AirGases.O3, ppmValue: 0.1, timestamp: mockMeasurements[0].timestamp },
+                ],
+            };
 
             // Mocking dependencies
-            vi.spyOn(
-                measurementsService,
-                'getMeasurementsInRange'
-            ).mockResolvedValue(mockMeasurements);
+            vi.spyOn(measurementsService, 'getMeasurementsInRange').mockResolvedValue(mockMeasurements);
 
-            vi.spyOn(airQualityUtils, 'getAirQualityReadingFromGasesValues')
-                .mockReturnValueOnce(mockAirQualityReadings[0])
-                .mockReturnValueOnce(mockAirQualityReadings[1]);
+            vi.spyOn(airQualityUtils, 'getAirQualityReadingFromMeasurementGasesValues')
+                .mockReturnValueOnce(mockAirQualityReadings.general[0])
+                .mockReturnValueOnce(mockAirQualityReadings.general[1]);
 
-            const result =
-                await measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange);
+            vi.spyOn(airQualityUtils, 'getAirQualityReadingFromMeasurementSingleGasValue')
+                .mockReturnValueOnce(mockAirQualityReadings.co[0])
+                .mockReturnValueOnce(mockAirQualityReadings.no2[0])
+                .mockReturnValueOnce(mockAirQualityReadings.o3[0])
+                .mockReturnValueOnce(mockAirQualityReadings.co[1])
+                .mockReturnValueOnce(mockAirQualityReadings.no2[1])
+                .mockReturnValueOnce(mockAirQualityReadings.o3[1]);
 
-            expect(result).toEqual([
-                {
-                    ...mockAirQualityReadings[0],
-                    latitude: mockMeasurements[0].latitude,
-                    longitude: mockMeasurements[0].longitude,
-                },
-                {
-                    ...mockAirQualityReadings[1],
-                    latitude: mockMeasurements[1].latitude,
-                    longitude: mockMeasurements[1].longitude,
-                },
-            ]);
+            const result = await measurementsService.getMapsGeolocatedAirQualityReadingsInRange(mockTimeRange);
+
+            expect(result).toEqual({
+                generalGeolocatedAirQualityReadings: mockMeasurements.map((measurement, i) => ({
+                    ...mockAirQualityReadings.general[i],
+                    latitude: measurement.latitude,
+                    longitude: measurement.longitude,
+                })),
+                coGeolocatedAirQualityReadings: mockMeasurements.map((measurement, i) => ({
+                    ...mockAirQualityReadings.co[i],
+                    latitude: measurement.latitude,
+                    longitude: measurement.longitude,
+                })),
+                no2GeolocatedAirQualityReadings: mockMeasurements.map((measurement, i) => ({
+                    ...mockAirQualityReadings.no2[i],
+                    latitude: measurement.latitude,
+                    longitude: measurement.longitude,
+                })),
+                o3GeolocatedAirQualityReadings: mockMeasurements.map((measurement, i) => ({
+                    ...mockAirQualityReadings.o3[i],
+                    latitude: measurement.latitude,
+                    longitude: measurement.longitude,
+                })),
+            });
 
             vi.restoreAllMocks();
         });
 
-        it('should return an empty array when no measurements exist', async () => {
+        it('should return empty arrays for all gas types when no measurements exist', async () => {
             const mockTimeRange = {
                 start: new Date('2023-11-01T00:00:00Z'),
                 end: new Date('2023-11-01T08:00:00Z'),
             };
 
-            // Mocking dependencies
-            vi.spyOn(
-                measurementsService,
-                'getMeasurementsInRange'
-            ).mockResolvedValue([]);
+            vi.spyOn(measurementsService, 'getMeasurementsInRange').mockResolvedValue([]);
 
-            const result =
-                await measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange);
+            const result = await measurementsService.getMapsGeolocatedAirQualityReadingsInRange(mockTimeRange);
 
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                generalGeolocatedAirQualityReadings: [],
+                coGeolocatedAirQualityReadings: [],
+                no2GeolocatedAirQualityReadings: [],
+                o3GeolocatedAirQualityReadings: [],
+            });
 
             vi.restoreAllMocks();
         });
@@ -991,15 +1007,11 @@ describe('measurementsService', () => {
                 end: new Date('2023-11-01T08:00:00Z'),
             };
 
-            // Mocking dependencies
-            vi.spyOn(
-                measurementsService,
-                'getMeasurementsInRange'
-            ).mockRejectedValue(new Error('Database error'));
+            vi.spyOn(measurementsService, 'getMeasurementsInRange').mockRejectedValue(new Error('Database error'));
 
-            await expect(
-                measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange)
-            ).rejects.toThrow('Database error');
+            await expect(measurementsService.getMapsGeolocatedAirQualityReadingsInRange(mockTimeRange)).rejects.toThrow(
+                'Database error'
+            );
 
             vi.restoreAllMocks();
         });
@@ -1023,24 +1035,18 @@ describe('measurementsService', () => {
                 },
             ];
 
-            // Mocking dependencies
-            vi.spyOn(
-                measurementsService,
-                'getMeasurementsInRange'
-            ).mockResolvedValue(mockMeasurements);
+            vi.spyOn(measurementsService, 'getMeasurementsInRange').mockResolvedValue(mockMeasurements);
 
-            vi.spyOn(
-                airQualityUtils,
-                'getAirQualityReadingFromGasesValues'
-            ).mockImplementation(() => {
+            vi.spyOn(airQualityUtils, 'getAirQualityReadingFromMeasurementGasesValues').mockImplementation(() => {
                 throw new Error('Error calculating air quality');
             });
 
             await expect(
-                measurementsService.getGeolocatedAirQualityReadingsInRange(mockTimeRange)
+                measurementsService.getMapsGeolocatedAirQualityReadingsInRange(mockTimeRange)
             ).rejects.toThrow('Error calculating air quality');
 
             vi.restoreAllMocks();
         });
     });
+
 });

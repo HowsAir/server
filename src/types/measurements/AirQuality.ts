@@ -81,3 +81,15 @@ export interface AirQualityReadingsInfo {
     airQualityReadings: AirQualityReading[];
     overallAirQuality: AirQualities | null;
 }
+
+/**
+ *
+ * This corresponds to a set of geolocated air quality readings for building air quality maps. 
+ * 
+ */
+export interface MapsGeolocatedAirQualityReadings {
+    generalGeolocatedAirQualityReadings: GeolocatedAirQualityReading[];
+    o3GeolocatedAirQualityReadings: GeolocatedAirQualityReading[];
+    coGeolocatedAirQualityReadings: GeolocatedAirQualityReading[];
+    no2GeolocatedAirQualityReadings: GeolocatedAirQualityReading[];
+}

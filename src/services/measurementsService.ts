@@ -8,9 +8,11 @@ import { Measurement, NodeStatus } from '@prisma/client';
 import prisma from '../libs/prisma';
 import { DashboardData } from '../types/measurements/DashboardData';
 import {
+    AirGases,
     AirQualityReading,
     AirQualityReadingsInfo,
     GeolocatedAirQualityReading,
+    MapsGeolocatedAirQualityReadings,
     MeasurementGasesValues,
 } from '../types/measurements/AirQuality';
 import {
@@ -19,6 +21,7 @@ import {
 } from '../types/measurements/Distance';
 import { airQualityUtils } from '../utils/airQualityUtils';
 import cacheService from './cacheService';
+import { get } from 'http';
 
 /**
  * Saves a new measurement in the database
@@ -274,7 +277,7 @@ export const getUserAirQualityReadingsInRange = async (
             airQualityUtils.calculateGasAverages(measurements);
 
         const airQualityReading =
-            airQualityUtils.getAirQualityReadingFromGasesValues(
+            airQualityUtils.getAirQualityReadingFromMeasurementGasesValues(
                 gasesAverageValues,
                 range.start
             );
@@ -311,7 +314,7 @@ const getDashboardData = async (
     };
 
     const lastAirQualityReading =
-        airQualityUtils.getAirQualityReadingFromGasesValues(
+        airQualityUtils.getAirQualityReadingFromMeasurementGasesValues(
             gasesValues,
             lastMeasurement.timestamp
         );
@@ -366,17 +369,20 @@ const getDashboardData = async (
 /**
  * Retrieves geolocated air quality readings for a given time range.
  * 
- * { start: Date, end: Date } -> getGeolocatedAirQualityReadingsInRange() -> Promise<GeolocatedAirQualityReading[]>
+ * { start: Date, end: Date } -> getMapsGeolocatedAirQualityReadingsInRange() -> Promise<MapsGeolocatedAirQualityReadings>
  * 
  * @param timeRange - An object containing the start and end timestamps defining the time range.
- * @returns {Promise<GeolocatedAirQualityReading[]>} - A promise that resolves to an array of geolocated air quality readings within the specified time range.
+ * @returns {Promise<MapsGeolocatedAirQualityReadings>} - A promise that resolves to a set of geolocated air quality readings for building air quality maps.
  */
-const getGeolocatedAirQualityReadingsInRange = async(
+const getMapsGeolocatedAirQualityReadingsInRange = async(
     timeRange: { start: Date; end: Date }
-): Promise<GeolocatedAirQualityReading[]> => {
+):Promise<MapsGeolocatedAirQualityReadings> => {
     const measurements = await measurementsService.getMeasurementsInRange(timeRange);
 
     const geolocatedAirQualityReadings: GeolocatedAirQualityReading[] = [];
+    const o3GeolocatedAirQualityReadings: GeolocatedAirQualityReading[] = [];
+    const coGeolocatedAirQualityReadings: GeolocatedAirQualityReading[] = [];
+    const no2GeolocatedAirQualityReadings: GeolocatedAirQualityReading[] = [];
 
     for (const measurement of measurements) {
         const measurementGasesValues: MeasurementGasesValues = {
@@ -385,21 +391,59 @@ const getGeolocatedAirQualityReadingsInRange = async(
             no2: measurement.no2Value,
         };
 
-        const airQualityReading = airQualityUtils.getAirQualityReadingFromGasesValues(
+        const generalAirQualityReading = airQualityUtils.getAirQualityReadingFromMeasurementGasesValues(
             measurementGasesValues,
             measurement.timestamp
         );
 
-        const geolocatedAirQualityReading: GeolocatedAirQualityReading = {
-            ...airQualityReading,
+        const generalGeolocatedAirQualityReading: GeolocatedAirQualityReading = {
+            ...generalAirQualityReading,
             latitude: measurement.latitude,
             longitude: measurement.longitude,
         }
+        
+        const coAirQualityReading = airQualityUtils.getAirQualityReadingFromMeasurementSingleGasValue(
+            AirGases.CO, measurement.coValue, measurement.timestamp
+        );
 
-        geolocatedAirQualityReadings.push(geolocatedAirQualityReading);
+        const coGeolocatedAirQualityReading: GeolocatedAirQualityReading = {
+            ...coAirQualityReading,
+            latitude: measurement.latitude,
+            longitude: measurement.longitude,
+        };
+        
+        const no2AirQualityReading = airQualityUtils.getAirQualityReadingFromMeasurementSingleGasValue(
+            AirGases.NO2, measurement.no2Value, measurement.timestamp
+        );
+
+        const no2GeolocatedAirQualityReading: GeolocatedAirQualityReading = {
+            ...no2AirQualityReading,
+            latitude: measurement.latitude,
+            longitude: measurement.longitude,
+        };
+
+        const o3AirQualityReading = airQualityUtils.getAirQualityReadingFromMeasurementSingleGasValue(
+            AirGases.O3, measurement.o3Value, measurement.timestamp
+        );
+
+        const o3GeolocatedAirQualityReading: GeolocatedAirQualityReading = {
+            ...o3AirQualityReading,
+            latitude: measurement.latitude,
+            longitude: measurement.longitude,
+        };
+        
+        geolocatedAirQualityReadings.push(generalGeolocatedAirQualityReading);
+        coGeolocatedAirQualityReadings.push(coGeolocatedAirQualityReading);
+        no2GeolocatedAirQualityReadings.push(no2GeolocatedAirQualityReading);
+        o3GeolocatedAirQualityReadings.push(o3GeolocatedAirQualityReading);
     }
 
-    return geolocatedAirQualityReadings;
+    return {
+        generalGeolocatedAirQualityReadings: geolocatedAirQualityReadings,
+        coGeolocatedAirQualityReadings: coGeolocatedAirQualityReadings,
+        no2GeolocatedAirQualityReadings: no2GeolocatedAirQualityReadings,
+        o3GeolocatedAirQualityReadings: o3GeolocatedAirQualityReadings,
+    };
 }
 
 
@@ -413,5 +457,5 @@ export const measurementsService = {
     getUserMeasurementsInRange,
     getUserAirQualityReadingsInRange,
     getDashboardData,
-    getGeolocatedAirQualityReadingsInRange,
+    getMapsGeolocatedAirQualityReadingsInRange,
 };
