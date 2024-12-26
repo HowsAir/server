@@ -49,13 +49,14 @@ export interface MeasurementGasesValues {
  *
  * This corresponds to a reading of air quality data at a specific time.
  * The gas field is the worst gas in the reading, which is used to determine the air quality.
+ * Nevertheless, it is possible to only represent the air quality based on a specific gas.
  *
  */
 export interface AirQualityReading {
     timestamp: Date;
     airQuality: AirQualities | null;
     proportionalValue: number | null;
-    gas: AirGases | null; //
+    gas: AirGases | null; 
     ppmValue: number | null;
 }
 
