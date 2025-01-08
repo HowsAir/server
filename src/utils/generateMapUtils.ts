@@ -522,9 +522,6 @@ function getMapTemplateFilled(
                     // Access the layers control container to style it
                     const layersControlContainer = layersControl.getContainer();
 
-                    // Variable para mantener la capa activa
-                    let activeLayer = \`<span class="layer-label">Mapa de calidad general</span>\`;
-                    
                     const layerSeparator = document.createElement("div");
                     layerSeparator.className = "layers-separator";
 
@@ -570,56 +567,72 @@ function getMapTemplateFilled(
                     }, 100); // Delay to ensure the DOM is fully rendered
 
                     // ADD EVENT LISTENERS TO ALL CHECKBOXES
+                    
+                    let activeLayerName = \`<span class="layer-label">Mapa de calidad general</span>\`;
 
-                        const checkboxes = overlaysContainer.querySelectorAll('input[type="checkbox"]');
-                        checkboxes.forEach(checkbox => {
-                            checkbox.addEventListener('change', (event) => {
-                                const layerName = checkbox.nextElementSibling?.innerHTML.trim();
+                    const checkboxes = overlaysContainer.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', (event) => {
+                            const layerName = checkbox.nextElementSibling?.innerHTML.trim();
 
-                                console.log('previous layer:', activeLayer);
-                                console.log('new name:', layerName);
+                            console.log('previous layer:', activeLayerName);
+                            console.log('new name:', layerName);
 
-                                // Ignorar cualquier cambio relacionado con la capa de "Estaciones oficiales"
-                                if (layerName === \`<span class="layer-label official-stations">Estaciones oficiales</span>\`) {
-                                    console.log('No se puede modificar la capa de estaciones oficiales');
-                                    return;
-                                }
+                            // Ignorar cualquier cambio relacionado con la capa de "Estaciones oficiales"
+                            if (layerName === \`<span class="layer-label official-stations">Estaciones oficiales</span>\`) {
+                                console.log('No se puede modificar la capa de estaciones oficiales');
+                                return;
+                            }
 
-                                // Si el checkbox está activado
-                                if (checkbox.checked) {
-                                    // Eliminar la capa activa previa si es necesario
-                                    if (activeLayer && activeLayer !== layerName) {
-                                        const previousCheckbox = Array.from(checkboxes).find(cb => cb.nextElementSibling?.innerHTML.trim() === activeLayer);
-                                        if (previousCheckbox) {
-                                            previousCheckbox.checked = false;
-                                            const previousLayer = layersControl._layers.find(layer => layer.name === activeLayer)?.layer;
-                                            if (previousLayer) previousLayer.remove();
-                                        }
+                            // Si el checkbox está activado
+                            if (checkbox.checked) {
+                                // Eliminar la capa activa previa si es necesario
+                                if (activeLayerName && activeLayerName !== layerName) {
+                                    const previousCheckbox = Array.from(checkboxes).find(
+                                    (cb) => cb.nextElementSibling?.innerHTML.trim() === activeLayerName
+                                    );
 
-                                        // if(activeLayer === \`<span class="layer-label">Mapa de calidad general</span>\`) map.removeLayer(idwLayerGeneral);
-                                        //     else if(activeLayer === \`<span class="layer-label">MonóWxido de carbono CO</span>\`) map.removeLayer(idwLayerCO);
-                                        //     else if(activeLayer === \`<span class="layer-label">Dióxido de nitrógeno NO2</span>\`) map.removeLayer(idwLayerNO2);
-                                        //     else if(activeLayer === \`<span class="layer-label">Ozono O3</span>\`) map.removeLayer(idwLayerO3);
+                                    if (previousCheckbox) {
+                                    previousCheckbox.checked = false;
+
+                                    // Eliminar la capa anterior del mapa
+                                    const previousLayer = layersControl._layers.find(
+                                        (layer) => layer.name === activeLayerName
+                                    )?.layer;
+
+                                    if (previousLayer) map.removeLayer(previousLayer);
                                     }
 
-                                    // Establecer la nueva capa activa
-                                    activeLayer = layerName;
-
-                                    // Añadir la nueva capa al mapa
-                                    const newLayer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
-                                    if (newLayer) map.addLayer(newLayer);
-                                } else {
-                                    // Si el checkbox se desactiva, eliminar la capa correspondiente
-                                    const layer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
-                                    if (layer) map.removeLayer(layer);
-
-                                    // No modificar activeLayer si es "Estaciones oficiales"
-                                    if (layerName !== '<span class="layer-label">Estaciones oficiales</span>') {
-                                        activeLayer = null;
-                                    }
+                                    console.log("hola1: ", layersControl);
+                                    removeLayer(activeLayerName);
+                                    console.log("hola2: ", layersControl);
                                 }
-                            });
+
+                                // Establecer la nueva capa activa
+                                activeLayerName = layerName;
+
+                                // Añadir la nueva capa al mapa
+                                const newLayer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
+                                if (newLayer) map.addLayer(newLayer);
+                            } else {
+                                // Si el checkbox se desactiva, eliminar la capa correspondiente
+                                removeLayer(layerName);
+
+                                // No modificar activeLayer si es "Estaciones oficiales"
+                                if (layerName !== '<span class="layer-label">Estaciones oficiales</span>') {
+                                    activeLayerName = null;
+                                }
+                            }
                         });
+                    });
+
+                    const removeLayer = (layerName) => {
+                       const layer = layersControl._layers.find(
+                            (layer) => layer.name === layerName
+                        )?.layer;
+                        if (layer) map.removeLayer(layer);
+                    };
+
                 </script>
 
             </body>
