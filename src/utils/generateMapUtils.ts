@@ -20,15 +20,31 @@ config();
  * @param data - A set of geolocated air quality readings for building air quality maps.
  * @returns {string} - The HTML content of the map.
  */
-export function generateHTMLMap(data: MapsGeolocatedAirQualityReadings): string {
+export function generateHTMLMap(
+    data: MapsGeolocatedAirQualityReadings
+): string {
     const token = process.env.WAQI_API_KEY as string;
-    
-    const generalHeatmapData = generateHeatmapData(data.generalGeolocatedAirQualityReadings);
-    const coHeatmapData = generateHeatmapData(data.coGeolocatedAirQualityReadings);
-    const o3HeatmapData = generateHeatmapData(data.o3GeolocatedAirQualityReadings);
-    const no2HeatmapData = generateHeatmapData(data.no2GeolocatedAirQualityReadings);
 
-    const htmlContent = getMapTemplateFilled(token, generalHeatmapData, coHeatmapData, no2HeatmapData, o3HeatmapData);
+    const generalHeatmapData = generateHeatmapData(
+        data.generalGeolocatedAirQualityReadings
+    );
+    const coHeatmapData = generateHeatmapData(
+        data.coGeolocatedAirQualityReadings
+    );
+    const o3HeatmapData = generateHeatmapData(
+        data.o3GeolocatedAirQualityReadings
+    );
+    const no2HeatmapData = generateHeatmapData(
+        data.no2GeolocatedAirQualityReadings
+    );
+
+    const htmlContent = getMapTemplateFilled(
+        token,
+        generalHeatmapData,
+        coHeatmapData,
+        no2HeatmapData,
+        o3HeatmapData
+    );
 
     return htmlContent;
 }
@@ -77,7 +93,7 @@ function getIntensity(airQuality: number): number {
  * coHeatmapData:string
  * no2HeatmapData:string
  * o3HeatmapData:string
- * 
+ *
  * @param token - The token for the WAQI API.
  * @param generalHeatmapData - The data for the general air quality heatmap.
  * @param coHeatmapData - The data for the CO air quality heatmap.
@@ -85,7 +101,13 @@ function getIntensity(airQuality: number): number {
  * @param o3HeatmapData - The data for the O3 air quality heatmap.
  * @returns {string} - The HTML content of the map.
  */
-function getMapTemplateFilled(token: string, generalHeatmapData: string, coHeatmapData: string, no2HeatmapData: string, o3HeatmapData: string): string {
+function getMapTemplateFilled(
+    token: string,
+    generalHeatmapData: string,
+    coHeatmapData: string,
+    no2HeatmapData: string,
+    o3HeatmapData: string
+): string {
     return `<!DOCTYPE html>
             <html lang="en">
             
@@ -411,9 +433,9 @@ function getMapTemplateFilled(token: string, generalHeatmapData: string, coHeatm
                     }
                     
                     idwLayerGeneral.addTo(map);
-                    idwLayerCO.addTo(map);
-                    idwLayerNO2.addTo(map);
-                    idwLayerO3.addTo(map);
+                    //idwLayerCO.addTo(map);
+                    //idwLayerNO2.addTo(map);
+                    //idwLayerO3.addTo(map);
 
                     //---------------------------------------------------------------------------------
                     //  FETCH TO API WAQI
@@ -489,6 +511,9 @@ function getMapTemplateFilled(token: string, generalHeatmapData: string, coHeatm
                     //  LAYERS CONTROL
                     //---------------------------------------------------------------------------------
                     
+                    // Variable para mantener la capa activa
+                    let activeLayer = \`<span class="layer-label">Mapa de calidad general</span>\`;
+
                     const layersControl = L.control.layers(null, { 
                         "<span class='layer-label'>Mapa de calidad general</span>": idwLayerGeneral,
                         "<span class='layer-label'>Monóxido de carbono CO</span>": idwLayerCO,
@@ -500,42 +525,82 @@ function getMapTemplateFilled(token: string, generalHeatmapData: string, coHeatm
                     // Access the layers control container to style it
                     const layersControlContainer = layersControl.getContainer();
 
-                    // Wait for the layers control to render completely, this helps when changing the border
-                    // radius of the official stations checkbox, because leaflet adds classes too whe rendering
+                    // Wait for the layers control to render completely
                     setTimeout(() => {
+                        // ADDING TITLE TO LAYERS CONTROL
 
-                    // ADDING TITLE TO LAYERS CONTROL
+                        const title = document.createElement('div');
+                        title.innerHTML = '<strong>Capas</strong>';
+                        title.className = 'layers-control-title';
 
-                    const title = document.createElement('div');
-                    title.innerHTML = '<strong>Capas</strong>';
-                    title.className = 'layers-control-title';
+                        // Insert the title into the layers control box
+                        layersControlContainer.insertBefore(title, layersControlContainer.firstChild);
 
-                    // Insert the title into the layers control box
-                    layersControlContainer.insertBefore(title, layersControlContainer.firstChild);
+                        // ADDING SEPARATOR TO LAYERS CONTROL AND CHANGING STYLE OF OFFICIAL STATIONS CHECKBOX
 
-                    // ADDING SEPARATOR TO LAYERS CONTROL AND CHANGING STYLE OF OFFICIAL STATIONS CHECKBOX
+                        const layerSeparator = document.createElement('div');
+                        layerSeparator.className = 'layers-separator';
 
-                    const layerSeparator = document.createElement('div');
-                    layerSeparator.className = 'layers-separator';
+                        // Find the "leaflet-control-layers-overlays" container
+                        const overlaysContainer = layersControlContainer.querySelector('.leaflet-control-layers-overlays');
 
-                    // Find the "leaflet-control-layers-overlays" container
-                    const overlaysContainer = layersControlContainer.querySelector('.leaflet-control-layers-overlays');
+                        if (overlaysContainer) {
+                            // Find the "Estaciones oficiales" label and its parent label
+                            const officialStationsLabelParent = overlaysContainer.querySelector('span.official-stations')?.closest('label');
 
-                    if (overlaysContainer) {
-                        // Find the "Estaciones oficiales" label and its parent label
-                        const officialStationsLabelParent = overlaysContainer.querySelector('span.official-stations')?.closest('label');
+                            if (officialStationsLabelParent) {
+                                // Insert the separator before the "Estaciones oficiales" label
+                                overlaysContainer.insertBefore(layerSeparator, officialStationsLabelParent);
+                            }
 
-                        if (officialStationsLabelParent) {
-                            // Insert the separator before the "Estaciones oficiales" label
-                            overlaysContainer.insertBefore(layerSeparator, officialStationsLabelParent);
+                            // Changing the style of the official stations checkbox
+                            const checkbox = officialStationsLabelParent?.querySelector('input[type="checkbox"]');
+                            checkbox?.classList.add('official-stations-checkbox');
                         }
 
-                        // Changing the style of the official stations checkbox
-                        const checkbox = officialStationsLabelParent?.querySelector('input[type="checkbox"]');
-                        checkbox?.classList.add('official-stations-checkbox');
-                    }
-                }, 100); // Delay to ensure the DOM is fully rendered
+                        // ADD EVENT LISTENERS TO ALL CHECKBOXES
+                        const checkboxes = overlaysContainer.querySelectorAll('input[type="checkbox"]');
+                        checkboxes.forEach(checkbox => {
+                            checkbox.addEventListener('change', (event) => {
+                                const layerName = checkbox.nextElementSibling?.innerHTML.trim();
 
+                                //console.log('Layer name:', layerName);
+                                //console.log('Active layer:', activeLayer);
+
+
+                                if (layerName === 'Estaciones oficiales') {
+                                    // Never modify the "Estaciones oficiales" layer
+                                    return;
+                                }
+
+                                // If the current checkbox is being activated
+                                if (checkbox.checked) {
+                                    // Remove the previous active layer if any
+                                    if (activeLayer && activeLayer !== layerName) {
+                                        const previousCheckbox = Array.from(checkboxes).find(cb => cb.nextElementSibling?.innerHTML.trim() === activeLayer);
+                                        if (previousCheckbox) {
+                                            previousCheckbox.checked = false;
+                                            const previousLayer = layersControl._layers.find(layer => layer.name === activeLayer)?.layer;
+                                            if (previousLayer) map.removeLayer(previousLayer);
+                                        }
+                                    }
+
+                                    // Set the new active layer
+                                    activeLayer = layerName;
+
+                                    // Add the new layer to the map
+                                    const newLayer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
+                                    if (newLayer) map.addLayer(newLayer);
+                                } else {
+                                    // If the current checkbox is being deactivated
+                                    const layer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
+                                    if (layer) map.removeLayer(layer);
+                                    activeLayer = null;
+                                }
+                            });
+                        });
+
+                    }, 100); // Delay to ensure the DOM is fully rendered
                 </script>
 
             </body>
