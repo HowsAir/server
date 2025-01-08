@@ -582,8 +582,13 @@ function getMapTemplateFilled(
                                         if (previousCheckbox) {
                                             previousCheckbox.checked = false;
                                             const previousLayer = layersControl._layers.find(layer => layer.name === activeLayer)?.layer;
-                                            if (previousLayer) map.removeLayer(previousLayer);
+                                            if (previousLayer) previousLayer.remove();
                                         }
+
+                                        if(activeLayer === \`<span class="layer-label">Mapa de calidad general</span>\`) map.removeLayer(idwLayerGeneral);
+                                            else if(activeLayer === \`<span class="layer-label">MonóWxido de carbono CO</span>\`) map.removeLayer(idwLayerCO);
+                                            else if(activeLayer === \`<span class="layer-label">Dióxido de nitrógeno NO2</span>\`) map.removeLayer(idwLayerNO2);
+                                            else if(activeLayer === \`<span class="layer-label">Ozono O3</span>\`) map.removeLayer(idwLayerO3);
                                     }
 
                                     // Establecer la nueva capa activa
