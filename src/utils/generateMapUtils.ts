@@ -510,9 +510,6 @@ function getMapTemplateFilled(
                     //---------------------------------------------------------------------------------
                     //  LAYERS CONTROL
                     //---------------------------------------------------------------------------------
-                    
-                    // Variable para mantener la capa activa
-                    let activeLayer = \`<span class="layer-label">Mapa de calidad general</span>\`;
 
                     const layersControl = L.control.layers(null, { 
                         "<span class='layer-label'>Mapa de calidad general</span>": idwLayerGeneral,
@@ -524,6 +521,9 @@ function getMapTemplateFilled(
 
                     // Access the layers control container to style it
                     const layersControlContainer = layersControl.getContainer();
+
+                    // Variable para mantener la capa activa
+                    let activeLayer = \`<span class="layer-label">Mapa de calidad general</span>\`;
 
                     // Wait for the layers control to render completely
                     setTimeout(() => {
@@ -559,23 +559,24 @@ function getMapTemplateFilled(
                         }
 
                         // ADD EVENT LISTENERS TO ALL CHECKBOXES
+
                         const checkboxes = overlaysContainer.querySelectorAll('input[type="checkbox"]');
                         checkboxes.forEach(checkbox => {
                             checkbox.addEventListener('change', (event) => {
                                 const layerName = checkbox.nextElementSibling?.innerHTML.trim();
 
-                                //console.log('Layer name:', layerName);
-                                //console.log('Active layer:', activeLayer);
+                                console.log('previous layer:', activeLayer);
+                                console.log('new name:', layerName);
 
-
-                                if (layerName === 'Estaciones oficiales') {
-                                    // Never modify the "Estaciones oficiales" layer
+                                // Ignorar cualquier cambio relacionado con la capa de "Estaciones oficiales"
+                                if (layerName === \`<span class="layer-label official-stations">Estaciones oficiales</span>\`) {
+                                    console.log('No se puede modificar la capa de estaciones oficiales');
                                     return;
                                 }
 
-                                // If the current checkbox is being activated
+                                // Si el checkbox está activado
                                 if (checkbox.checked) {
-                                    // Remove the previous active layer if any
+                                    // Eliminar la capa activa previa si es necesario
                                     if (activeLayer && activeLayer !== layerName) {
                                         const previousCheckbox = Array.from(checkboxes).find(cb => cb.nextElementSibling?.innerHTML.trim() === activeLayer);
                                         if (previousCheckbox) {
@@ -585,21 +586,24 @@ function getMapTemplateFilled(
                                         }
                                     }
 
-                                    // Set the new active layer
+                                    // Establecer la nueva capa activa
                                     activeLayer = layerName;
 
-                                    // Add the new layer to the map
+                                    // Añadir la nueva capa al mapa
                                     const newLayer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
                                     if (newLayer) map.addLayer(newLayer);
                                 } else {
-                                    // If the current checkbox is being deactivated
+                                    // Si el checkbox se desactiva, eliminar la capa correspondiente
                                     const layer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
                                     if (layer) map.removeLayer(layer);
-                                    activeLayer = null;
+
+                                    // No modificar activeLayer si es "Estaciones oficiales"
+                                    if (layerName !== '<span class="layer-label">Estaciones oficiales</span>') {
+                                        activeLayer = null;
+                                    }
                                 }
                             });
                         });
-
                     }, 100); // Delay to ensure the DOM is fully rendered
                 </script>
 
