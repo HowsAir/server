@@ -524,6 +524,14 @@ function getMapTemplateFilled(
 
                     // Variable para mantener la capa activa
                     let activeLayer = \`<span class="layer-label">Mapa de calidad general</span>\`;
+                    
+                    const layerSeparator = document.createElement("div");
+                    layerSeparator.className = "layers-separator";
+
+                    // Find the "leaflet-control-layers-overlays" container
+                    const overlaysContainer = layersControlContainer.querySelector(
+                        ".leaflet-control-layers-overlays"
+                    );
 
                     // Wait for the layers control to render completely
                     setTimeout(() => {
@@ -534,31 +542,34 @@ function getMapTemplateFilled(
                         title.className = 'layers-control-title';
 
                         // Insert the title into the layers control box
-                        layersControlContainer.insertBefore(title, layersControlContainer.firstChild);
+                        layersControlContainer.insertBefore(
+                            title, 
+                            layersControlContainer.firstChild);
 
                         // ADDING SEPARATOR TO LAYERS CONTROL AND CHANGING STYLE OF OFFICIAL STATIONS CHECKBOX
 
-                        const layerSeparator = document.createElement('div');
-                        layerSeparator.className = 'layers-separator';
-
-                        // Find the "leaflet-control-layers-overlays" container
-                        const overlaysContainer = layersControlContainer.querySelector('.leaflet-control-layers-overlays');
-
                         if (overlaysContainer) {
                             // Find the "Estaciones oficiales" label and its parent label
-                            const officialStationsLabelParent = overlaysContainer.querySelector('span.official-stations')?.closest('label');
+                            const officialStationsLabelParent = overlaysContainer
+                            .querySelector('span.official-stations')?.closest('label');
 
                             if (officialStationsLabelParent) {
                                 // Insert the separator before the "Estaciones oficiales" label
-                                overlaysContainer.insertBefore(layerSeparator, officialStationsLabelParent);
+                                overlaysContainer.insertBefore(
+                                layerSeparator, 
+                                officialStationsLabelParent
+                                );
                             }
 
                             // Changing the style of the official stations checkbox
-                            const checkbox = officialStationsLabelParent?.querySelector('input[type="checkbox"]');
+                            const checkbox = officialStationsLabelParent?.querySelector(
+                            'input[type="checkbox"]'
+                            );
                             checkbox?.classList.add('official-stations-checkbox');
                         }
+                    }, 100); // Delay to ensure the DOM is fully rendered
 
-                        // ADD EVENT LISTENERS TO ALL CHECKBOXES
+                    // ADD EVENT LISTENERS TO ALL CHECKBOXES
 
                         const checkboxes = overlaysContainer.querySelectorAll('input[type="checkbox"]');
                         checkboxes.forEach(checkbox => {
@@ -585,10 +596,10 @@ function getMapTemplateFilled(
                                             if (previousLayer) previousLayer.remove();
                                         }
 
-                                        if(activeLayer === \`<span class="layer-label">Mapa de calidad general</span>\`) map.removeLayer(idwLayerGeneral);
-                                            else if(activeLayer === \`<span class="layer-label">MonóWxido de carbono CO</span>\`) map.removeLayer(idwLayerCO);
-                                            else if(activeLayer === \`<span class="layer-label">Dióxido de nitrógeno NO2</span>\`) map.removeLayer(idwLayerNO2);
-                                            else if(activeLayer === \`<span class="layer-label">Ozono O3</span>\`) map.removeLayer(idwLayerO3);
+                                        // if(activeLayer === \`<span class="layer-label">Mapa de calidad general</span>\`) map.removeLayer(idwLayerGeneral);
+                                        //     else if(activeLayer === \`<span class="layer-label">MonóWxido de carbono CO</span>\`) map.removeLayer(idwLayerCO);
+                                        //     else if(activeLayer === \`<span class="layer-label">Dióxido de nitrógeno NO2</span>\`) map.removeLayer(idwLayerNO2);
+                                        //     else if(activeLayer === \`<span class="layer-label">Ozono O3</span>\`) map.removeLayer(idwLayerO3);
                                     }
 
                                     // Establecer la nueva capa activa
@@ -609,7 +620,6 @@ function getMapTemplateFilled(
                                 }
                             });
                         });
-                    }, 100); // Delay to ensure the DOM is fully rendered
                 </script>
 
             </body>
