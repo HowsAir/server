@@ -1061,6 +1061,139 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+
+  /air-quality-maps/calendar-metadata:
+    get:
+      tags:
+        - Mapas de calidad del aire 
+      summary: Obtiene los metadatos del calendario de mapas de calidad de aire.
+      description: Proporciona los metadatos del calendario para el administrador, permitiendo la navegación por fechas de mapas de calidad de aire disponibles. Solo accesible para administradores autenticados.
+      parameters:
+        - name: year
+          in: query
+          required: true
+          description: El año para el cual se solicitan los metadatos del calendario.
+          schema:
+            type: integer
+            example: 2024
+        - name: month
+          in: query
+          required: true
+          description: El mes para el cual se solicitan los metadatos del calendario (debe ser entre 1 y 12).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+            example: 5
+      security:
+        - AuthTokenCookie: []
+      responses:
+        "200":
+          description: Solicitud exitosa. Devuelve los metadatos del calendario de mapas de calidad de aire.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  calendarMetadata:
+                    $ref: "#/components/schemas/CalendarMetadataOutput"
+        "400":
+          description: Error en la solicitud. El año o mes proporcionado no es válido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Acceso prohibido. Solo los administradores pueden acceder a este recurso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al obtener los metadatos del calendario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /air-quality-maps/{timestamp}:
+    get:
+      tags:
+        - Mapas de calidad del aire 
+      summary: Obtiene un mapa histórico de calidad del aire para un timestamp específico.
+      description: Permite a un administrador obtener un mapa de calidad del aire en un momento específico, indicado por un timestamp ISO 8601. Solo accesible para administradores autenticados.
+      parameters:
+        - name: timestamp
+          in: path
+          required: true
+          description: Timestamp en formato ISO 8601 para obtener el mapa histórico de calidad del aire.
+          schema:
+            type: string
+            format: date-time
+          example: "2024-05-15T18:00:00.000Z"
+      security:
+        - AuthTokenCookie: []
+      responses:
+        "200":
+          description: Solicitud exitosa. Devuelve el mapa de calidad de aire histórico.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  airQualityMap:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: ID del mapa de calidad de aire.
+                        example: 1
+                      url:
+                        type: string
+                        description: URL del mapa de calidad de aire en Cloudinary.
+                        example: "https://res.cloudinary.com/.../air-quality-map.html"
+                      timestamp:
+                        type: string
+                        format: date-time
+                        description: Timestamp de la fecha y hora en que se generó el mapa.
+                        example: "2024-05-15T18:00:00.000Z"
+        "400":
+          description: Solicitud incorrecta. El timestamp proporcionado no es válido o está malformado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Token inválido o no proporcionado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Acceso prohibido. Solo los administradores pueden acceder a este recurso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: No se encontró el mapa de calidad de aire para el timestamp especificado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Error en el servidor al obtener el mapa de calidad de aire.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error" 
+
 components:
   securitySchemes:
     AuthTokenCookie:
@@ -1471,6 +1604,37 @@ components:
           description: Valor en ppm del gas más perjudicial.
           example: 0.03
 
+    CalendarMetadataOutput:
+      type: object
+      properties:
+        firstAvailableYear:
+          type: integer
+          description: Año en el que se encuentran los primeros mapas disponibles.
+          example: 2020
+        year:
+          type: integer
+          description: Año solicitado para los mapas de calidad de aire.
+          example: 2024
+        month:
+          type: integer
+          description: Mes solicitado para los mapas de calidad de aire (1-12).
+          example: 5
+        availableDates:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+                description: Fecha disponible para los mapas de calidad de aire.
+                example: "2024-05-15T00:00:00Z"
+              times:
+                type: array
+                items:
+                  type: string
+                  description: Tiempos disponibles para ese día en formato ISO.
+                  example: ["18:00:00.000Z", "18:30:00.000Z"]
     Error:
       type: object
       properties:
