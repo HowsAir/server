@@ -81,49 +81,6 @@ describe('historicAirQualityMapsService', () => {
         });
     });
 
-    describe('getHistoricAirQualityMaps()', () => {
-        it('should retrieve all historic air quality maps', async () => {
-            // Mocking the findMany method to return mock data
-            const mockData = [
-                {
-                    id: 1,
-                    url: 'https://cloudinary.com/map1',
-                    timestamp: new Date('2024-12-06T12:00:00Z'),
-                },
-                {
-                    id: 2,
-                    url: 'https://cloudinary.com/map2',
-                    timestamp: new Date('2024-12-06T12:30:00Z'),
-                },
-            ];
-            prisma.historicAirQualityMap.findMany = vi
-                .fn()
-                .mockResolvedValue(mockData);
-
-            // Call the service method
-            const result =
-                await historicAirQualityMapsService.getHistoricAirQualityMaps();
-
-            // Assertions
-            expect(result).toEqual(mockData);
-            expect(prisma.historicAirQualityMap.findMany).toHaveBeenCalledWith({
-                orderBy: {
-                    timestamp: 'desc',
-                },
-            });
-        });
-
-        it('should handle errors gracefully when fetching maps', async () => {
-            // Simulating an error during the fetch operation
-            prisma.historicAirQualityMap.findMany = vi
-                .fn()
-                .mockRejectedValue(new Error('Database error'));
-
-            await expect(
-                historicAirQualityMapsService.getHistoricAirQualityMaps()
-            ).rejects.toThrow('Database error');
-        });
-    });
 
     describe('getLastHistoricAirQualityMap()', () => {
         it('should retrieve the most recent historic air quality map', async () => {
@@ -158,6 +115,110 @@ describe('historicAirQualityMapsService', () => {
 
             await expect(
                 historicAirQualityMapsService.getLastHistoricAirQualityMap()
+            ).rejects.toThrow('Database error');
+        });
+    });
+
+    describe('getCalendarMetadata', () => {
+        beforeEach(() => {
+            vi.restoreAllMocks(); // Reset mocks before each test
+        });
+
+        it('should return calendar metadata with available dates when maps exist', async () => {
+            const year = 2024;
+            const month = 5;
+
+            // Mock the response for Prisma queries
+            const mockFirstMap = { timestamp: new Date('2020-01-01') };
+            const mockMaps = [
+                { timestamp: new Date('2024-05-15T18:00:00.000Z'), url: 'https://example.com/map1' },
+                { timestamp: new Date('2024-05-15T18:30:00.000Z'), url: 'https://example.com/map2' },
+                { timestamp: new Date('2024-05-16T12:00:00.000Z'), url: 'https://example.com/map3' },
+            ];
+
+            // Mocking the Prisma calls
+            prisma.historicAirQualityMap.findFirst = vi.fn().mockResolvedValue(mockFirstMap);
+            prisma.historicAirQualityMap.findMany = vi.fn().mockResolvedValue(mockMaps);
+
+            const result = await historicAirQualityMapsService.getCalendarMetadata(year, month);
+
+            expect(result).toEqual({
+                firstAvailableYear: 2020,
+                year: 2024,
+                month: 5,
+                availableDates: [
+                    { date: new Date('2024-05-15'), times: ['18:00:00.000Z', '18:30:00.000Z'] },
+                    { date: new Date('2024-05-16'), times: ['12:00:00.000Z'  ] },
+                ],
+            });
+        });
+
+        it('should return empty calendar metadata when no maps are found', async () => {
+            const year = 2024;
+            const month = 5;
+
+            // Mock the response for Prisma queries
+            const mockFirstMap = { timestamp: new Date('2020-01-01') };
+
+            prisma.historicAirQualityMap.findFirst = vi.fn().mockResolvedValue(mockFirstMap);
+            prisma.historicAirQualityMap.findMany = vi.fn().mockResolvedValue([]);
+
+            const result = await historicAirQualityMapsService.getCalendarMetadata(year, month);
+
+            expect(result).toEqual({
+                firstAvailableYear: 2020,
+                year: 2024,
+                month: 5,
+                availableDates: [],
+            });
+        });
+
+        it('should return null for firstAvailableYear when no maps are found in the database', async () => {
+            const year = 2024;
+            const month = 5;
+
+            // Mock the response for Prisma queries
+            prisma.historicAirQualityMap.findFirst = vi.fn().mockResolvedValue(null);
+            prisma.historicAirQualityMap.findMany = vi.fn().mockResolvedValue([]);
+
+            const result = await  historicAirQualityMapsService.getCalendarMetadata(year, month);
+
+            expect(result).toEqual({
+                firstAvailableYear: null,
+                year: 2024,
+                month: 5,
+                availableDates: [],
+            });
+        });
+    });
+
+    describe('getHistoricAirQualityMap()', () => {
+        it('should return the historic air quality map for a valid timestamp', async () => {
+            const mockMap = { id: 1, url: 'https://cloudinary.com/some-map-url', timestamp };
+
+            // Mock Prisma query to return the map
+            prisma.historicAirQualityMap.findFirst = vi.fn().mockResolvedValue(mockMap);
+
+            const result = await historicAirQualityMapsService.getHistoricAirQualityMap(timestamp);
+
+            expect(result).toEqual(mockMap);
+        });
+
+        it('should return null if no map is found for the given timestamp', async () => {
+            // Mock Prisma query to return null (no map found)
+            prisma.historicAirQualityMap.findFirst = vi.fn().mockResolvedValue(null);
+
+            const result = await historicAirQualityMapsService.getHistoricAirQualityMap(timestamp);
+
+            expect(result).toBeNull();
+        });
+
+        it('should handle errors gracefully when fetching the map', async () => {
+            // Simulating an error (e.g., database down)
+            prisma.historicAirQualityMap.findFirst = vi.fn().mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                historicAirQualityMapsService.getHistoricAirQualityMap(timestamp)
             ).rejects.toThrow('Database error');
         });
     });
