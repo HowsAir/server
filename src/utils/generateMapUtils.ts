@@ -549,42 +549,42 @@ function getMapTemplateFilled(
 
                     // ADD EVENT LISTENERS TO ALL CHECKBOXES
                     document.addEventListener("DOMContentLoaded", () => {
-                        // Seleccionar todos los checkboxes excepto "Estaciones oficiales"
+                        // Select all checkboxes except the "official stations" checkbox
                         const checkboxes = document.querySelectorAll(
                         ".ha-checkbox:not(.official-stations-checkbox)"
                         );
 
-                        // Listener para cada checkbox
                         checkboxes.forEach((checkbox) => {
-                        checkbox.addEventListener("change", (event) => {
-                            // Si se selecciona un checkbox, desactivar los demás
-                            if (event.target.checked) {
-                            checkboxes.forEach((otherCheckbox) => {
-                                if (otherCheckbox !== event.target) {
-                                otherCheckbox.checked = false; // Desmarcar otros checkboxes
+                            checkbox.addEventListener("change", (event) => {
+                                // if the checkbox was already checked and it's being unchecked
+                                if (event.target.checked) {
+                                    checkboxes.forEach((otherCheckbox) => {
+                                        if (otherCheckbox !== event.target) {
+                                            otherCheckbox.checked = false; // Uncheck the other checkboxes
+                                        }
+                                    });
+
+                                    // Get the text of the selected checkbox
+                                    const label = event.target.closest("label");
+                                    const selectedText = label
+                                        ? label.textContent.trim()
+                                        : "Texto no encontrado";
+
+                                    let newMeasurements = identifyMeasurementsFromText(selectedText);
+                                    changeLayer(newMeasurements);
+                                } else {
+                                    idwLayer.removeFrom(map);
                                 }
                             });
-
-                            // Obtener el texto asociado al checkbox
-                            const label = event.target.closest("label");
-                            const selectedText = label
-                                ? label.textContent.trim()
-                                : "Texto no encontrado";
-
-                            let newMeasurements = identifyMeasurementsFromText(selectedText);
-                            changeLayer(newMeasurements);
-                            }
-                        });
                         });
                     });
 
-                    //officialStationsActive = true;
                     document.addEventListener("DOMContentLoaded", () => {
-                        // Seleccionar el checkbox de "Estaciones oficiales"
+                        // Select the "official stations" checkbox
                         const officialStationsCheckbox = document.querySelector(
                         ".official-stations-checkbox"
                         );
-                        // Verificar que exista el checkbox antes de asignarle un listener
+                        
                         if (officialStationsCheckbox) {
                         officialStationsCheckbox.addEventListener("change", (event) => {
                             if (officialStationsCheckbox.checked) {
