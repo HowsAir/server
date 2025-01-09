@@ -124,19 +124,19 @@ function getMapTemplateFilled(
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 
                 <style>
-
                     /* Apply the font to all elements */
-                    body, html, .leaflet-control-layers, .layers-control-title {
-                        font-family: 'Outfit', sans-serif;
+                    body,
+                    html,
+                    .leaflet-control-layers,
+                    body {
+                        margin: 0;
                     }
-
-                    body { margin: 0;}
 
                     #map {
                         height: 100vh;
                         width: 100%;
                     }
-                        
+
                     .leaflet-touch .leaflet-control-layers {
                         border: 0px;
                     }
@@ -157,7 +157,7 @@ function getMapTemplateFilled(
                         border-radius: 20px;
                         padding: 3px;
                         box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-                        font-family: 'Outfit', sans-serif;
+                        font-family: "Outfit", sans-serif;
                         font-size: 14px;
                         text-align: center;
                         transition: background-color 0.3s, transform 0.3s; /* Smooth transition for hover effect */
@@ -190,33 +190,38 @@ function getMapTemplateFilled(
                     /*-------------------------------------*/
 
                     .layer-label {
-                        font-family: 'Outfit', sans-serif;
+                        font-family: "Outfit", sans-serif;
                     }
 
-                    .layers-control-title {
+                    .ha-layers-control-title {
                         font-size: 16px;
-                        font-weight: bold;
+                        font-weight: 500;
+                        font-family: "Outfit", sans-serif;
                         background-color: #fff;
                         border-radius: 5px;
                         margin-bottom: 10px;
                     }
 
-                    .leaflet-control-layers {
+                    .ha-layers-control-container {
                         background-color: #fff;
                         border-radius: 10px;
-                        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                         padding: 20px;
                         font-size: 14px;
-                        font-family: Arial, sans-serif;
+                        font-family: "Outfit", sans-serif;
+                        z-index: 1000;
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
                     }
 
                     .leaflet-control-layers .disabled {
                         pointer-events: none;
                         opacity: 0.5;
                     }
-                    
+
                     /* General checkbox styles */
-                    .leaflet-control-layers-selector {
+                    .ha-checkbox {
                         appearance: none;
                         -webkit-appearance: none;
                         -moz-appearance: none;
@@ -234,20 +239,20 @@ function getMapTemplateFilled(
                     }
 
                     /* Specific styles for the "official stations" checkbox */
-                    .leaflet-control-layers input[type="checkbox"].official-stations-checkbox {
+                    .ha-checkbox.official-stations-checkbox {
                         border-radius: 5px; /* Less border radius for "Estaciones oficiales" checkbox */
                     }
 
                     /* Checked state for the checkbox */
-                    .leaflet-control-layers-selector:checked {
-                        background-color: #1074E7; /* Blue background */
-                        border-color: #1074E7;
+                    .ha-checkbox:checked {
+                        background-color: #1074e7; /* Blue background */
+                        border-color: #1074e7;
                         position: relative;
                     }
 
                     /* Create a white checkmark */
-                    .leaflet-control-layers-selector:checked::after {
-                        content: '';
+                    .ha-checkbox:checked::after {
+                        content: "";
                         display: block;
                         width: 4px;
                         height: 7px;
@@ -256,18 +261,18 @@ function getMapTemplateFilled(
                         transform: rotate(45deg);
                         position: absolute;
                         top: 1px;
-                        left: 3px;
+                        left: 4px;
                     }
 
                     /* Style for the separator between layers */
-                    .layers-separator {
+                    .ha-layers-separator {
                         height: 1px; /* Height of the separator */
                         background-color: #f0f0f0; /* Light gray color */
                         width: 200px; /* Width of the separator */
                         margin: 5px auto; /* Vertical margin of 5px */
                         border-radius: 5px; /* Border radius for smooth corners */
                     }
-                    
+
                     /*-------------------------------------*/
                     /* Legend style */
                     /*-------------------------------------*/
@@ -285,6 +290,7 @@ function getMapTemplateFilled(
                         font-size: 14px;
                         color: #333;
                         z-index: 1000;
+                        font-family: "Outfit", sans-serif;
                     }
 
                     .legend-title {
@@ -305,10 +311,15 @@ function getMapTemplateFilled(
                         margin-right: 10px;
                     }
 
-                    .legend-color.green { background-color: #35B765; }
-                    .legend-color.yellow { background-color: #E5B41C; }
-                    .legend-color.red { background-color: #E24C4C; }
-
+                    .legend-color.green {
+                        background-color: #35b765;
+                    }
+                    .legend-color.yellow {
+                        background-color: #e5b41c;
+                    }
+                    .legend-color.red {
+                        background-color: #e24c4c;
+                    }
                 </style>
 
             </head>
@@ -316,6 +327,51 @@ function getMapTemplateFilled(
             <body>
 
                 <div id="map"></div>
+
+                 <div id="layers-control-container" class="ha-layers-control-container">
+                    <div class="ha-layers-control-title">Capas</div>
+                    <div class="layer-option">
+                        <label>
+                        <input
+                            type="checkbox"
+                            id="layer-general"
+                            class="ha-checkbox"
+                            checked
+                        />
+                        Calidad general
+                        </label>
+                    </div>
+                    <div class="layer-option">
+                        <label>
+                        <input type="checkbox" id="layer-O3" class="ha-checkbox" />
+                        Ozono (O3)
+                        </label>
+                    </div>
+                    <div class="layer-option">
+                        <label>
+                        <input type="checkbox" id="layer-CO" class="ha-checkbox" />
+                        Monóxido de carbono (CO)
+                        </label>
+                    </div>
+                    <div class="layer-option">
+                        <label>
+                        <input type="checkbox" id="layer-NO2" class="ha-checkbox" />
+                        Dióxido de nitrógeno (NO2)
+                        </label>
+                    </div>
+                    <div class="ha-layers-separator"></div>
+                    <div class="layer-option">
+                        <label>
+                        <input
+                            type="checkbox"
+                            id="layer-officialStations"
+                            class="ha-checkbox official-stations-checkbox"
+                            checked
+                        />
+                        Estaciones oficiales
+                        </label>
+                    </div>
+                </div>
 
                 <div class="legend">
                     <div class="legend-title">Calidad del aire</div>
@@ -334,9 +390,13 @@ function getMapTemplateFilled(
                 </div>
 
                 <script>
-
                     // Initialize the map and set the initial view and zoom level
                     const map = L.map('map').setView([39.47, -0.376], 14);
+
+                    generalMeasurements = [${generalHeatmapData}];
+                    coMeasurements = [${coHeatmapData}];
+                    no2Measurements = [${no2HeatmapData}];
+                    o3Measurements = [${o3HeatmapData}];
 
                     // Add the tile layer for the map's background
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -347,69 +407,20 @@ function getMapTemplateFilled(
                     }).addTo(map);
 
                     // General Air Quality Layer
-                        const idwLayerGeneral = L.idwLayer(
-                            [${generalHeatmapData}],
-                            {
-                                opacity: 0.4,
-                                cellSize: 4,
-                                exp: 2,
-                                max: 1,
-                                gradient: {
-                                    0.3: 'green',
-                                    0.6: 'yellow',
-                                    1.0: 'red'
-                                }
+                    let idwLayer = L.idwLayer(
+                        generalMeasurements,
+                        {
+                            opacity: 0.4,
+                            cellSize: 4,
+                            exp: 2,
+                            max: 1,
+                            gradient: {
+                                0.3: 'green',
+                                0.6: 'yellow',
+                                1.0: 'red'
                             }
-                        );
-
-                        // CO Layer
-                        const idwLayerCO = L.idwLayer(
-                            [${coHeatmapData}],
-                            {
-                                opacity: 0.4,
-                                cellSize: 4,
-                                exp: 2,
-                                max: 1,
-                                gradient: {
-                                    0.3: 'green',
-                                    0.6: 'yellow',
-                                    1.0: 'red'
-                                }
-                            }
-                        );
-
-                        // NO2 Layer
-                        const idwLayerNO2 = L.idwLayer(
-                            [${no2HeatmapData}],
-                            {
-                                opacity: 0.4,
-                                cellSize: 4,
-                                exp: 2,
-                                max: 1,
-                                gradient: {
-                                    0.3: 'green',
-                                    0.6: 'yellow',
-                                    1.0: 'red'
-                                }
-                            }
-                        );
-
-                        // O3 Layer
-                        const idwLayerO3 = L.idwLayer(
-                            [${o3HeatmapData}],
-                            {
-                                opacity: 0.4,
-                                cellSize: 4,
-                                exp: 2,
-                                max: 1,
-                                gradient: {
-                                    0.3: 'green',
-                                    0.6: 'yellow',
-                                    1.0: 'red'
-                                }
-                            }
-                        );
-
+                        }
+                    );
 
                     // Everytime the zoom changes, update the cell size using Debounce
                     map.on('zoomend', updateCellSize);
@@ -424,18 +435,12 @@ function getMapTemplateFilled(
                             const zoom = map.getZoom();
                             let newCellSize = zoom < 15 ? 4 : zoom < 16 ? 8 : zoom < 17 ? 16 : zoom < 18 ? 28 : 40;
     
-                            idwLayerGeneral.setOptions({ cellSize: newCellSize }).redraw();
-                            idwLayerCO.setOptions({ cellSize: newCellSize }).redraw();
-                            idwLayerNO2.setOptions({ cellSize: newCellSize }).redraw();
-                            idwLayerO3.setOptions({ cellSize: newCellSize }).redraw();
+                            idwLayer.setOptions({ cellSize: newCellSize }).redraw();
                         }, 200); 
 
                     }
                     
-                    idwLayerGeneral.addTo(map);
-                    //idwLayerCO.addTo(map);
-                    //idwLayerNO2.addTo(map);
-                    //idwLayerO3.addTo(map);
+                    idwLayer.addTo(map);
 
                     //---------------------------------------------------------------------------------
                     //  FETCH TO API WAQI
@@ -511,127 +516,85 @@ function getMapTemplateFilled(
                     //  LAYERS CONTROL
                     //---------------------------------------------------------------------------------
 
-                    const layersControl = L.control.layers(null, { 
-                        "<span class='layer-label'>Mapa de calidad general</span>": idwLayerGeneral,
-                        "<span class='layer-label'>Monóxido de carbono CO</span>": idwLayerCO,
-                        "<span class='layer-label'>Dióxido de nitrógeno NO2</span>": idwLayerNO2,
-                        "<span class='layer-label'>Ozono O3</span>": idwLayerO3,
-                        "<span class='layer-label official-stations'>Estaciones oficiales</span>": officialStations
-                    }, { collapsed: false }).addTo(map);
+                    const changeLayer = (measurements) => {
+                        map.removeLayer(idwLayer);
+                        idwLayer = L.idwLayer(measurements, {
+                        opacity: 0.4,
+                        cellSize: 4,
+                        exp: 2,
+                        max: 1,
+                        gradient: {
+                            0.3: "green",
+                            0.6: "yellow",
+                            1.0: "red",
+                        },
+                        });
+                        idwLayer.addTo(map);
+                    };
 
-                    // Access the layers control container to style it
-                    const layersControlContainer = layersControl.getContainer();
-
-                    const layerSeparator = document.createElement("div");
-                    layerSeparator.className = "layers-separator";
-
-                    // Find the "leaflet-control-layers-overlays" container
-                    const overlaysContainer = layersControlContainer.querySelector(
-                        ".leaflet-control-layers-overlays"
-                    );
-
-                    // Wait for the layers control to render completely
-                    setTimeout(() => {
-                        // ADDING TITLE TO LAYERS CONTROL
-
-                        const title = document.createElement('div');
-                        title.innerHTML = '<strong>Capas</strong>';
-                        title.className = 'layers-control-title';
-
-                        // Insert the title into the layers control box
-                        layersControlContainer.insertBefore(
-                            title, 
-                            layersControlContainer.firstChild);
-
-                        // ADDING SEPARATOR TO LAYERS CONTROL AND CHANGING STYLE OF OFFICIAL STATIONS CHECKBOX
-
-                        if (overlaysContainer) {
-                            // Find the "Estaciones oficiales" label and its parent label
-                            const officialStationsLabelParent = overlaysContainer
-                            .querySelector('span.official-stations')?.closest('label');
-
-                            if (officialStationsLabelParent) {
-                                // Insert the separator before the "Estaciones oficiales" label
-                                overlaysContainer.insertBefore(
-                                layerSeparator, 
-                                officialStationsLabelParent
-                                );
-                            }
-
-                            // Changing the style of the official stations checkbox
-                            const checkbox = officialStationsLabelParent?.querySelector(
-                            'input[type="checkbox"]'
-                            );
-                            checkbox?.classList.add('official-stations-checkbox');
+                    const identifyMeasurementsFromText = (text) => {
+                        switch (text) {
+                        case "Calidad general":
+                            return generalMeasurements;
+                        case "Ozono (O3)":
+                            return o3Measurements;
+                        case "Monóxido de carbono (CO)":
+                            return coMeasurements;
+                        case "Dióxido de nitrógeno (NO2)":
+                            return no2Measurements;
+                        default:
+                            return generalMeasurements;
                         }
-                    }, 100); // Delay to ensure the DOM is fully rendered
+                    };
 
                     // ADD EVENT LISTENERS TO ALL CHECKBOXES
-                    
-                    let activeLayerName = \`<span class="layer-label">Mapa de calidad general</span>\`;
+                    document.addEventListener("DOMContentLoaded", () => {
+                        // Seleccionar todos los checkboxes excepto "Estaciones oficiales"
+                        const checkboxes = document.querySelectorAll(
+                        ".ha-checkbox:not(.official-stations-checkbox)"
+                        );
 
-                    const checkboxes = overlaysContainer.querySelectorAll('input[type="checkbox"]');
-                    checkboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', (event) => {
-                            const layerName = checkbox.nextElementSibling?.innerHTML.trim();
-
-                            console.log('previous layer:', activeLayerName);
-                            console.log('new name:', layerName);
-
-                            // Ignorar cualquier cambio relacionado con la capa de "Estaciones oficiales"
-                            if (layerName === \`<span class="layer-label official-stations">Estaciones oficiales</span>\`) {
-                                console.log('No se puede modificar la capa de estaciones oficiales');
-                                return;
-                            }
-
-                            // Si el checkbox está activado
-                            if (checkbox.checked) {
-                                // Eliminar la capa activa previa si es necesario
-                                if (activeLayerName && activeLayerName !== layerName) {
-                                    const previousCheckbox = Array.from(checkboxes).find(
-                                    (cb) => cb.nextElementSibling?.innerHTML.trim() === activeLayerName
-                                    );
-
-                                    if (previousCheckbox) {
-                                    previousCheckbox.checked = false;
-
-                                    // Eliminar la capa anterior del mapa
-                                    const previousLayer = layersControl._layers.find(
-                                        (layer) => layer.name === activeLayerName
-                                    )?.layer;
-
-                                    if (previousLayer) map.removeLayer(previousLayer);
-                                    }
-
-                                    console.log("hola1: ", layersControl);
-                                    removeLayer(activeLayerName);
-                                    console.log("hola2: ", layersControl);
+                        // Listener para cada checkbox
+                        checkboxes.forEach((checkbox) => {
+                        checkbox.addEventListener("change", (event) => {
+                            // Si se selecciona un checkbox, desactivar los demás
+                            if (event.target.checked) {
+                            checkboxes.forEach((otherCheckbox) => {
+                                if (otherCheckbox !== event.target) {
+                                otherCheckbox.checked = false; // Desmarcar otros checkboxes
                                 }
+                            });
 
-                                // Establecer la nueva capa activa
-                                activeLayerName = layerName;
+                            // Obtener el texto asociado al checkbox
+                            const label = event.target.closest("label");
+                            const selectedText = label
+                                ? label.textContent.trim()
+                                : "Texto no encontrado";
 
-                                // Añadir la nueva capa al mapa
-                                const newLayer = layersControl._layers.find(layer => layer.name === layerName)?.layer;
-                                if (newLayer) map.addLayer(newLayer);
-                            } else {
-                                // Si el checkbox se desactiva, eliminar la capa correspondiente
-                                removeLayer(layerName);
-
-                                // No modificar activeLayer si es "Estaciones oficiales"
-                                if (layerName !== '<span class="layer-label">Estaciones oficiales</span>') {
-                                    activeLayerName = null;
-                                }
+                            let newMeasurements = identifyMeasurementsFromText(selectedText);
+                            changeLayer(newMeasurements);
                             }
+                        });
                         });
                     });
 
-                    const removeLayer = (layerName) => {
-                       const layer = layersControl._layers.find(
-                            (layer) => layer.name === layerName
-                        )?.layer;
-                        if (layer) map.removeLayer(layer);
-                    };
+                    //officialStationsActive = true;
+                    document.addEventListener("DOMContentLoaded", () => {
+                        // Seleccionar el checkbox de "Estaciones oficiales"
+                        const officialStationsCheckbox = document.querySelector(
+                        ".official-stations-checkbox"
+                        );
+                        // Verificar que exista el checkbox antes de asignarle un listener
+                        if (officialStationsCheckbox) {
+                        officialStationsCheckbox.addEventListener("change", (event) => {
+                            if (officialStationsCheckbox.checked) {
+                            officialStations.addTo(map);
+                            } else {
+                            officialStations.removeFrom(map);
+                            }
+                        });
+                        }
+                    });
 
                 </script>
 
