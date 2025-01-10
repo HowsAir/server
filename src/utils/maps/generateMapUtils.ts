@@ -122,7 +122,7 @@ function getMapTemplateFilled(
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
                 <link
                     rel="stylesheet"
-                    href="https://res.cloudinary.com/dcup5oalu/raw/upload/v1736510382/assets/howsair-map.css"
+                    href="https://res.cloudinary.com/dcup5oalu/raw/upload/v1736518123/assets/howsair-map.css"
                 />
 
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -351,7 +351,13 @@ function getMapTemplateFilled(
 
                     import { initializeLayersControl } from "https://res.cloudinary.com/dcup5oalu/raw/upload/v1736509343/assets/burgerMenuLayer.js";
                     initializeLayersControl();
-
+                    
+                    //---------------------------------------------------------------------------------
+                    // SVG Icon at the right of Official Stations label
+                    //---------------------------------------------------------------------------------
+                    import { addIconToLabel } from "https://res.cloudinary.com/dcup5oalu/raw/upload/v1736517965/assets/labelIconUpdater.js";
+                    addIconToLabel();
+                    
                 </script>
 
             </body>
