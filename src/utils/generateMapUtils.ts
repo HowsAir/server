@@ -116,16 +116,18 @@ function getMapTemplateFilled(
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
                 <title>Air Quality Map</title>
+
                 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                <script src="https://unpkg.com/leaflet.heat"></script>
-                <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw/src/leaflet-idw.js"></script>
                 <!-- Add Google Fonts -->
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
                 <link
                     rel="stylesheet"
                     href="https://res.cloudinary.com/dcup5oalu/raw/upload/v1736499740/assets/howsair-map.css"
                 />
+
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <script src="https://unpkg.com/leaflet.heat"></script>
+                <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw/src/leaflet-idw.js"></script>
 
             </head>
 
@@ -194,14 +196,14 @@ function getMapTemplateFilled(
                     </div>
                 </div>
 
-                <script>
+                <script type="module">
                     // Initialize the map and set the initial view and zoom level
                     const map = L.map('map').setView([39.47, -0.376], 14);
 
-                    generalMeasurements = [${generalHeatmapData}];
-                    coMeasurements = [${coHeatmapData}];
-                    no2Measurements = [${no2HeatmapData}];
-                    o3Measurements = [${o3HeatmapData}];
+                    const generalMeasurements = [${generalHeatmapData}];
+                    const coMeasurements = [${coHeatmapData}];
+                    const no2Measurements = [${no2HeatmapData}];
+                    const o3Measurements = [${o3HeatmapData}];
 
                     // Add the tile layer for the map's background
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -248,74 +250,16 @@ function getMapTemplateFilled(
                     idwLayer.addTo(map);
 
                     //---------------------------------------------------------------------------------
-                    //  FETCH TO API WAQI
+                    //  OFFICIAL STATIONS LAYER
                     //---------------------------------------------------------------------------------
+                   
+                    import { fetchOfficialStations } from "https://res.cloudinary.com/dcup5oalu/raw/upload/v1736500682/assets/fetchToOfficialStations.js";
 
                     const officialStations = L.layerGroup();
 
                     const token = "${token}"; 
 
-                    function getAQIInfo(aqi) {
-                        if (aqi <= 50) { // green
-                            return { color: "#35B765", text: "Limpio" };
-                        }
-                        if (aqi <= 100) { // yellow
-                            return { color: "#E5B41C", text: "Moderado" };
-                        }
-                        if (aqi <= 200) { // red 
-                            return { color: "#E24C4C", text: "Insalubre" };
-                        } // purple
-                        return { color: "#EF5CDD", text: "Peligroso" };
-                    }
-
-                    // Function to create custom HTML markers
-                    function createCustomMarker(aqi) {
-                        const color = getAQIInfo(aqi).color;
-                        const text = getAQIInfo(aqi).text;
-
-                        const svgIcon = \`
-                            <img src="https://res.cloudinary.com/dcup5oalu/image/upload/v1733928181/assets/antenna-icon.svg" 
-                                alt="Icon" 
-                                class="marker-svg-icon" style="color:#ffffff"/>\`;
-
-                        const iconHtml = \`
-                            <div class="custom-marker" style="--marker-bg-color: \${color}\;
-                                                              --marker-text-color: "white">
-                                <div style="margin-top:auto">\${svgIcon}\</div>
-                                <div style="color:#ffffff">\${text}\</div>
-                            </div>\`;
-
-                        return L.divIcon({
-                            html: iconHtml,
-                            className: 'custom-marker-wrapper',
-                        });
-                    }
-
-                    // Fetch the data from the WAQI API using HowsAir token
-                    fetch(\`https://api.waqi.info/map/bounds/?latlng=39.4,-0.6,39.6,-0.2&token=\${token}\`)
-                    .then(response => response.json())
-                        .then(data => {
-                            if (data.status === "ok") {
-                                data.data.forEach(station => {
-                                const aqi = station.aqi; 
-                                const latitude = station.lat; 
-                                const longitude = station.lon; 
-                                const aqiInfo = getAQIInfo(aqi); // Retrieve AQI info here
-                                const text = aqiInfo.text; // Get the text again
-
-                                // Create a marker with the custom color for each official station
-                                const marker = L.marker([latitude, longitude], {
-                                    icon: createCustomMarker(aqi),
-                                }).addTo(officialStations)
-                                .bindPopup(\`Estación: \${station.station.name}<br> AQI: \${aqi}<br> Calidad del aire: \${text}\`);
-                            });
-                            } else {
-                                console.log("Couldn't obtain the official stations data");
-                            }
-                        })
-                        .catch(error => console.error('Error fetching WAQI data:', error));
-
-                    officialStations.addTo(map);
+                    fetchOfficialStations(officialStations, token, map);
 
                     //---------------------------------------------------------------------------------
                     //  LAYERS CONTROL
