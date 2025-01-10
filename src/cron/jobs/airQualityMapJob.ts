@@ -6,7 +6,7 @@
 
 import { Cron, scheduledJobs } from 'croner';
 import { measurementsService } from '../../services/measurementsService';
-import { generateHTMLMap } from '../../utils/generateMapUtils';
+import { generateHTMLMap } from '../../utils/maps/generateMapUtils';
 import { uploadMapToCloudinary } from '../../services/cloudinaryService';
 import { CloudinaryFolders } from '../../types/users/CloudinaryFolders';
 import { historicAirQualityMapsService } from '../../services/historicAirQualityMapsService';
@@ -57,11 +57,11 @@ const generateAirQualityMap = async (): Promise<void> => {
         start: new Date(Date.now() - frequencyInMinutes * 60 * 1000),
         end: new Date(),
     };
-    
+
     const airQualityMapTimestamp = new Date(timeRange.end);
 
     airQualityMapTimestamp.setSeconds(0, 0);
-    
+
     try {
         const mapsGeolocatedAirQualityReadings =
             await measurementsService.getMapsGeolocatedAirQualityReadingsInRange(
@@ -80,8 +80,11 @@ const generateAirQualityMap = async (): Promise<void> => {
             CloudinaryFolders.AIR_QUALITY_MAPS
         );
 
-        await historicAirQualityMapsService.saveHistoricAirQualityMap(newMapUrl, airQualityMapTimestamp)
-        
+        await historicAirQualityMapsService.saveHistoricAirQualityMap(
+            newMapUrl,
+            airQualityMapTimestamp
+        );
+
         console.log('Task executed successfully.');
         console.log('New map URL:', newMapUrl);
     } catch (error) {

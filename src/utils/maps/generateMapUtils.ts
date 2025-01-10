@@ -7,7 +7,7 @@ import {
     GasProportionalValueThresholds,
     GeolocatedAirQualityReading,
     MapsGeolocatedAirQualityReadings,
-} from '../types/measurements/AirQuality';
+} from '../../types/measurements/AirQuality';
 import { config } from 'dotenv';
 
 config();
@@ -122,7 +122,7 @@ function getMapTemplateFilled(
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
                 <link
                     rel="stylesheet"
-                    href="https://res.cloudinary.com/dcup5oalu/raw/upload/v1736499740/assets/howsair-map.css"
+                    href="https://res.cloudinary.com/dcup5oalu/raw/upload/v1736510382/assets/howsair-map.css"
                 />
 
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -345,37 +345,15 @@ function getMapTemplateFilled(
                         }
                     });
 
+                    //---------------------------------------------------------------------------------
+                    // Burger Menu
+                    //---------------------------------------------------------------------------------
+
+                    import { initializeLayersControl } from "https://res.cloudinary.com/dcup5oalu/raw/upload/v1736509343/assets/burgerMenuLayer.js";
+                    initializeLayersControl();
+
                 </script>
 
             </body>
             </html>`;
 }
-
-/* FUNCTIONS FOR TESTING PURPOSES
-
-// Generar datos de ejemplo utilizando la interfaz GeolocatedAirQualityReading
-const randomData: GeolocatedAirQualityReading[] = Array.from(
-    { length: 50 },
-    () => ({
-        latitude: 39.4699 + (Math.random() - 0.5) * 0.05,
-        longitude: -0.3763 + (Math.random() - 0.5) * 0.05,
-        airQuality:
-            Object.values(AirQualities)[
-                Math.floor(Math.random() * Object.values(AirQualities).length)
-            ],
-        // Asignar un valor aleatorio dentro de AirQualities
-        proportionalValue: Math.random() * 100, // Valor proporcional aleatorio
-        gas: Object.values(AirGases)[
-            Math.floor(Math.random() * Object.values(AirGases).length)
-        ] as AirGases, // Asignar gas aleatorio
-        ppmValue: Math.random() * 1000, // Valor de ppm aleatorio
-        timestamp: new Date(), // Timestamp actual
-    })
-);
-
-function generateHTMLFile(content: string): void {
-    fs.writeFileSync('heatmap.html', content);
-}
-
-generateHTMLFile(generateHTMLMap(randomData));
-// */
