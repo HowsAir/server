@@ -38,7 +38,7 @@ function getAQIInfo(aqi) {
  * @param {number} aqi - The AQI value.
  * @returns {L.DivIcon} - A Leaflet DivIcon object representing the custom marker.
  */
-function createCustomMarker(aqi) {
+function createCustomMarker(aqi, notext) {
     const color = getAQIInfo(aqi).color;
     const text = getAQIInfo(aqi).text;
 
@@ -48,10 +48,9 @@ function createCustomMarker(aqi) {
             class="marker-svg-icon" style="color:#ffffff"/>`;
 
     const iconHtml = `
-        <div class="custom-marker" style="--marker-bg-color: ${color};
-                                          --marker-text-color: "white">
-            <div style="margin-top:auto">${svgIcon}</div>
-            <div style="color:#ffffff">${text}</div>
+        <div class="custom-marker" style="--marker-bg-color: ${color}; ${notext ? 'box-shadow: none;' : ''}">
+            ${svgIcon}
+            ${notext ? '' : `<div style="color:#fff;">${text}</div>`}
         </div>`;
 
     return L.divIcon({
@@ -60,10 +59,42 @@ function createCustomMarker(aqi) {
     });
 }
 
+const generatePopUpContent = (station, stationData) => {
+    const color = getAQIInfo(station.aqi).color;
+    const customMarkerHtml = `
+        <div class="custom-marker" style="--marker-bg-color: ${color}; display: flex; justify-content: center; align-items: center; width: 40px; box-shadow: none">
+            <img src="https://res.cloudinary.com/dcup5oalu/image/upload/v1733928181/assets/antenna-icon.svg" 
+                alt="Icon" 
+                class="marker-svg-icon" style="color:#ffffff; margin-right: 0;"/>
+        </div>`;
+    const popupContent = `
+        <div style="min-width: 200px; margin: 0 auto;">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                ${customMarkerHtml}
+                <h3 style="margin-left: 10px;">${getStationName(station.station.name)}</h3>
+            </div>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                <div>
+                    <p style="margin: 4px 0;"><strong>O3:</strong> ${stationData.o3} AQI</p>
+                    <p style="margin: 4px 0;"><strong>NO2:</strong> ${stationData.no2} AQI</p>
+                    <p style="margin: 4px 0;"><strong>PM10:</strong> ${stationData.pm10} AQI</p>
+                    <p style="margin: 4px 0;"><strong>PM2.5:</strong> ${stationData.pm25} AQI</p>
+                    <p style="margin: 4px 0;"><strong>SO2:</strong> ${stationData.so2} AQI</p>
+                </div>
+                <div style="margin-left: auto;">
+                    <h3 style="font-size: 40px; margin-bottom: 0; margin-top: 20px; color:${color};">${station.aqi}<span style="font-size: 20px;">AQI</span></h3>
+                    <button style="color: #969696; font-size: 14px; cursor: pointer; background-color: transparent; border: none; text-decoration: underline;">Saber más</button>
+                </div>
+            </div>
+        </div>`;
+
+    return popupContent;
+};
+
 /**
  * Fetches official station data from the WAQI API and displays it on the map.
  * @author Manuel Borregales
- * 
+ *
  * @param {L.LayerGroup} officialStationsLayer - The Leaflet layer group to which markers will be added.
  * @param {string} token - The WAQI API token for authentication.
  * @param {L.Map} map - The Leaflet map object where the stations will be displayed.
@@ -96,7 +127,8 @@ async function fetchOfficialStations(officialStationsLayer, token, map) {
                 })
                     .addTo(officialStationsLayer)
                     .bindPopup(
-                        `Estación: ${station.station.name}<br> Calidad del aire: ${text} <br> O3: ${stationData.o3} <br> NO2: ${stationData.no2} <br> PM10: ${stationData.pm10} <br> PM2.5: ${stationData.pm25} <br> SO2: ${stationData.so2}`
+                        generatePopUpContent(station, stationData)
+                        // `Estación: ${station.station.name}<br> Calidad del aire: ${text} <br> O3: ${stationData.o3} <br> NO2: ${stationData.no2} <br> PM10: ${stationData.pm10} <br> PM2.5: ${stationData.pm25} <br> SO2: ${stationData.so2}`
                     );
             }
         } else {
@@ -112,12 +144,12 @@ async function fetchOfficialStations(officialStationsLayer, token, map) {
 /**
  * Fetches station data from the WAQI API based on the latitude and longitude.
  * @author Mario Luis
- * 
+ *
  * @param {number} lat - The latitude of the station.
  * @param {number} lng - The longitude of the station.
  * @param {string} token - The WAQI API token for authentication.
  * @returns {Object} - An object containing the station data.
- * 
+ *
  * @description This function fetches the station data (O3, NO2, PM10, PM2.5, SO2) from the WAQI API of a given station.
  * It returns an object with the values of each pollutant. If there's an error, it returns an empty object.
  */
@@ -156,10 +188,8 @@ async function fetchStationData(lat, lng, token) {
     }
 }
 
-
-function getStationName(station) {
-    const fullName = station.station.name;
-    const shortName = fullName.split(',')[0]; // Separa por la coma y toma el primer elemento
+function getStationName(name) {
+    const shortName = name.split(',')[0]; // Separa por la coma y toma el primer elemento
     return shortName;
 }
 
