@@ -253,7 +253,7 @@ function getMapTemplateFilled(
                     //  OFFICIAL STATIONS LAYER
                     //---------------------------------------------------------------------------------
                    
-                    import { fetchOfficialStations } from "https://res.cloudinary.com/dcup5oalu/raw/upload/v1736500682/assets/fetchToOfficialStations.js";
+                    import { fetchOfficialStations } from "https://res.cloudinary.com/dutlryhdt/raw/upload/v1737052055/fetchOfficialStations_mlzsgz.js";
 
                     const officialStations = L.layerGroup();
 
