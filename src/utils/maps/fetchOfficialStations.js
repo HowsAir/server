@@ -67,8 +67,69 @@ const generatePopUpContent = (station, stationData) => {
                 alt="Icon" 
                 class="marker-svg-icon" style="color:#ffffff; margin-right: 0;"/>
         </div>`;
+
+    // Generate a unique ID for this popup
+    const popupId = `aqiInfoPopup-${station.station.name.replace(/\s+/g, '-')}`;
+
+    // AQI Info Popup HTML
+    const aqiInfoPopup = `
+        <div id="${popupId}" class="aqi-info-popup" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000;">
+            <div id="aqiInfoContainer" style="width: 600px; font-family: 'Outfit'; border-radius: 15px; background-color: #f7f7f7; padding: 0 20px; padding-bottom: 12px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                <h3 style="padding-top: 12px; text-align: center; font-weight: 500">
+                    ¿Qué es el indice de calidad del aire (AQI)?
+                </h3>
+                <div id="aqiInfoInnerContainer" style="display: flex; justify-content: space-between; padding: 20px; border-radius: 20px; background-color: white;">
+                    <div class="responsiveAqiData" style="width: 45%">
+                        <p style="font-weight: 300; font-size: 14px">
+                            El AQI traduce los niveles de contaminación en valores y colores que
+                            indican su impacto en la salud.
+                        </p>
+                        <p style="font-size: 16px; margin-bottom: 0">¿Cómo se calcula?</p>
+                        <p style="font-weight: 300; font-size: 14px; margin-top: 8px">
+                            El AQI se calcula a partir de contaminantes clave como PM2.5, PM10,
+                            ozono (O₃), NO₂, SO₂ y CO, evaluando cómo afectan la salud humana y
+                            la calidad del aire.
+                        </p>
+                    </div>
+                    <table class="responsiveAqiData" style="width: 45%; border-collapse: collapse">
+                        <thead>
+                            <tr style="color: #667085; border-bottom: 1px solid #EAECF0">
+                                <th style="font-weight: normal; font-size: 12px; text-align: left; padding-bottom: 8px;">Categoria</th>
+                                <th style="font-weight: normal; font-size: 12px; text-align: left; padding-bottom: 8px;">Rango AQI</th>
+                                <th style="font-weight: normal; font-size: 12px; text-align: left; padding-bottom: 8px;">Color</th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 14px">
+                            <tr style="border-bottom: 1px solid #EAECF0">
+                                <td>Limpio</td>
+                                <td>0-50</td>
+                                <td><div style="width: 20px; height: 20px; border-radius: 20%; background-color: #49b504;"></div></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #EAECF0">
+                                <td>Moderado</td>
+                                <td>51-150</td>
+                                <td><div style="width: 20px; height: 20px; border-radius: 20%; background-color: #eab30e;"></div></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #EAECF0">
+                                <td>Insalubre</td>
+                                <td>150-300</td>
+                                <td><div style="width: 20px; height: 20px; border-radius: 20%; background-color: #e10000;"></div></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #EAECF0">
+                                <td>Peligroso</td>
+                                <td>300+</td>
+                                <td><div style="width: 20px; height: 20px; border-radius: 20%; background-color: #ef5cdd;"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="close-popup-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 20px;">×</button>
+            </div>
+        </div>`;
+
     const popupContent = `
-        <div style="min-width: 200px; margin: 0 auto;">
+        ${aqiInfoPopup}
+        <div style="font-family: 'Outfit', sans-serif; min-width: 200px; margin: 0 auto;">
             <div style="display: flex; align-items: center; margin-bottom: 10px;">
                 ${customMarkerHtml}
                 <h3 style="margin-left: 10px;">${getStationName(station.station.name)}</h3>
@@ -83,13 +144,14 @@ const generatePopUpContent = (station, stationData) => {
                 </div>
                 <div style="margin-left: auto;">
                     <h3 style="font-size: 40px; margin-bottom: 0; margin-top: 20px; color:${color};">${station.aqi}<span style="font-size: 20px;">AQI</span></h3>
-                    <button style="color: #969696; font-size: 14px; cursor: pointer; background-color: transparent; border: none; text-decoration: underline;">Saber más</button>
+                    <button class="saber-mas-btn" data-popup-id="${popupId}" style="color: #969696; font-size: 14px; cursor: pointer; background-color: transparent; border: none; text-decoration: underline;">Saber más</button>
                 </div>
             </div>
         </div>`;
 
     return popupContent;
 };
+
 
 /**
  * Fetches official station data from the WAQI API and displays it on the map.
@@ -111,25 +173,54 @@ async function fetchOfficialStations(officialStationsLayer, token, map) {
                 const aqi = station.aqi;
                 const latitude = station.lat;
                 const longitude = station.lon;
-                const aqiInfo = getAQIInfo(aqi); // Retrieve AQI info here
-                const text = aqiInfo.text; // Get the text again
-
-                // Wait for the station data to be fetched
                 const stationData = await fetchStationData(
                     latitude,
                     longitude,
                     token
                 );
 
-                // Create a marker with the custom color for each official station
                 const marker = L.marker([latitude, longitude], {
                     icon: createCustomMarker(aqi),
                 })
                     .addTo(officialStationsLayer)
-                    .bindPopup(
-                        generatePopUpContent(station, stationData)
-                        // `Estación: ${station.station.name}<br> Calidad del aire: ${text} <br> O3: ${stationData.o3} <br> NO2: ${stationData.no2} <br> PM10: ${stationData.pm10} <br> PM2.5: ${stationData.pm25} <br> SO2: ${stationData.so2}`
-                    );
+                    .bindPopup(generatePopUpContent(station, stationData));
+
+                // Add event listener after popup opens
+                marker.on('popupopen', function () {
+                    // Handle "Saber más" button click
+                    const saberMasBtn =
+                        document.querySelector('.saber-mas-btn');
+                    if (saberMasBtn) {
+                        saberMasBtn.addEventListener('click', function () {
+                            const popupId = this.getAttribute('data-popup-id');
+                            const popup = document.getElementById(popupId);
+                            if (popup) {
+                                popup.style.display = 'block';
+                            }
+                        });
+                    }
+
+                    // Handle close button click
+                    const closeBtn = document.querySelector('.close-popup-btn');
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', function () {
+                            const popup = this.closest('.aqi-info-popup');
+                            if (popup) {
+                                popup.style.display = 'none';
+                            }
+                        });
+                    }
+
+                    // Handle click outside popup
+                    const aqiPopup = document.querySelector('.aqi-info-popup');
+                    if (aqiPopup) {
+                        aqiPopup.addEventListener('click', function (event) {
+                            if (event.target === this) {
+                                this.style.display = 'none';
+                            }
+                        });
+                    }
+                });
             }
         } else {
             console.log("Couldn't obtain the official stations data");
