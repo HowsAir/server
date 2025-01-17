@@ -122,7 +122,7 @@ function getMapTemplateFilled(
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
                 <link
                     rel="stylesheet"
-                    href="https://res.cloudinary.com/dcup5oalu/raw/upload/v1736518123/assets/howsair-map.css"
+                    href="https://res.cloudinary.com/dutlryhdt/raw/upload/v1737120855/howsair-map_ajcwba.css"
                 />
 
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
