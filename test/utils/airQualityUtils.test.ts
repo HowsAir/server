@@ -14,6 +14,7 @@ import {
     MeasurementGasesValues,
     AirQualityReading,
 } from '../../src/types/measurements/AirQuality';
+import { time } from 'console';
 
 describe('airQualityUtils', () => {
     beforeEach(() => {
@@ -280,31 +281,36 @@ describe('airQualityUtils', () => {
         });
     });
 
-    describe('getWorstGasOnProportionalValue()', () => {
+    describe('getWorstAirQualityReading()', () => {
         it('should return the gas with the highest proportional value', () => {
+           const currentDate = new Date(); 
+            
             const gasesData = [
                 {
                     gas: AirGases.O3,
                     proportionalValue: 10,
                     airQuality: AirQualities.Regular,
                     ppmValue: 0.08,
+                    timestamp : currentDate
                 },
                 {
                     gas: AirGases.CO,
                     proportionalValue: 40,
                     airQuality: AirQualities.Bad,
                     ppmValue: 13,
+                    timestamp : currentDate
                 },
                 {
                     gas: AirGases.NO2,
                     proportionalValue: 25,
                     airQuality: AirQualities.Good,
                     ppmValue: 0.05,
+                    timestamp : currentDate
                 },
             ];
 
             const result =
-                airQualityUtils.getWorstGasOnProportionalValue(gasesData);
+                airQualityUtils.getWorstAirQualityReading(gasesData);
             expect(result.gas).toBe(AirGases.CO); // CO has the highest proportional value (40)
             expect(result.proportionalValue).toBe(40);
             expect(result).toEqual(
@@ -313,12 +319,13 @@ describe('airQualityUtils', () => {
                     proportionalValue: 40,
                     airQuality: AirQualities.Bad,
                     ppmValue: 13,
+                    timestamp : currentDate 
                 }
             )
         });
     });
 
-    describe('getAirQualityReadingFromGasesValues()', () => {
+    describe('getAirQualityReadingFromMeasurementGasesValues()', () => {
         it('should return an AirQualityReading with the worst gas', async () => {
             // Mock data
             const gasesValues: MeasurementGasesValues = { o3: 0.12, co: 0.2, no2: 0.06 };
@@ -346,16 +353,17 @@ describe('airQualityUtils', () => {
                 .mockReturnValue(mockAirQualities[AirGases.O3]);
 
             const mockGetWorstGasOnProportionalValue = vi
-                .spyOn(airQualityUtils, 'getWorstGasOnProportionalValue')
+                .spyOn(airQualityUtils, 'getWorstAirQualityReading')
                 .mockReturnValueOnce({
                     gas: AirGases.CO,
                     proportionalValue: mockProportionalValues[AirGases.CO],
                     airQuality: mockAirQualities[AirGases.CO],
                     ppmValue: gasesValues.co,
+                    timestamp : timestamp
                 });
 
             // Execute the method
-            const result = await airQualityUtils.getAirQualityReadingFromGasesValues(
+            const result = await airQualityUtils.getAirQualityReadingFromMeasurementGasesValues(
                 gasesValues,
                 timestamp
             );

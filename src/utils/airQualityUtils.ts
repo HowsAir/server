@@ -158,82 +158,78 @@ const getGasProportionalValue = (gas: AirGases, value: number): number => {
 /**
  * Finds the gas with the worst air quality based on proportional values.
  *
- * Array<{ gas, proportionalValue, airQuality, ppmValue }> -> getWorstGas() -> { gas, proportionalValue, airQuality, ppmValue }
+ * Array<AirQualityReading> -> getWorstAirQualityReading() -> AirQualityReading
  *
- * @param gasesData - Array of gas data containing gas type, proportional value, and air quality.
- * @returns {Object} - The worst gas data (gas, proportionalValue, airQuality, ppmValue).
+ * @param airQualityReadings - Array of air quality readings. 
+ * @returns {Object} - The worst air quality reading. 
  */
-const getWorstGasOnProportionalValue = (
-    gasesData: Omit<AirQualityReading, 'timestamp'>[]
-): Omit<AirQualityReading, 'timestamp'> => {
-    return gasesData.reduce((worst, current) =>
+const getWorstAirQualityReading = (
+    airQualityReadings: AirQualityReading[]
+): AirQualityReading => {
+    return airQualityReadings.reduce((worst, current) =>
         current.proportionalValue! > worst.proportionalValue! ? current : worst
     );
 };
 
 /**
+ * Helper function to create an air quality reading for a single gas.
+ *
+ * @param gas - The type of gas being evaluated.
+ * @param ppmValue - The gas concentration in parts per million (PPM).
+ * @param timestamp - The timestamp of the reading.
+ * @returns {AirQualityReading} - Partial air quality reading for the given gas.
+ */
+const getAirQualityReadingFromMeasurementSingleGasValue = (
+    gas: AirGases,
+    ppmValue: number,
+    timestamp: Date
+): AirQualityReading => ({
+    gas,
+    proportionalValue: airQualityUtils.getGasProportionalValue(gas, ppmValue),
+    airQuality: airQualityUtils.getAirQualityFromGasPPMValue(gas, ppmValue),
+    ppmValue,
+    timestamp,
+});
+
+/**
  * Transforms raw gases values into an AirQualityReading.
  * We assume that the worst gas is the one with the highest proportional value, and we use its air quality.
  *
- * { MeasurementGasesValues: measurementGasesValues, Date: timestamp } -> getAirQualityReadingFromGasesValues() -> AirQualityReading
+ * { MeasurementGasesValues: measurementGasesValues, Date: timestamp } -> 
+ * 
+ *                                              getAirQualityReadingFromMeasurementGasesValues() 
+*                         AirQualityReading  <- 
  *
  * @param measurementGasesValues - The gases values to be transformed.
  * @param timestamp - The timestamp of the reading.
  * @returns {AirQualityReading} - An air quality reading with air quality, proportional values, and the worst gas.
  */
-const getAirQualityReadingFromGasesValues = (
+const getAirQualityReadingFromMeasurementGasesValues = (
     measurementGasesValues: MeasurementGasesValues,
     timestamp: Date
 ): AirQualityReading => {
-    const gasesData: Omit<AirQualityReading,'timestamp'>[] = [
-        {
-            gas: AirGases.O3,
-            proportionalValue: airQualityUtils.getGasProportionalValue(
-                AirGases.O3,
-                measurementGasesValues.o3
-            ),
-            airQuality: airQualityUtils.getAirQualityFromGasPPMValue(
-                AirGases.O3,
-                measurementGasesValues.o3
-            ),
-            ppmValue: measurementGasesValues.o3,
-        },
-        {
-            gas: AirGases.CO,
-            proportionalValue: airQualityUtils.getGasProportionalValue(
-                AirGases.CO,
-                measurementGasesValues.co
-            ),
-            airQuality: airQualityUtils.getAirQualityFromGasPPMValue(
-                AirGases.CO,
-                measurementGasesValues.co
-            ),
-            ppmValue: measurementGasesValues.co,
-        },
-        {
-            gas: AirGases.NO2,
-            proportionalValue: airQualityUtils.getGasProportionalValue(
-                AirGases.NO2,
-                measurementGasesValues.no2
-            ),
-            airQuality: airQualityUtils.getAirQualityFromGasPPMValue(
-                AirGases.NO2,
-                measurementGasesValues.no2
-            ),
-            ppmValue: measurementGasesValues.no2,
-        },
+    const gasesAirQualityReadings = [
+        getAirQualityReadingFromMeasurementSingleGasValue(
+            AirGases.O3,
+            measurementGasesValues.o3,
+            timestamp
+        ),
+        getAirQualityReadingFromMeasurementSingleGasValue(
+            AirGases.CO,
+            measurementGasesValues.co,
+            timestamp
+        ),
+        getAirQualityReadingFromMeasurementSingleGasValue(
+            AirGases.NO2,
+            measurementGasesValues.no2,
+            timestamp
+        ),
     ];
 
-    const worstGasData =
-        airQualityUtils.getWorstGasOnProportionalValue(gasesData);
+    const worstAirQualityReading =
+        airQualityUtils.getWorstAirQualityReading(gasesAirQualityReadings);
 
-    return {
-        timestamp: timestamp,
-        gas: worstGasData.gas,
-        airQuality: worstGasData.airQuality,
-        proportionalValue: worstGasData.proportionalValue,
-        ppmValue: worstGasData.ppmValue,
-    };
+    return worstAirQualityReading;
 };
 
 /**
@@ -244,8 +240,7 @@ const getAirQualityReadingFromGasesValues = (
  * @param measurements - Array of measurement objects with gas values.
  * @returns {Object} - The average values for O3, CO, and NO2 gases.
  */
-const calculateGasAverages = (
-    measurements: Measurement[]
+const calculateGasAverages = ( measurements: Measurement[]
 ): MeasurementGasesValues => {
     const total = measurements.reduce(
         (acc, measurement) => {
@@ -318,8 +313,9 @@ export const airQualityUtils = {
     getAirQualityFromGasProportionalValue,
     getAverageAirQualityFromAirQualityReadings,
     getGasProportionalValue,
-    getWorstGasOnProportionalValue,
-    getAirQualityReadingFromGasesValues,
+    getWorstAirQualityReading,
+    getAirQualityReadingFromMeasurementSingleGasValue,
+    getAirQualityReadingFromMeasurementGasesValues,
     calculateGasAverages,
     splitTimeRange,
 };
